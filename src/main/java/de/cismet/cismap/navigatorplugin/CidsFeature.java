@@ -51,6 +51,8 @@ import de.cismet.cismap.commons.features.XStyledFeature;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
+import de.cismet.tools.BlacklistClassloading;
+import de.cismet.tools.collections.TypeSafeCollections;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
@@ -59,6 +61,7 @@ import java.awt.Stroke;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 
+import java.util.HashMap;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
@@ -106,9 +109,6 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             mo = mon.getObject();
             this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
             initFeatureSettings();
-
-
-
 
             //renderFeature auswerten
             try {
@@ -193,13 +193,18 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         }
         try {
             log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");
-            String featureRendererClass = (String)getAttribValue("FEATURE_RENDERER", mo, mc);
+            String overrideFeatureRendererClassName=System.getProperty(mo.getDomain().toLowerCase()+"."+mo.getMetaClass().getTableName().toLowerCase()+".featurerenderer");
+
+            String featureRendererClass = overrideFeatureRendererClassName;
             if (featureRendererClass==null){
                 String mcName=mo.getMetaClass().getName();
                 featureRendererClass="de.cismet.cids.custom.featurerenderer."+mo.getDomain().toLowerCase()+"."+mcName.substring(0,1).toUpperCase()+mcName.substring(1).toLowerCase()+"FeatureRenderer";
             }
             log.debug("FEATURE_RENDERER=" + featureRendererClass);
-            Class c = Class.forName(featureRendererClass);
+            Class c = BlacklistClassloading.forName(featureRendererClass);
+            if (c==null){
+                c=BlacklistClassloading.forName((String)getAttribValue("FEATURE_RENDERER", mo, mc));
+            }
             Constructor constructor = c.getConstructor();
             featureRenderer = (FeatureRenderer) constructor.newInstance();
             ((CustomCidsFeatureRenderer) featureRenderer).setMetaObject(mo);
@@ -299,7 +304,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             supportingRasterServiceIdAttributeName = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE", mo, mc).toString();
             String serviceName = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc).toString();
             log.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);
-            Class c = Class.forName(supportingRasterService);
+            Class c = BlacklistClassloading.forName(supportingRasterService);
             SimpleFeatureSupporterRasterServiceUrl url = new SimpleFeatureSupporterRasterServiceUrl(supportingRasterServiceUrl);
             Constructor constructor = c.getConstructor(SimpleFeatureSupporterRasterServiceUrl.class);
             this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance(url);
