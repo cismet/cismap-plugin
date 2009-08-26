@@ -224,12 +224,12 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
     }
 
     public CismapPlugin getCismap() {
-        log.fatal("xxxlaa getting plugin: " + cismap);
+        log.debug("laa getting plugin: " + cismap);
         return cismap;
     }
 
     public void setCismap(CismapPlugin cismap) {
-        log.fatal("xxxlaa setting plugin to: " + cismap);
+        log.debug("setting plugin to: " + cismap);
         this.cismap = cismap;
     }
 
