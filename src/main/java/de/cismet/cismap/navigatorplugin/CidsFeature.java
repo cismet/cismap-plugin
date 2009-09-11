@@ -197,7 +197,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
             String featureRendererClass = overrideFeatureRendererClassName;
             if (featureRendererClass==null){
-                String mcName=mo.getMetaClass().getName();
+                String mcName=mo.getMetaClass().getTableName();
                 featureRendererClass="de.cismet.cids.custom.featurerenderer."+mo.getDomain().toLowerCase()+"."+mcName.substring(0,1).toUpperCase()+mcName.substring(1).toLowerCase()+"FeatureRenderer";
             }
             log.debug("FEATURE_RENDERER=" + featureRendererClass);
