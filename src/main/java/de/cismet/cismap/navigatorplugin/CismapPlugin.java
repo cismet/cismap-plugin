@@ -28,14 +28,12 @@ import Sirius.server.middleware.types.Node;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
-import de.cismet.cids.utils.interfaces.DefaultMetaTreeNodeVisualizationService;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
-import de.cismet.cismap.commons.featureservice.WebFeatureService;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
@@ -86,6 +84,7 @@ import edu.umd.cs.piccolo.util.PBounds;
 import java.applet.AppletContext;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
@@ -107,7 +106,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,7 +128,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -150,7 +151,6 @@ import net.infonode.docking.util.PropertiesUtil;
 import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
-import org.deegree_impl.model.cs.DatumType.Local;
 import org.jdom.Element;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
@@ -165,7 +165,6 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
  *
  * @author  thorsten.hell@cismet.de
  */
-
 public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, Observer,
         FloatingPluginUI, Configurable, MapSearchListener, MapDnDListener,
         StatusListener, HistoryModelListener, FeatureCollectionListener {
@@ -190,6 +189,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     //private HashMap<View,DockingState> dockingStates=new HashMap<View,DockingState>();
     private RootWindow rootWindow;
     private StringViewMap viewMap = new StringViewMap();
+    private HashMap<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
     private ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
     private HashMap<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
@@ -234,6 +234,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private int oldWindowPositionX = -1;
     private int oldWindowPositionY = -1;
     private String dirExtension = "";
+    private Element cismapPluginUIPreferences;
+    private Vector<String> windows2skip;
 
     public CismapPlugin() {
         this(null);
@@ -501,29 +503,36 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             //-------------------------InfoNode initialization-------------------------------------------//
             rootWindow = DockingUtil.createRootWindow(viewMap, true);
 
+
             vMap = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Karte"), Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), mapC);
             viewMap.addView("map", vMap);
+            viewMenuMap.put("map", mniMap);
 
             vLayers = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Layer"), Static2DTools.borderIcon(icoLayers, 0, 3, 0, 1), activeLayers);
             viewMap.addView("activeLayers", vLayers);
+            viewMenuMap.put("activeLayers", mniLayer);
 
             vCaps = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Capabilities"), Static2DTools.borderIcon(icoServer, 0, 3, 0, 1), capabilities);
             viewMap.addView("capabilities", vCaps);
+            viewMenuMap.put("capabilities", mniCapabilities);
 
             vServerInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Server_Info"), Static2DTools.borderIcon(icoServerInfo, 0, 3, 0, 1), serverInfo);
             viewMap.addView("serverinfo", vServerInfo);
+            viewMenuMap.put("serverinfo", mniServerInfo);
 
             vOverview = new View("Overview", Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), overviewComponent);
             viewMap.addView("overview", vOverview);
+            viewMenuMap.put("overview", mniOverview);
             legendTab[2] = vOverview;
 
             vLayerInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Layerinfo"), Static2DTools.borderIcon(icoLayerInfo, 0, 3, 0, 1), layerInfo);
             viewMap.addView("layerinfo", vLayerInfo);
+            viewMenuMap.put("layerinfo", mniLayerInfo);
             legendTab[3] = vLayerInfo;
 
             vLegend = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Legende"), Static2DTools.borderIcon(icoLegend, 0, 3, 0, 1), legend);
             viewMap.addView("legend", vLegend);
-
+            viewMenuMap.put("legend", mniLegend);
             if (plugin) {
                 vMetaSearch = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Suchauswahl"), Static2DTools.borderIcon(icoClassSelection, 0, 3, 0, 1), metaSearch);
                 viewMap.addView("metaSearch", vMetaSearch);
@@ -531,13 +540,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             } else {
                 legendTab[1] = vLegend;
             }
+
+            mniClassTree.setVisible(plugin);
+            viewMenuMap.put("metaSearch", mniClassTree);
             vFeatureInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Sachdatenabfrage"), Static2DTools.borderIcon(icoFeatureInfo, 0, 3, 0, 1), featureInfo);
             viewMap.addView("featureInfo", vFeatureInfo);
+            viewMenuMap.put("featureInfo", mniFeatureInfo);
 
             vFeatureControl = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Objekte"), Static2DTools.borderIcon(icoFeatureControl, 0, 3, 0, 1), featureControl);
             viewMap.addView("featureControl", vFeatureControl);
-
-
+            viewMenuMap.put("featureControl", mniFeatureControl);
 
             //vDebug=createView("debug","DebugPanel",debugPanel);
             //vGroovy=createView("groovy","Groovy Console",groovyConsole);
@@ -811,6 +823,19 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         vCaps.restoreFocus();
         vLayers.restoreFocus();
         vMap.restoreFocus();
+
+        if (windows2skip != null) {
+            for (String id : windows2skip) {
+                View v = viewMap.getView(id);
+                if (v != null) {
+                    v.close();
+                }
+                JMenuItem menu = viewMenuMap.get(id);
+                if (menu != null) {
+                    menu.setVisible(false);
+                }
+            }
+        }
     }
 
     private void openUrlInExternalBrowser(String url) {
@@ -913,7 +938,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniLoadConfig = new javax.swing.JMenuItem();
         mniSaveConfig = new javax.swing.JMenuItem();
         mniLoadConfigFromServer = new javax.swing.JMenuItem();
-        jSeparator8 = new javax.swing.JSeparator();
+        sepServerProfilesStart = new javax.swing.JSeparator();
+        sepServerProfilesEnd = new javax.swing.JSeparator();
         mniSaveLayout = new javax.swing.JMenuItem();
         mniLoadLayout = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
@@ -1370,7 +1396,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
         });
         menFile.add(mniLoadConfigFromServer);
-        menFile.add(jSeparator8);
+
+        sepServerProfilesStart.setName("sepServerProfilesStart"); // NOI18N
+        menFile.add(sepServerProfilesStart);
+
+        sepServerProfilesEnd.setName("sepServerProfilesEnd"); // NOI18N
+        menFile.add(sepServerProfilesEnd);
 
         mniSaveLayout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         mniSaveLayout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/layout.png"))); // NOI18N
@@ -1960,7 +1991,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
     private void mniLoadConfigFromServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadConfigFromServerActionPerformed
         activeLayers.removeAllLayers();
-        mapC.getRasterServiceLayer().removeAllChildren();
+        mapC.getMapServiceLayer().removeAllChildren();
         configureApp(true);
     }//GEN-LAST:event_mniLoadConfigFromServerActionPerformed
 
@@ -2411,7 +2442,6 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
-    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenu menBookmarks;
     private javax.swing.JMenu menEdit;
@@ -2468,6 +2498,8 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
     private javax.swing.JPopupMenu popMen;
     private javax.swing.JSeparator sepAfterPos;
     private javax.swing.JSeparator sepBeforePos;
+    private javax.swing.JSeparator sepServerProfilesEnd;
+    private javax.swing.JSeparator sepServerProfilesStart;
     private javax.swing.JToolBar tlbMain;
     private javax.swing.JToggleButton togInvisible;
     // End of variables declaration//GEN-END:variables
@@ -2597,6 +2629,7 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
         return ret;
     }
 
+    @Override
     public void masterConfigure(Element e) {
         Element prefs = e.getChild("cismapPluginUIPreferences");
         cismapPluginUIPreferences = prefs;
@@ -2610,16 +2643,154 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
                 log.warn("httpInterface wurde nicht konfiguriert. Wird auf Standardwert gesetzt:" + httpInterfacePort, t);
             }
             helpUrl = help_url_element.getText();
-            log.fatal("helpUrl:" + helpUrl);
+            log.debug("helpUrl:" + helpUrl);
 
             newsUrl = news_url_element.getText();
 
         } catch (Throwable t) {
             log.error("Fehler beim Laden der Hilfeurls (" + prefs.getChildren() + ")", t);
         }
-    }
-    Element cismapPluginUIPreferences;
 
+        windows2skip = new Vector<String>();
+        try {
+            Element windows2SkipElement = e.getChild("skipWindows");
+            Iterator<Element> it = windows2SkipElement.getChildren("skip").iterator();
+            while (it.hasNext()) {
+                Element next = it.next();
+                String id = next.getAttributeValue("windowid");
+                windows2skip.add(id);
+                View v = viewMap.getView(id);
+                if (v != null) {
+                    v.close();
+                }
+                JMenuItem menu = viewMenuMap.get(id);
+                if (menu != null) {
+                    menu.setVisible(false);
+                }
+            }
+        } catch (Exception x) {
+            log.info("Keine skipWindow Info vorhanden oder Fehler beim Lesen der Einstellungen", x);
+        }
+
+
+
+
+
+
+        try {
+
+            //Analysieren des FileMenues
+            Vector<Component> before = new Vector<Component>();
+            Vector<Component> after = new Vector<Component>();
+            after.add(sepServerProfilesEnd);
+
+
+            Component[] comps = menFile.getMenuComponents();
+            Vector<Component> active = before;
+            for (Component comp : comps) {
+                //Component comp=menFile.getMenuComponent(i);
+                if (active != null) {
+                    active.add(comp);
+                }
+
+                if (active == before && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesStart")) { //erster Separator
+                    active = null;
+                } else if (active == null && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesEnd")) { //zweiter Separator
+                    active = after;
+                }
+
+            }
+
+
+            Vector<JMenuItem> serverProfileItems = new Vector<JMenuItem>();
+
+
+            Element serverprofiles = e.getChild("serverProfiles");
+            Iterator<Element> it = serverprofiles.getChildren("profile").iterator();
+            while (it.hasNext()) {
+                final Element next = it.next();
+                final String id = next.getAttributeValue("id");
+                final String sorter = next.getAttributeValue("sorter");
+                final String name = next.getAttributeValue("name");
+                final String path = next.getAttributeValue("path");
+                final String icon = next.getAttributeValue("icon");
+                final String descr = next.getAttributeValue("descr");
+                final String descrWidth = next.getAttributeValue("descrwidth");
+                final String complexDescriptionText=next.getTextTrim();
+                final String complexDescriptionSwitch=next.getAttributeValue("complexdescr");
+
+                JMenuItem serverProfileMenuItem = new JMenuItem();
+                serverProfileMenuItem.setText(name);
+                serverProfileMenuItem.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            ((ActiveLayerModel) mapC.getMappingModel()).removeAllLayers();
+                            configurationManager.configureFromClasspath(path, null);
+                            setButtonSelectionAccordingToMappingComponent();
+                        } catch (Throwable ex) {
+                            log.fatal("Nix ServerProfile", ex);
+                        }
+                    }
+                });
+                serverProfileMenuItem.setName("ServerProfile:" + sorter + ":" + name);
+
+                if (complexDescriptionSwitch!=null && complexDescriptionSwitch.equalsIgnoreCase("true")&&complexDescriptionText!=null){
+                    serverProfileMenuItem.setToolTipText(complexDescriptionText);
+                }
+                else if (descrWidth!=null){
+                    serverProfileMenuItem.setToolTipText("<html><table width=\""+descrWidth+"\" border=\"0\"><tr><td>"+descr+"</p></td></tr></table></html>");
+                }
+                else {
+                    serverProfileMenuItem.setToolTipText(descr);
+                }
+
+
+
+
+                try {
+                    serverProfileMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource(icon)));
+                }
+                catch (Exception iconE) {
+                    log.warn("Could not create Icon for ServerProfile.",iconE);
+                }
+
+                serverProfileItems.add(serverProfileMenuItem);
+
+            }
+
+
+            Collections.sort(serverProfileItems, new Comparator<JMenuItem>() {
+
+                @Override
+                public int compare(JMenuItem o1, JMenuItem o2) {
+                    if (o1.getName() != null && o2.getName() != null) {
+                        return o1.getName().compareTo(o2.getName());
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+
+            menFile.removeAll();
+
+            for (Component c : before) {
+                menFile.add(c);
+            }
+            for (JMenuItem jmi : serverProfileItems) {
+                menFile.add(jmi);
+            }
+            for (Component c : after) {
+                menFile.add(c);
+            }
+
+        } catch (Exception x) {
+            log.info("Keine Serverprofile vorhanden, oder Fehler bei der Auswertung", x);
+        }
+    }
+
+    @Override
     public void configure(Element e) {
         Element prefs = e.getChild("cismapPluginUIPreferences");
         cismapPluginUIPreferences = prefs;
@@ -2636,6 +2807,7 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
 //            log.fatal("is EDT?"+EventQueue.isDispatchThread());
             EventQueue.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     CismapPlugin.this.setSize(windowWidth, windowHeight);
                     CismapPlugin.this.setLocation(windowX, windowY);
@@ -2705,13 +2877,13 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
                 rootWindow.getWindowBar(Direction.LEFT).setEnabled(true);
                 rootWindow.getWindowBar(Direction.RIGHT).setEnabled(true);
                 /*if (isInit) {
-                    int count = viewMap.getViewCount();
-                    for (int i = 0; i < count; i++) {
-                        View curr = viewMap.getViewAtIndex(i);
-                        if (curr.isUndocked()) {
-                            curr.dock();
-                        }
-                    }
+                int count = viewMap.getViewCount();
+                for (int i = 0; i < count; i++) {
+                View curr = viewMap.getViewAtIndex(i);
+                if (curr.isUndocked()) {
+                curr.dock();
+                }
+                }
                 }*/
                 log.debug("Loading Layout successfull");
             } catch (IOException ex) {
@@ -2821,8 +2993,6 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
     public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
         return showObjectsMethod.invoke(node, oAttr, editable);
     }
-
-    
 
     public void dragOverMap(MapDnDEvent mde) {
 //        if (mde.getDte() instanceof DropTargetDragEvent) {
