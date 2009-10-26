@@ -65,6 +65,8 @@ import de.cismet.extensions.timeasy.TimEasyDialog;
 import de.cismet.extensions.timeasy.TimEasyEvent;
 import de.cismet.extensions.timeasy.TimEasyListener;
 import de.cismet.extensions.timeasy.TimEasyPureNewFeature;
+import de.cismet.security.Proxy;
+import de.cismet.security.WebAccessManager;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
 import de.cismet.tools.configuration.Configurable;
@@ -127,6 +129,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -221,7 +224,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private boolean isInit = true;
     private String helpUrl;
     private String newsUrl;
-    private final static String VERSION = "cismapPlugin.jar Version:2 ($Date: 2009-08-14 11:21:40 $(+1) $Revision: 1.1.1.1 $";
+    private final static String VERSION = "cismapPlugin.jar Version:2 ($Date: 2009-09-04 15:36:19 $(+1) $Revision: 1.1.1.1.2.1 $";
     private AboutDialog about;
     int httpInterfacePort = 9098;
     boolean nodeSelectionEventBlocker = false;
@@ -969,6 +972,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniGotoPoint = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JSeparator();
         mniScale = new javax.swing.JMenuItem();
+        menOptions = new javax.swing.JMenu();
+        mniNetwork = new javax.swing.JMenuItem();
         menWindows = new javax.swing.JMenu();
         mniLayer = new javax.swing.JMenuItem();
         mniCapabilities = new javax.swing.JMenuItem();
@@ -1595,6 +1600,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menExtras.add(mniScale);
 
         mnuBar.add(menExtras);
+
+        menOptions.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menOptions.text")); // NOI18N
+
+        mniNetwork.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniNetwork.text")); // NOI18N
+        mniNetwork.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniNetworkActionPerformed(evt);
+            }
+        });
+        menOptions.add(mniNetwork);
+
+        mnuBar.add(menOptions);
 
         menWindows.setMnemonic('F');
         menWindows.setText(bundle.getString("CismapPlugin.menWindows.text")); // NOI18N
@@ -2345,6 +2362,52 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
 
 }//GEN-LAST:event_formComponentResized
 
+private void mniNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniNetworkActionPerformed
+        log.debug("Network Settings performed");
+        final Proxy proxy = WebAccessManager.getInstance().getHttpProxy();
+        log.debug("proxy: " + proxy);
+
+        NetworkOptionsDialog pd = new NetworkOptionsDialog(this, true);
+        
+        if (proxy != null) {
+            log.debug("proxy activated");
+            pd.setProxyActivated(true);
+            pd.setProxyHost(proxy.getHost());
+            pd.setProxyPort(proxy.getPort());
+        } else {
+            log.debug("proxy disactivated");
+            pd.setProxyActivated(false);
+        }
+        pd.setLocationRelativeTo(this);
+        pd.setVisible(true);
+
+        switch (pd.getReturnStatus()) {
+            case NetworkOptionsDialog.RET_OK:
+                log.debug("return OK");
+                setProxy(pd.isProxyActivated(), pd.getProxyHost(), pd.getProxyPort());
+                break;
+            default:
+                log.debug("return " + pd.getReturnStatus());
+        }
+}//GEN-LAST:event_mniNetworkActionPerformed
+
+private void setProxy(final boolean isActivated, final String host, final int port) {
+    if (isActivated && !host.isEmpty() && port > 0) {
+        final Proxy newProxy = new Proxy(host, port);
+        WebAccessManager.getInstance().setHttpProxy(newProxy);
+        log.debug("set proxy in system-property: " + newProxy);
+        System.setProperty("http.proxySet", "true");
+        System.setProperty("http.proxyHost", newProxy.getHost());
+        System.setProperty("http.proxyPort", String.valueOf(newProxy.getPort()));
+    } else {
+        WebAccessManager.getInstance().setHttpProxy(null);
+        log.debug("set proxy in system-property: null");
+        System.setProperty("http.proxySet", "false");
+        System.setProperty("http.proxyHost", "");
+        System.setProperty("http.proxyPort", "");
+    }
+}
+
 //    private void addShutdownHook() {
 //        ShutdownHook shutdownHook = new ShutdownHook();
 //        Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -2449,6 +2512,7 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
     private javax.swing.JMenu menFile;
     private javax.swing.JMenu menHelp;
     private javax.swing.JMenu menHistory;
+    private javax.swing.JMenu menOptions;
     private javax.swing.JMenu menWindows;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniAddBookmark;
@@ -2473,6 +2537,7 @@ private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRS
     private javax.swing.JMenuItem mniLoadConfigFromServer;
     private javax.swing.JMenuItem mniLoadLayout;
     private javax.swing.JMenuItem mniMap;
+    private javax.swing.JMenuItem mniNetwork;
     private javax.swing.JMenuItem mniNews;
     private javax.swing.JMenuItem mniOnlineHelp;
     private javax.swing.JMenuItem mniOptions;
