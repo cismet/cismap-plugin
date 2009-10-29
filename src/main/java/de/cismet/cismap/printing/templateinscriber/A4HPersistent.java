@@ -3,21 +3,34 @@
  *
  * Created on 11. Juli 2006, 12:19
  */
-
 package de.cismet.cismap.printing.templateinscriber;
 
 import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
+import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.navigatorplugin.CismapPlugin;
+import de.cismet.tools.CismetThreadPool;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
 /**
  *
  * @author  thorsten.hell@cismet.de
  */
-public class A4H extends AbstractPrintingInscriber {
-    
+public class A4HPersistent extends AbstractPrintingInscriber {
+    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    String cacheFile = "";
+    Properties cache = new Properties();
+    public static final String FIRST_LINE = "FIRST_LINE";
+    public static final String SECOND_LINE = "SECOND_LINE";
+
     /** Creates new form A4H */
-    public A4H() {
+    public A4HPersistent() {
         initComponents();
+        cacheFile = CismapBroker.getInstance().getCismapFolderPath() + System.getProperty("file.separator") + "inscriberCache";
+        readInscriberCache();
     }
 
     /**
@@ -26,12 +39,15 @@ public class A4H extends AbstractPrintingInscriber {
      *  value: value
      */
     public HashMap<String, String> getValues() {
-        HashMap<String,String> hm=new HashMap<String,String>();
-        hm.put("Ueberschrift",txtZeile1.getText());
-        hm.put("Unterschrift",txtZeile2.getText());
+        HashMap<String, String> hm = new HashMap<String, String>();
+        hm.put("Ueberschrift", txtZeile1.getText());
+        hm.put("Unterschrift", txtZeile2.getText());
+        cache.setProperty(FIRST_LINE, txtZeile1.getText());
+        cache.setProperty(SECOND_LINE, txtZeile2.getText());
+        writeInscriberCache();
         return hm;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -45,7 +61,7 @@ public class A4H extends AbstractPrintingInscriber {
         jLabel2 = new javax.swing.JLabel();
         txtZeile2 = new javax.swing.JTextField();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(A4H.class, "A4H.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(A4HPersistent.class, "A4HPersistent.jLabel1.text")); // NOI18N
 
         txtZeile1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -53,7 +69,7 @@ public class A4H extends AbstractPrintingInscriber {
             }
         });
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(A4H.class, "A4H.jLabel2.text")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(A4HPersistent.class, "A4HPersistent.jLabel2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -65,11 +81,11 @@ public class A4H extends AbstractPrintingInscriber {
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtZeile1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                        .add(txtZeile1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtZeile2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)))
+                        .add(txtZeile2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -88,10 +104,7 @@ public class A4H extends AbstractPrintingInscriber {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtZeile1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtZeile1ActionPerformed
-
     }//GEN-LAST:event_txtZeile1ActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -99,5 +112,29 @@ public class A4H extends AbstractPrintingInscriber {
     private javax.swing.JTextField txtZeile2;
     // End of variables declaration//GEN-END:variables
 
+    private void readInscriberCache() {
+        try {
+            cache.load(new FileInputStream(cacheFile));
+            String z1 = cache.getProperty(FIRST_LINE).toString();
+            String z2 = cache.getProperty(SECOND_LINE).toString();
+            txtZeile1.setText(z1);
+            txtZeile2.setText(z2);
+        } catch (Throwable t) {
+            log.warn("Fehler beim Lesen des InscriberCaches",t);
+        }
+    }
 
+    private void writeInscriberCache() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    cache.store(new FileOutputStream(cacheFile), "Saved: " + System.currentTimeMillis());
+                } catch (Throwable t) {
+                log.warn("Fehler beim Schreiben des InscriberCaches",t);
+                }
+            }
+        };
+        CismetThreadPool.execute(r);
+    }
 }
