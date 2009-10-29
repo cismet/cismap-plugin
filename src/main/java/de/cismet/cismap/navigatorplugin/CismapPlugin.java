@@ -69,6 +69,7 @@ import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
 import de.cismet.security.Proxy;
 import de.cismet.security.WebAccessManager;
+import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
 import de.cismet.tools.configuration.Configurable;
@@ -214,8 +215,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     //private HashMap<String,View> viewsHM=new HashMap<String,View>(8);
     private String home = System.getProperty("user.home");
     private String fs = System.getProperty("file.separator");
-    private String standalonePathname = home + fs + ".cismap" + fs + "cismap.layout";
-    private String pluginPathname = home + fs + ".cismap" + fs + "plugin.layout";
+    private String standaloneLayoutName = "cismap.layout";
+    private String pluginLayoutName = "plugin.layout";
     private ShowObjectsWaitDialog showObjectsWaitDialog;
     private String cismapDirectory = home + fs + ".cismap";
     private javax.swing.ImageIcon miniBack = new javax.swing.ImageIcon(getClass().getResource("/images/miniBack.png"));
@@ -261,6 +262,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 String ext = System.getProperty("directory.extension");
 
                 System.out.println("SystemdirExtension=:" + ext);
+                
                 if (ext != null) {
                     dirExtension = ext;
                     cismapDirectory += ext;
@@ -269,6 +271,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 log.warn("Error while adding DirectoryExtension");
             }
         }
+
+        CismapBroker.getInstance().setCismapFolderPath(cismapDirectory);
 
         this.setIconImage(logo.getImage());
         System.setSecurityManager(null);
@@ -628,22 +632,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                     public void run() {
                         if (plugin) {
                             //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
-                            loadLayout(pluginPathname);
+                            loadLayout(cismapDirectory+fs+pluginLayoutName);
 
                         } else {
                             //DockingManager.setDefaultPersistenceKey("cismapPerspectives.xml");
-                            loadLayout(standalonePathname);
+                            loadLayout(cismapDirectory+fs+standaloneLayoutName);
                         }
                     }
                 });
             } else {
                 if (plugin) {
                     //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
-                    loadLayout(pluginPathname);
+                    loadLayout(cismapDirectory+fs+pluginLayoutName);
 
                 } else {
                     //DockingManager.setDefaultPersistenceKey("cismapPerspectives.xml");
-                    loadLayout(standalonePathname);
+                    loadLayout(cismapDirectory+fs+standaloneLayoutName);
                 }
             }
 
@@ -2534,7 +2538,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
             //CismapBroker.getInstance().cleanUpSystemRegistry();
-            saveLayout(pluginPathname);
+            saveLayout(cismapDirectory+fs+pluginLayoutName);
         }
     }
 
@@ -2596,13 +2600,18 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     @Override
     public void dispose() {
+        try {
         log.debug("dispose().CIAO");
-        saveLayout(standalonePathname);
+        saveLayout(cismapDirectory+fs+standaloneLayoutName);
         configurationManager.writeConfiguration();
         CismapBroker.getInstance().writePropertyFile();
         //CismapBroker.getInstance().cleanUpSystemRegistry();
         super.dispose();
         System.exit(0);
+        }
+        catch (Throwable t){
+            log.fatal("Fehler beim Beenden. Abschuss freigegeben ;-)",t);
+        }
     }
 
     public Element getConfiguration() {
@@ -2874,7 +2883,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
             log.debug("Shutdownhook --> saving layout");
-            saveLayout(standalonePathname);
+            saveLayout(cismapDirectory+fs+standaloneLayoutName);
         }
     }
 
@@ -2932,7 +2941,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void saveLayout(String file) {
-        log.debug("Saving Layout.. to " + file);
+        log.debug("Saving Layout.. to " + file,new CurrentStackTrace());
         File layoutFile = new File(file);
         try {
             if (!layoutFile.exists()) {
