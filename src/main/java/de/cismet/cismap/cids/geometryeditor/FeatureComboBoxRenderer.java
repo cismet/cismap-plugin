@@ -71,7 +71,7 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
                 else if (value instanceof XStyledFeature&&((XStyledFeature)value).getGeometry()!=null) {
                     setText(((XStyledFeature)value).getName());
                     setIcon(((XStyledFeature)value).getIconImage());
-                    log.fatal("xxxlala "+CismapBroker.getInstance().getMappingComponent().getPFeatureHM());
+                    //log.fatal("xxxlala "+CismapBroker.getInstance().getMappingComponent().getPFeatureHM());
                     PFeature pf=(PFeature)CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(value);
                     
                     PFeature clonePf=(PFeature)pf.clone();
