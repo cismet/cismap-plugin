@@ -248,28 +248,26 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     }
 
     public CismapPlugin(final PluginContext context) {
-        if (context == null) {
-            try {
-                String l = System.getProperty("user.language");
-                String c = System.getProperty("user.country");
-                System.out.println("Locale=" + l + "_" + c);
-                Locale.setDefault(new Locale(l, c));
-            } catch (Exception e) {
-                log.warn("Error while changing the user language and country");
-            }
+        try {
+            String l = System.getProperty("user.language");
+            String c = System.getProperty("user.country");
+            System.out.println("Locale=" + l + "_" + c);
+            Locale.setDefault(new Locale(l, c));
+        } catch (Exception e) {
+            log.warn("Error while changing the user language and country");
+        }
 
-            try {
-                String ext = System.getProperty("directory.extension");
+        try {
+            String ext = System.getProperty("directory.extension");
 
-                System.out.println("SystemdirExtension=:" + ext);
-                
-                if (ext != null) {
-                    dirExtension = ext;
-                    cismapDirectory += ext;
-                }
-            } catch (Exception e) {
-                log.warn("Error while adding DirectoryExtension");
+            System.out.println("SystemdirExtension=:" + ext);
+
+            if (ext != null) {
+                dirExtension = ext;
+                cismapDirectory += ext;
             }
+        } catch (Exception e) {
+            log.warn("Error while adding DirectoryExtension");
         }
 
         CismapBroker.getInstance().setCismapFolderPath(cismapDirectory);
@@ -632,22 +630,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                     public void run() {
                         if (plugin) {
                             //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
-                            loadLayout(cismapDirectory+fs+pluginLayoutName);
+                            loadLayout(cismapDirectory + fs + pluginLayoutName);
 
                         } else {
                             //DockingManager.setDefaultPersistenceKey("cismapPerspectives.xml");
-                            loadLayout(cismapDirectory+fs+standaloneLayoutName);
+                            loadLayout(cismapDirectory + fs + standaloneLayoutName);
                         }
                     }
                 });
             } else {
                 if (plugin) {
                     //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
-                    loadLayout(cismapDirectory+fs+pluginLayoutName);
+                    loadLayout(cismapDirectory + fs + pluginLayoutName);
 
                 } else {
                     //DockingManager.setDefaultPersistenceKey("cismapPerspectives.xml");
-                    loadLayout(cismapDirectory+fs+standaloneLayoutName);
+                    loadLayout(cismapDirectory + fs + standaloneLayoutName);
                 }
             }
 
@@ -2538,7 +2536,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
             //CismapBroker.getInstance().cleanUpSystemRegistry();
-            saveLayout(cismapDirectory+fs+pluginLayoutName);
+            saveLayout(cismapDirectory + fs + pluginLayoutName);
         }
     }
 
@@ -2601,16 +2599,15 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     @Override
     public void dispose() {
         try {
-        log.debug("dispose().CIAO");
-        saveLayout(cismapDirectory+fs+standaloneLayoutName);
-        configurationManager.writeConfiguration();
-        CismapBroker.getInstance().writePropertyFile();
-        //CismapBroker.getInstance().cleanUpSystemRegistry();
-        super.dispose();
-        System.exit(0);
-        }
-        catch (Throwable t){
-            log.fatal("Fehler beim Beenden. Abschuss freigegeben ;-)",t);
+            log.debug("dispose().CIAO");
+            saveLayout(cismapDirectory + fs + standaloneLayoutName);
+            configurationManager.writeConfiguration();
+            CismapBroker.getInstance().writePropertyFile();
+            //CismapBroker.getInstance().cleanUpSystemRegistry();
+            super.dispose();
+            System.exit(0);
+        } catch (Throwable t) {
+            log.fatal("Fehler beim Beenden. Abschuss freigegeben ;-)", t);
         }
     }
 
@@ -2741,8 +2738,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 final String icon = next.getAttributeValue("icon");
                 final String descr = next.getAttributeValue("descr");
                 final String descrWidth = next.getAttributeValue("descrwidth");
-                final String complexDescriptionText=next.getTextTrim();
-                final String complexDescriptionSwitch=next.getAttributeValue("complexdescr");
+                final String complexDescriptionText = next.getTextTrim();
+                final String complexDescriptionSwitch = next.getAttributeValue("complexdescr");
 
                 JMenuItem serverProfileMenuItem = new JMenuItem();
                 serverProfileMenuItem.setText(name);
@@ -2761,13 +2758,11 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 });
                 serverProfileMenuItem.setName("ServerProfile:" + sorter + ":" + name);
 
-                if (complexDescriptionSwitch!=null && complexDescriptionSwitch.equalsIgnoreCase("true")&&complexDescriptionText!=null){
+                if (complexDescriptionSwitch != null && complexDescriptionSwitch.equalsIgnoreCase("true") && complexDescriptionText != null) {
                     serverProfileMenuItem.setToolTipText(complexDescriptionText);
-                }
-                else if (descrWidth!=null){
-                    serverProfileMenuItem.setToolTipText("<html><table width=\""+descrWidth+"\" border=\"0\"><tr><td>"+descr+"</p></td></tr></table></html>");
-                }
-                else {
+                } else if (descrWidth != null) {
+                    serverProfileMenuItem.setToolTipText("<html><table width=\"" + descrWidth + "\" border=\"0\"><tr><td>" + descr + "</p></td></tr></table></html>");
+                } else {
                     serverProfileMenuItem.setToolTipText(descr);
                 }
 
@@ -2776,9 +2771,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
                 try {
                     serverProfileMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource(icon)));
-                }
-                catch (Exception iconE) {
-                    log.warn("Could not create Icon for ServerProfile.",iconE);
+                } catch (Exception iconE) {
+                    log.warn("Could not create Icon for ServerProfile.", iconE);
                 }
 
                 serverProfileItems.add(serverProfileMenuItem);
@@ -2883,7 +2877,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
             log.debug("Shutdownhook --> saving layout");
-            saveLayout(cismapDirectory+fs+standaloneLayoutName);
+            saveLayout(cismapDirectory + fs + standaloneLayoutName);
         }
     }
 
@@ -2941,7 +2935,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void saveLayout(String file) {
-        log.debug("Saving Layout.. to " + file,new CurrentStackTrace());
+        log.debug("Saving Layout.. to " + file, new CurrentStackTrace());
         File layoutFile = new File(file);
         try {
             if (!layoutFile.exists()) {
