@@ -1124,6 +1124,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/frameprint.png"))); // NOI18N
         cmdPrint.setText(bundle.getString("CismapPlugin.cmdPrint.text")); // NOI18N
+        cmdPrint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.toolTipText")); // NOI18N
         cmdPrint.setBorderPainted(false);
         cmdPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
