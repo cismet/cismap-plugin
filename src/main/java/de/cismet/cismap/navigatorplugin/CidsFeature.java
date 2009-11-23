@@ -48,7 +48,9 @@ import de.cismet.cismap.commons.features.FeatureRenderer;
 import de.cismet.cismap.commons.features.Highlightable;
 import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
 import de.cismet.cismap.commons.features.XStyledFeature;
+import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 import de.cismet.tools.BlacklistClassloading;
@@ -166,7 +168,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     private void initFeatureSettings() throws Throwable {
-
+        if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel){
+            if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs().equalsIgnoreCase("epsg:4326")){
+                featureBorder=0.001f;
+            }
+        }
         try {
             renderFeature = getAttribValue("RENDER_FEATURE", mo, mc).toString();
             log.debug("RENDER_FEATURE=" + renderFeature);
