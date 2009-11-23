@@ -2193,8 +2193,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void cmdNodeRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeRemoveActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
-            public void run() {
+            public void run() {               
                 mapC.setHandleInteractionMode(MappingComponent.REMOVE_HANDLE);
+                mapC.setInteractionMode(MappingComponent.SELECT);
             }
         });
     }//GEN-LAST:event_cmdNodeRemoveActionPerformed
@@ -2204,6 +2205,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
             public void run() {
                 mapC.setHandleInteractionMode(MappingComponent.ADD_HANDLE);
+                mapC.setInteractionMode(MappingComponent.SELECT);
             }
         });
     }//GEN-LAST:event_cmdNodeAddActionPerformed
@@ -2213,6 +2215,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
             public void run() {
                 mapC.setHandleInteractionMode(MappingComponent.MOVE_HANDLE);
+                mapC.setInteractionMode(MappingComponent.SELECT);
             }
         });
     }//GEN-LAST:event_cmdNodeMoveActionPerformed
@@ -2339,6 +2342,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
+                //mapC.setInteractionMode(MappingComponent.SELECT);
                 mapC.setHandleInteractionMode(MappingComponent.ROTATE_POLYGON);
             }
         });
