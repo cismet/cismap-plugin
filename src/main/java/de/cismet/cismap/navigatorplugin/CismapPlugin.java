@@ -28,6 +28,7 @@ import Sirius.server.middleware.types.Node;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
+import com.vividsolutions.jts.geom.Geometry;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
@@ -67,8 +68,6 @@ import de.cismet.extensions.timeasy.TimEasyListener;
 import de.cismet.extensions.timeasy.TimEasyPureNewFeature;
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
-import de.cismet.security.Proxy;
-import de.cismet.security.WebAccessManager;
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
@@ -111,7 +110,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -132,7 +130,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -2962,10 +2959,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void mapSearchStarted(MapSearchEvent mse) {
-        initMetaSearch(mse.getBounds());
+        initMetaSearch(mse.getBounds(),mse.getGeometry());
     }
 
-    private void initMetaSearch(PBounds bounds) {
+    private void initMetaSearch(PBounds bounds,Geometry geom) {
         String geosuche = "";
         try {
             geosuche = context.getEnvironment().getParameter("geosuche");
@@ -2981,6 +2978,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY());
         double[][] pointCoordinates = context.getToolkit().getPointCoordinates(boundingBox);
         String ogcPolygon = Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
+        log.error("ogcPolygon:"+ogcPolygon);
+        log.fatal("newStuff:"+ geom.toText());
         coordinatesDataBean.setBeanParameter("featureString", ogcPolygon);
         context.getSearch().performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(), coordinatesDataBean, context.getUserInterface().getFrameFor((PluginUI) this), false);
     }
