@@ -3012,10 +3012,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public void showInMap(Collection c, boolean editable) throws Exception {
         showObjectsMethod.invoke(c, editable);
     }
-
-    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-        return showObjectsMethod.invoke(node, oAttr, editable);
-    }
+//
+//    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+//        return showObjectsMethod.invoke(node, oAttr, editable);
+//    }
 
     public void dragOverMap(MapDnDEvent mde) {
 //        if (mde.getDte() instanceof DropTargetDragEvent) {
