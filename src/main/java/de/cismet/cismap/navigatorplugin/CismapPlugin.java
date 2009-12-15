@@ -656,6 +656,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
 
             if (!plugin) {
+                menSearch.setVisible(false);
                 cmdPluginSearch.setVisible(false);
                 KeyStroke configLoggerKeyStroke = KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK);
                 Action configAction = new AbstractAction() {
