@@ -32,9 +32,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
+import de.cismet.cismap.commons.features.DefaultFeatureCollection;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
+import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
@@ -48,7 +51,9 @@ import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 //import de.cismet.cismap.commons.gui.overviewwidget.OverviewWidget;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
-import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.printing.Scale;
 import de.cismet.cismap.commons.gui.statusbar.StatusBar;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -100,6 +105,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -200,7 +206,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private ArrayList<JMenuItem> menues = new ArrayList<JMenuItem>();
     private HashMap<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
     private HashMap<CidsFeature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<CidsFeature, DefaultMetaTreeNode>();
-    private String newGeometryMode = CreateGeometryListener.LINESTRING;
+    private String newGeometryMode = CreateNewGeometryListener.LINESTRING;
     private WFSFormFactory wfsFormFactory = WFSFormFactory.getInstance(mapC);
     private Set<View> wfsFormViews = new HashSet<View>();
     private Vector<View> wfs = new Vector<View>();
@@ -239,6 +245,324 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private String dirExtension = "";
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
+
+    private Action searchMenuSelectedAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchMenuSelectedAction");
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    PureNewFeature lastGeometry = searchListener.getLastSearchFeature();
+                    if (lastGeometry == null) {
+                        mniSearchShowLastFeature.setIcon(null);
+                        mniSearchShowLastFeature.setEnabled(false);
+                        mniSearchRedo.setIcon(null);
+                        mniSearchRedo.setEnabled(false);
+                        mniSearchBuffer.setEnabled(false);
+                    } else {
+                        switch (lastGeometry.getGeometryType()) {
+                            case ELLIPSE:
+                                mniSearchRedo.setIcon(mniSearchEllipse.getIcon());
+                                break;
+                            case LINESTRING:
+                                mniSearchRedo.setIcon(mniSearchPolyline.getIcon());
+                                break;
+                            case POLYGON:
+                                mniSearchRedo.setIcon(mniSearchPolygon.getIcon());
+                                break;
+                            case RECTANGLE:
+                                mniSearchRedo.setIcon(mniSearchRectangle.getIcon());
+                                break;
+                        }
+                        mniSearchShowLastFeature.setIcon(mniSearchRedo.getIcon());
+                        
+                        mniSearchRedo.setEnabled(true);
+                        mniSearchBuffer.setEnabled(true);
+                        mniSearchShowLastFeature.setEnabled(true);
+                    }
+                   
+                    // kopieren nach popupmenu im grünen M
+                    mniSearchRectangle1.setSelected(mniSearchRectangle.isSelected());
+                    mniSearchPolygon1.setSelected(mniSearchPolygon.isSelected());
+                    mniSearchEllipse1.setSelected(mniSearchEllipse.isSelected());
+                    mniSearchPolyline1.setSelected(mniSearchPolyline.isSelected());
+                    mniSearchRedo1.setIcon(mniSearchRedo.getIcon());
+                    mniSearchRedo1.setEnabled(mniSearchRedo.isEnabled());
+                    mniSearchBuffer1.setEnabled(mniSearchBuffer.isEnabled());
+                    mniSearchShowLastFeature1.setIcon(mniSearchShowLastFeature.getIcon());
+                    mniSearchShowLastFeature1.setEnabled(mniSearchShowLastFeature.isEnabled());
+
+//                    for (int index = 0; index < menSearch.getMenuComponentCount(); index++) {
+//                        Component component = popMenSearch.getComponent(index);
+//                        if (component instanceof JRadioButtonMenuItem) {
+//                            ((JRadioButtonMenuItem)component).setSelected(((JRadioButtonMenuItem)menSearch.getMenuComponent(index)).isSelected());
+//                        } else if (component instanceof JCheckBoxMenuItem) {
+//                            ((JCheckBoxMenuItem)component).setSelected(((JCheckBoxMenuItem)menSearch.getMenuComponent(index)).isSelected());
+//                        }
+//                    }
+
+                }
+            });
+        }
+    };
+    private Action searchAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchAction");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            if (mniSearchRectangle.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.RECTANGLE);
+                            } else if (mniSearchPolygon.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.POLYGON);
+                            } else if (mniSearchEllipse.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.ELLIPSE);
+                            } else if (mniSearchPolyline.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.LINESTRING);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchRectangleAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchRectangleAction");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchRectangle.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png")));
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.RECTANGLE);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchPolygonAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchPolygonAction");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchPolygon.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolygon.png")));
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.POLYGON);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchEllipseAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchEllipseAction");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchEllipse.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchEllipse.png")));
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.ELLIPSE);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchPolylineAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchPolylineAction");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchPolyline.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolyline.png")));
+
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.LINESTRING);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchRedoAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("redoSearchAction");
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    searchListener.redoLastSearch();
+                }
+            });
+        }
+    };
+    private Action searchShowLastFeatureAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchShowLastFeatureAction");
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    searchListener.showLastFeature();
+                }
+            });
+        }
+    };
+    private Action searchBufferAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("bufferSearchGeometry");
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            String s = (String) JOptionPane.showInputDialog(
+                                    null,
+                                    "Geben Sie den Abstand des zu erzeugenden\n" +
+                                    "Puffers der letzten Suchgeometrie an.",
+                                    "Puffer",
+                                    JOptionPane.PLAIN_MESSAGE,
+                                    null,
+                                    null,
+                                    "");
+                            log.debug(s);
+
+                            // , statt . ebenfalls erlauben
+                            if (s.matches("\\d*,\\d*")) {
+                                s.replace(",", ".");
+                            }
+
+                            try {
+                                float buffer = Float.valueOf(s);
+
+                                CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                                PureNewFeature lastFeature = searchListener.getLastSearchFeature();
+
+                                if (lastFeature != null) {
+                                    // Geometrie-Daten holen
+                                    Geometry geom = lastFeature.getGeometry();
+                                    // Puffer-Geometrie holen
+                                    Geometry bufferGeom = geom.buffer(buffer);
+                                    // und setzen
+                                    lastFeature.setGeometry(bufferGeom);
+
+                                    // Geometrie ist jetzt eine Polygon (keine Linie, Ellipse, oder ähnliches mehr)
+                                    lastFeature.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+
+                                    for (Object feature : mapC.getFeatureCollection().getAllFeatures()) {
+
+                                        PFeature sel = (PFeature) mapC.getPFeatureHM().get(feature);
+                                        if (sel.getFeature().equals(lastFeature)) {
+                                            // Koordinaten der Puffer-Geometrie als Feature-Koordinaten setzen
+                                            sel.setCoordArr(bufferGeom.getCoordinates());
+
+                                            // refresh
+                                            sel.syncGeometry();
+                                            Vector v = new Vector();
+                                            v.add(sel.getFeature());
+                                            ((DefaultFeatureCollection) mapC.getFeatureCollection()).fireFeaturesChanged(v);
+                                        }
+                                    }
+
+                                    searchListener.search(lastFeature);
+                                }
+
+//                for (Object feature : mapC.getFeatureCollection().getSelectedFeatures()) {
+//                    PFeature sel = (PFeature)mapC.getPFeatureHM().get(feature);
+//                    if (sel.getFeature() instanceof SearchFeature) {
+//                        // Geometrie-Daten holen
+//                        Geometry geom = ((SearchFeature)sel.getFeature()).getGeometry();
+//                        // Puffer-Geometrie holen
+//                        Geometry bufferGeom = geom.buffer(buffer);
+//
+//                        // Koordinaten der Puffer-Geometrie als Feature-Koordinaten setzen
+//                        sel.setCoordArr(bufferGeom.getCoordinates());
+//
+//                        // Geometrie ist jetzt eine Polygon (keine Linie, Ellipse, oder ähnliches mehr)
+//                        ((PureNewFeature)sel.getFeature()).setGeometryType(PureNewFeature.geomTypes.POLYGON);
+//
+//                        // refresh
+//                        sel.syncGeometry();
+//                        Vector v = new Vector();
+//                        v.add(sel.getFeature());
+//                        ((DefaultFeatureCollection) mapC.getFeatureCollection()).fireFeaturesChanged(v);
+//                    }
+//                }
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(null, "Der eingegebene Wert entsprach nicht einer Fließkommazahl!", "Fehler", JOptionPane.ERROR_MESSAGE);
+                            } catch (Exception ex) {
+                                log.debug("", ex);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
 
     public CismapPlugin() {
         this(null);
@@ -363,6 +687,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
 
             if (!plugin) {
+                menSearch.setVisible(false);
                 cmdPluginSearch.setVisible(false);
                 KeyStroke configLoggerKeyStroke = KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK);
                 Action configAction = new AbstractAction() {
@@ -384,6 +709,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             menues.add(menFile);
             menues.add(menEdit);
             menues.add(menHistory);
+            menues.add(menSearch);
             menues.add(menBookmarks);
             menues.add(menExtras);
             menues.add(menWindows);
@@ -712,7 +1038,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
 
             //TimEasy
-            ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setGeometryFeatureClass(TimEasyPureNewFeature.class);
+            ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setGeometryFeatureClass(TimEasyPureNewFeature.class);
             TimEasyDialog.addTimTimEasyListener(new TimEasyListener() {
 
                 public void timEasyObjectInserted(TimEasyEvent tee) {
@@ -766,6 +1092,38 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         layerInfo.initDividerLocation();
 
     }
+
+//    private JMenuItem copyMenuItem(JMenuItem from) {
+//        JMenuItem to;
+//        if (from instanceof JMenuItem) {
+//            to = new JMenuItem();
+//        } else if (from instanceof JCheckBoxMenuItem) {
+//            to = new JCheckBoxMenuItem();
+//        } else if (from instanceof JRadioButtonMenuItem) {
+//            to = new JRadioButtonMenuItem();
+//        } else {
+//            return null;
+//        }
+//        to.setText(from.getText());
+//        to.setToolTipText(from.getToolTipText());
+//        to.setIcon(from.getIcon());
+//        to.setAction(from.getAction());
+//        to.setAccelerator(from.getAccelerator());
+//        return to;
+//    }
+//
+//    private void copyMenu(JMenu from, JPopupMenu to) {
+//        for (Component fromComponent : from.getMenuComponents()) {
+//            try {
+//                to.add(copyMenuItem((JMenuItem)fromComponent));
+//            } catch (ClassCastException ex) {
+//                if (fromComponent instanceof JSeparator) {
+//                    to.addSeparator();
+//                }
+//            }
+//        }
+//        to.pack();
+//    }
 
     private JMenuItem getScaleMenuItem(String t, final int d) {
         JMenuItem jmi = new JMenuItem(t);
@@ -886,6 +1244,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniAddBookmark = new javax.swing.JMenuItem();
         mniBookmarkManager = new javax.swing.JMenuItem();
         mniBookmarkSidebar = new javax.swing.JMenuItem();
+        popMenSearch = new javax.swing.JPopupMenu();
+        mniSearchRectangle1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolygon1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchEllipse1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolyline1 = new javax.swing.JRadioButtonMenuItem();
+        jSeparator12 = new javax.swing.JSeparator();
+        mniSearchShowLastFeature1 = new javax.swing.JMenuItem();
+        mniSearchRedo1 = new javax.swing.JMenuItem();
+        mniSearchBuffer1 = new javax.swing.JMenuItem();
+        cmdGroupSearch = new javax.swing.ButtonGroup();
+        cmdGroupSearch1 = new javax.swing.ButtonGroup();
         panAll = new javax.swing.JPanel();
         panToolbar = new javax.swing.JPanel();
         panMain = new javax.swing.JPanel();
@@ -921,7 +1290,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         cmdZoom = new javax.swing.JToggleButton();
         cmdPan = new javax.swing.JToggleButton();
         cmdFeatureInfo = new javax.swing.JToggleButton();
-        cmdPluginSearch = new javax.swing.JToggleButton();
+        cmdPluginSearch = new JPopupMenuButton();
         cmdNewPolygon = new javax.swing.JToggleButton();
         cmdNewLinestring = new javax.swing.JToggleButton();
         cmdNewPoint = new javax.swing.JToggleButton();
@@ -968,6 +1337,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         sepBeforePos = new javax.swing.JSeparator();
         sepAfterPos = new javax.swing.JSeparator();
         mniHistorySidebar = new javax.swing.JMenuItem();
+        menSearch = new javax.swing.JMenu();
+        mniSearchRectangle = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolygon = new javax.swing.JRadioButtonMenuItem();
+        mniSearchEllipse = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolyline = new javax.swing.JRadioButtonMenuItem();
+        jSeparator8 = new javax.swing.JSeparator();
+        mniSearchShowLastFeature = new javax.swing.JMenuItem();
+        mniSearchRedo = new javax.swing.JMenuItem();
+        mniSearchBuffer = new javax.swing.JMenuItem();
         menExtras = new javax.swing.JMenu();
         mniOptions = new javax.swing.JMenuItem();
         jSeparator16 = new javax.swing.JSeparator();
@@ -1019,6 +1397,60 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniBookmarkSidebar.setText(bundle.getString("CismapPlugin.mniBookmarkSidebar.text")); // NOI18N
         mniBookmarkSidebar.setEnabled(false);
         menBookmarks.add(mniBookmarkSidebar);
+
+        popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            }
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
+            }
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                popMenSearchPopupMenuWillBecomeVisible(evt);
+            }
+        });
+
+        mniSearchRectangle1.setAction(searchRectangleAction);
+        cmdGroupSearch1.add(mniSearchRectangle1);
+        mniSearchRectangle1.setSelected(true);
+        mniSearchRectangle1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRectangle1.text")); // NOI18N
+        mniSearchRectangle1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rectangle.png"))); // NOI18N
+        popMenSearch.add(mniSearchRectangle1);
+
+        mniSearchPolygon1.setAction(searchPolygonAction);
+        cmdGroupSearch1.add(mniSearchPolygon1);
+        mniSearchPolygon1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolygon1.text")); // NOI18N
+        mniSearchPolygon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        popMenSearch.add(mniSearchPolygon1);
+
+        mniSearchEllipse1.setAction(searchEllipseAction);
+        cmdGroupSearch1.add(mniSearchEllipse1);
+        mniSearchEllipse1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchEllipse1.text")); // NOI18N
+        mniSearchEllipse1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ellipse.png"))); // NOI18N
+        popMenSearch.add(mniSearchEllipse1);
+
+        mniSearchPolyline1.setAction(searchPolylineAction);
+        cmdGroupSearch1.add(mniSearchPolyline1);
+        mniSearchPolyline1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolyline1.text")); // NOI18N
+        mniSearchPolyline1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
+        popMenSearch.add(mniSearchPolyline1);
+        popMenSearch.add(jSeparator12);
+
+        mniSearchShowLastFeature1.setAction(searchShowLastFeatureAction);
+        mniSearchShowLastFeature1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchShowLastFeature1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature1.text")); // NOI18N
+        mniSearchShowLastFeature1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchShowLastFeature1);
+
+        mniSearchRedo1.setAction(searchRedoAction);
+        mniSearchRedo1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchRedo1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo1.text")); // NOI18N
+        mniSearchRedo1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchRedo1);
+
+        mniSearchBuffer1.setAction(searchBufferAction);
+        mniSearchBuffer1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buffer.png"))); // NOI18N
+        mniSearchBuffer1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer1.text")); // NOI18N
+        mniSearchBuffer1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchBuffer1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(bundle.getString("CismapPlugin.Form.title")); // NOI18N
@@ -1195,15 +1627,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         });
         tlbMain.add(cmdFeatureInfo);
 
+        cmdPluginSearch.setAction(searchAction);
+        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
+        cmdPluginSearch.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPluginSearch.toolTipText")); // NOI18N
         cmdGroupPrimaryInteractionMode.add(cmdPluginSearch);
-        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearch.gif"))); // NOI18N
-        cmdPluginSearch.setToolTipText(bundle.getString("CismapPlugin.cmdPluginSearch.toolTipText")); // NOI18N
-        cmdPluginSearch.setBorderPainted(false);
-        cmdPluginSearch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdPluginSearchActionPerformed(evt);
-            }
-        });
         tlbMain.add(cmdPluginSearch);
 
         cmdGroupPrimaryInteractionMode.add(cmdNewPolygon);
@@ -1569,6 +1996,65 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menHistory.add(mniHistorySidebar);
 
         mnuBar.add(menHistory);
+
+        menSearch.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menSearch.text")); // NOI18N
+        menSearch.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                menSearchMenuSelected(evt);
+            }
+        });
+
+        mniSearchRectangle.setAction(searchRectangleAction);
+        cmdGroupSearch.add(mniSearchRectangle);
+        mniSearchRectangle.setSelected(true);
+        mniSearchRectangle.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRectangle.text")); // NOI18N
+        mniSearchRectangle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rectangle.png"))); // NOI18N
+        menSearch.add(mniSearchRectangle);
+
+        mniSearchPolygon.setAction(searchPolygonAction);
+        cmdGroupSearch.add(mniSearchPolygon);
+        mniSearchPolygon.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolygon.text")); // NOI18N
+        mniSearchPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        menSearch.add(mniSearchPolygon);
+
+        mniSearchEllipse.setAction(searchEllipseAction);
+        cmdGroupSearch.add(mniSearchEllipse);
+        mniSearchEllipse.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchEllipse.text_1")); // NOI18N
+        mniSearchEllipse.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ellipse.png"))); // NOI18N
+        menSearch.add(mniSearchEllipse);
+
+        mniSearchPolyline.setAction(searchPolylineAction);
+        cmdGroupSearch.add(mniSearchPolyline);
+        mniSearchPolyline.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolyline.text_1")); // NOI18N
+        mniSearchPolyline.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
+        menSearch.add(mniSearchPolyline);
+        menSearch.add(jSeparator8);
+
+        mniSearchShowLastFeature.setAction(searchShowLastFeatureAction);
+        mniSearchShowLastFeature.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchShowLastFeature.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature.text")); // NOI18N
+        mniSearchShowLastFeature.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature.toolTipText")); // NOI18N
+        menSearch.add(mniSearchShowLastFeature);
+
+        mniSearchRedo.setAction(searchRedoAction);
+        mniSearchRedo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchRedo.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo.text")); // NOI18N
+        mniSearchRedo.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo.toolTipText")); // NOI18N
+        menSearch.add(mniSearchRedo);
+
+        mniSearchBuffer.setAction(searchBufferAction);
+        mniSearchBuffer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buffer.png"))); // NOI18N
+        mniSearchBuffer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer.text_1")); // NOI18N
+        mniSearchBuffer.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer.toolTipText")); // NOI18N
+        menSearch.add(mniSearchBuffer);
+
+        mnuBar.add(menSearch);
+        //copyMenu(menSearch, popMenSearch);
+        ((JPopupMenuButton)cmdPluginSearch).setPopupMenu(popMenSearch);
 
         menExtras.setMnemonic('E');
         menExtras.setText(bundle.getString("CismapPlugin.menExtras.text")); // NOI18N
@@ -2161,7 +2647,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.POINT);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.POINT);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2171,7 +2657,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.POLYGON);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.POLYGON);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2181,7 +2667,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.LINESTRING);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.LINESTRING);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2233,17 +2719,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void mniFeatureControlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniFeatureControlActionPerformed
         showOrHideView(vFeatureControl);
     }//GEN-LAST:event_mniFeatureControlActionPerformed
-
-    private void cmdPluginSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPluginSearchActionPerformed
-        mapC.setInteractionMode(MappingComponent.BOUNDING_BOX_SEARCH);
-    }//GEN-LAST:event_cmdPluginSearchActionPerformed
-
-    private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuConfigServerActionPerformed
-        activeLayers.removeAllLayers();
-        mapC.getRasterServiceLayer().removeAllChildren();
-        //mapC.resetWtst();
-        configureApp(true);
-    }//GEN-LAST:event_mnuConfigServerActionPerformed
 
     private void cmdReconfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconfigActionPerformed
         activeLayers.removeAllLayers();
@@ -2365,6 +2840,21 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     od.setVisible(true);
 }//GEN-LAST:event_mniOptionsActionPerformed
 
+private void popMenSearchPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    searchMenuSelectedAction.actionPerformed(new ActionEvent(popMenSearch, ActionEvent.ACTION_PERFORMED, null));
+}//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+
+private void menSearchMenuSelected(javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_menSearchMenuSelected
+    searchMenuSelectedAction.actionPerformed(new ActionEvent(menSearch, ActionEvent.ACTION_PERFORMED, null));
+}//GEN-LAST:event_menSearchMenuSelected
+
+private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuConfigServerActionPerformed
+    activeLayers.removeAllLayers();
+    mapC.getRasterServiceLayer().removeAllChildren();
+    //mapC.resetWtst();
+    configureApp(true);
+}//GEN-LAST:event_mnuConfigServerActionPerformed
+
 //    private void addShutdownHook() {
 //        ShutdownHook shutdownHook = new ShutdownHook();
 //        Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -2428,6 +2918,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton cmdForward;
     private javax.swing.ButtonGroup cmdGroupNodes;
     private javax.swing.ButtonGroup cmdGroupPrimaryInteractionMode;
+    private javax.swing.ButtonGroup cmdGroupSearch;
+    private javax.swing.ButtonGroup cmdGroupSearch1;
     private javax.swing.JButton cmdHome;
     private javax.swing.JToggleButton cmdMoveGeometry;
     private javax.swing.JToggleButton cmdNewLinestring;
@@ -2438,7 +2930,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JToggleButton cmdNodeRemove;
     private javax.swing.JToggleButton cmdNodeRotateGeometry;
     private javax.swing.JToggleButton cmdPan;
-    private javax.swing.JToggleButton cmdPluginSearch;
+    private javax.swing.JButton cmdPluginSearch;
     private javax.swing.JButton cmdPrint;
     private javax.swing.JButton cmdReconfig;
     private javax.swing.JButton cmdRedo;
@@ -2452,6 +2944,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JSeparator jSeparator12;
     private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator14;
     private javax.swing.JSeparator jSeparator15;
@@ -2462,6 +2955,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenu menBookmarks;
     private javax.swing.JMenu menEdit;
@@ -2469,6 +2963,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JMenu menFile;
     private javax.swing.JMenu menHelp;
     private javax.swing.JMenu menHistory;
+    private javax.swing.JMenu menSearch;
     private javax.swing.JMenu menWindows;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniAddBookmark;
@@ -2505,6 +3000,20 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JMenuItem mniSaveConfig;
     private javax.swing.JMenuItem mniSaveLayout;
     private javax.swing.JMenuItem mniScale;
+    private javax.swing.JMenuItem mniSearchBuffer;
+    private javax.swing.JMenuItem mniSearchBuffer1;
+    private javax.swing.JRadioButtonMenuItem mniSearchEllipse;
+    private javax.swing.JRadioButtonMenuItem mniSearchEllipse1;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolygon;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolygon1;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolyline;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolyline1;
+    private javax.swing.JRadioButtonMenuItem mniSearchRectangle;
+    private javax.swing.JRadioButtonMenuItem mniSearchRectangle1;
+    private javax.swing.JMenuItem mniSearchRedo;
+    private javax.swing.JMenuItem mniSearchRedo1;
+    private javax.swing.JMenuItem mniSearchShowLastFeature;
+    private javax.swing.JMenuItem mniSearchShowLastFeature1;
     private javax.swing.JMenuItem mniServerInfo;
     private javax.swing.JMenuItem mniZoomToAllObjects;
     private javax.swing.JMenuItem mniZoomToSelectedObjects;
@@ -2516,6 +3025,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JPanel panStatus;
     private javax.swing.JPanel panToolbar;
     private javax.swing.JPopupMenu popMen;
+    private javax.swing.JPopupMenu popMenSearch;
     private javax.swing.JSeparator sepAfterPos;
     private javax.swing.JSeparator sepBeforePos;
     private javax.swing.JSeparator sepServerProfilesEnd;
@@ -2959,10 +3469,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void mapSearchStarted(MapSearchEvent mse) {
-        initMetaSearch(mse.getBounds(),mse.getGeometry());
+        initMetaSearch(mse.getGeometry());
     }
 
-    private void initMetaSearch(PBounds bounds,Geometry geom) {
+    private void initMetaSearch(Geometry geom) {
         String geosuche = "";
         try {
             geosuche = context.getEnvironment().getParameter("geosuche");
@@ -2971,16 +3481,16 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         Object object = context.getSearch().getDataBeans().get(geosuche);
         FormDataBean coordinatesDataBean = (FormDataBean) object;
-        double[] boundingBox = new double[4];
-        boundingBox[0] = mapC.getWtst().getWorldX(bounds.getX());
-        boundingBox[1] = mapC.getWtst().getWorldY(bounds.getY() + bounds.getHeight());
-        boundingBox[2] = mapC.getWtst().getWorldX(bounds.getX() + bounds.getWidth());
-        boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY());
-        double[][] pointCoordinates = context.getToolkit().getPointCoordinates(boundingBox);
-        String ogcPolygon = Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
-        log.error("ogcPolygon:"+ogcPolygon);
-        log.fatal("newStuff:"+ geom.toText());
-        coordinatesDataBean.setBeanParameter("featureString", ogcPolygon);
+//        double[] boundingBox = new double[4];
+//        boundingBox[0] = mapC.getWtst().getWorldX(bounds.getX());
+//        boundingBox[1] = mapC.getWtst().getWorldY(bounds.getY() + bounds.getHeight());
+//        boundingBox[2] = mapC.getWtst().getWorldX(bounds.getX() + bounds.getWidth());
+//        boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY());
+//        double[][] pointCoordinates = context.getToolkit().getPointCoordinates(boundingBox);
+//        String ogcPolygon = Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
+//        log.error("ogcPolygon:"+ogcPolygon);
+//        log.fatal("newStuff:"+ geom.toText());
+        coordinatesDataBean.setBeanParameter("featureString", geom.toText());
         context.getSearch().performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(), coordinatesDataBean, context.getUserInterface().getFrameFor((PluginUI) this), false);
     }
 
@@ -3012,10 +3522,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public void showInMap(Collection c, boolean editable) throws Exception {
         showObjectsMethod.invoke(c, editable);
     }
-//
-//    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-//        return showObjectsMethod.invoke(node, oAttr, editable);
-//    }
+
+    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+        return showObjectsMethod.invoke(node, oAttr, editable);
+    }
 
     public void dragOverMap(MapDnDEvent mde) {
 //        if (mde.getDte() instanceof DropTargetDragEvent) {
@@ -3041,7 +3551,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             if (!cmdFeatureInfo.isSelected()) {
                 cmdFeatureInfo.setSelected(true);
             }
-        } else if (mapC.getInteractionMode().equals(MappingComponent.BOUNDING_BOX_SEARCH)) {
+        } else if (mapC.getInteractionMode().equals(MappingComponent.CREATE_SEARCH_POLYGON)) {
             if (!cmdPluginSearch.isSelected()) {
                 cmdPluginSearch.setSelected(true);
             }
@@ -3050,15 +3560,15 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 cmdSelect.setSelected(true);
             }
         } else if (mapC.getInteractionMode().equals(MappingComponent.NEW_POLYGON)) {
-            if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.POLYGON)) {
+            if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.POLYGON)) {
                 if (!cmdNewPolygon.isSelected()) {
                     cmdNewPolygon.setSelected(true);
                 }
-            } else if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.LINESTRING)) {
+            } else if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.LINESTRING)) {
                 if (!cmdNewLinestring.isSelected()) {
                     cmdNewLinestring.setSelected(true);
                 }
-            } else if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.POINT)) {
+            } else if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.POINT)) {
                 if (!cmdNewPoint.isSelected()) {
                     cmdNewPoint.setSelected(true);
                 }
