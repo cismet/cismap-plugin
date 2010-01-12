@@ -379,6 +379,10 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         return true;
     }
 
+    public void setCanBeSelected(boolean b){
+        
+    }
+
     public void setHighlighting(boolean highlighting) {
     }
 
@@ -615,4 +619,5 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public void setLinePaint(Paint linePaint) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
 }
