@@ -41,7 +41,6 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import com.vividsolutions.jts.geom.Geometry;
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
-import de.cismet.cids.tools.StaticCidsUtilities;
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
 import de.cismet.cismap.commons.features.FeatureRenderer;
@@ -54,7 +53,6 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 import de.cismet.tools.BlacklistClassloading;
-import de.cismet.tools.collections.TypeSafeCollections;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
@@ -63,7 +61,6 @@ import java.awt.Stroke;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 
-import java.util.HashMap;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
@@ -86,7 +83,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     private Geometry geom;
     private MetaObject mo;
     private MetaClass mc;
-    private MetaObjectNode mon;
+    // private MetaObjectNode mon;
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private boolean editable = false;
     private String namenszusatz = "";
@@ -102,20 +99,29 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     /**
      * Creates a new instance of CidsFeature
      * @param mon
-     * @throws java.lang.IllegalArgumentException 
+     * @throws java.lang.IllegalArgumentException
      */
+    @Deprecated
     public CidsFeature(MetaObjectNode mon) throws IllegalArgumentException {
+        this(mon.getObject());
+    }
+
+    /**
+     * Creates a new instance of CidsFeature
+     * @param mon
+     * @throws java.lang.IllegalArgumentException
+     */
+    public CidsFeature(MetaObject mo) throws IllegalArgumentException {
         log.debug("New CIDSFEATURE");
         try {
-            this.mon = mon;
-            mo = mon.getObject();
+//            this.mon = mon;
+            this.mo = mo;
             this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
             initFeatureSettings();
-
             //renderFeature auswerten
             try {
-                if (renderFeature != null && renderFeature.trim().equals("")) {
-                    geom = (Geometry) StaticCidsUtilities.getValueOfAttributeByString(renderFeature, mo);
+                if (renderFeature != null && !renderFeature.trim().equals("")) {
+                    geom = (Geometry) mo.getBean().getProperty(renderFeature);
                 }
             } catch (Exception e) {
                 log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeature + " konnte nicht gefunden werden", e);
@@ -137,27 +143,25 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         }
     }
 
+    @Deprecated
     public CidsFeature(MetaObjectNode mon, ObjectAttribute oAttr) throws IllegalArgumentException {
+        this(mon.getObject(), oAttr.getMai().getFieldName());
+    }
+
+    public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException {
         log.debug("New CIDSFEATURE");
         try {
-            this.mon = mon;
-            mo = mon.getObject();
-            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
+//            this.mon = mon;
+            this.mo = mo;
+            this.mc = mo.getMetaClass();
             initFeatureSettings();
 
             //TODO noch irgendwie sinnvoll den namenszusatz f\u00FCllen
-
-            if (oAttr.getValue() instanceof MetaObject) {
-                Collection c = ((MetaObject) oAttr.getValue()).getAttributesByType(Geometry.class, 1);
-                if (c.size() == 0) {
+            Object test = mo.getBean().getProperty(property);
+            if (test instanceof Geometry) {
+                geom = (Geometry) test;
+                if (geom == null) {
                     throw new IllegalArgumentException("Geometry==null");
-                }
-                for (Object elem : c) {
-                    ObjectAttribute oa = (ObjectAttribute) elem;
-                    geom = (Geometry) oa.getValue();
-                    if (geom == null) {
-                        throw new IllegalArgumentException("Geometry==null");
-                    }
                 }
             } else {
                 throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
@@ -168,9 +172,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     private void initFeatureSettings() throws Throwable {
-        if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel){
-            if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs().equalsIgnoreCase("epsg:4326")){
-                featureBorder=0.001f;
+        if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
+            if (((ActiveLayerModel) CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs().equalsIgnoreCase("epsg:4326")) {
+                featureBorder = 0.001f;
             }
         }
         try {
@@ -199,17 +203,17 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         }
         try {
             log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");
-            String overrideFeatureRendererClassName=System.getProperty(mo.getDomain().toLowerCase()+"."+mo.getMetaClass().getTableName().toLowerCase()+".featurerenderer");
+            String overrideFeatureRendererClassName = System.getProperty(mo.getDomain().toLowerCase() + "." + mo.getMetaClass().getTableName().toLowerCase() + ".featurerenderer");
 
             String featureRendererClass = overrideFeatureRendererClassName;
-            if (featureRendererClass==null){
-                String mcName=mo.getMetaClass().getTableName();
-                featureRendererClass="de.cismet.cids.custom.featurerenderer."+mo.getDomain().toLowerCase()+"."+mcName.substring(0,1).toUpperCase()+mcName.substring(1).toLowerCase()+"FeatureRenderer";
+            if (featureRendererClass == null) {
+                String mcName = mo.getMetaClass().getTableName();
+                featureRendererClass = "de.cismet.cids.custom.featurerenderer." + mo.getDomain().toLowerCase() + "." + mcName.substring(0, 1).toUpperCase() + mcName.substring(1).toLowerCase() + "FeatureRenderer";
             }
             log.debug("FEATURE_RENDERER=" + featureRendererClass);
             Class c = BlacklistClassloading.forName(featureRendererClass);
-            if (c==null){
-                c=BlacklistClassloading.forName((String)getAttribValue("FEATURE_RENDERER", mo, mc));
+            if (c == null) {
+                c = BlacklistClassloading.forName((String) getAttribValue("FEATURE_RENDERER", mo, mc));
             }
             Constructor constructor = c.getConstructor();
             featureRenderer = (FeatureRenderer) constructor.newInstance();
@@ -305,18 +309,24 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         }
         try {
             String supportingRasterService = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_TYPE", mo, mc).toString();
-            String supportingRasterServiceUrl = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL", mo, mc).toString();
-            supportingRasterServiceRasterLayerName = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER", mo, mc).toString();
-            supportingRasterServiceIdAttributeName = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE", mo, mc).toString();
-            String serviceName = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc).toString();
+            String supportingRasterServiceUrl = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL", mo, mc);
+
+            supportingRasterServiceRasterLayerName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER", mo, mc);
+            supportingRasterServiceIdAttributeName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE", mo, mc);
+            String serviceName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc);
             log.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);
             Class c = BlacklistClassloading.forName(supportingRasterService);
-            SimpleFeatureSupporterRasterServiceUrl url = new SimpleFeatureSupporterRasterServiceUrl(supportingRasterServiceUrl);
-            Constructor constructor = c.getConstructor(SimpleFeatureSupporterRasterServiceUrl.class);
-            this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance(url);
+            if (supportingRasterServiceUrl != null) {
+                SimpleFeatureSupporterRasterServiceUrl url = new SimpleFeatureSupporterRasterServiceUrl(supportingRasterServiceUrl);
+                Constructor constructor = c.getConstructor(SimpleFeatureSupporterRasterServiceUrl.class);
+                this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance(url);
+            } else {
+                Constructor constructor = c.getConstructor();
+                this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance();
+            }
             featureAwareRasterService.setName(serviceName);
         } catch (Throwable t) {
-            log.info("Fehler beim Erzeugen des FeaureSupportingRasterService, oder nicht vorhanden.", t);
+            log.fatal("Fehler beim Erzeugen des FeaureSupportingRasterService, oder nicht vorhanden.", t);
         }
     }
 
@@ -379,9 +389,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         return true;
     }
 
-    public void setCanBeSelected(boolean b){
-        
+    @Override
+    public void setCanBeSelected(boolean canBeSelected) {
     }
+
+
 
     public void setHighlighting(boolean highlighting) {
     }
@@ -396,7 +408,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             if (featureRenderer instanceof CustomCidsFeatureRenderer && ((CustomCidsFeatureRenderer) featureRenderer).getAlternativeName() != null) {
                 return ((CustomCidsFeatureRenderer) featureRenderer).getAlternativeName();
             } else {
-                return mon.getName() + namenszusatz;
+                return mo.toString() + namenszusatz;
             }
         } catch (Throwable t) {
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.Fehler_beim_Ermitteln_des_Namens"), t);
@@ -454,8 +466,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             return false;
         } else {
             try {
-                String thisString = mon.getObjectId() + "@" + mon.getClassId();
-                String thatString = ((CidsFeature) o).mon.getObjectId() + "@" + ((CidsFeature) o).mon.getClassId();
+                String thisString = mo.getID() + "@" + mo.getMetaClass().getID();
+                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID();
                 return thisString.equals(thatString);
             } catch (Exception e) {
                 return false;
@@ -510,8 +522,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     @Override
     public int hashCode() {
         int retValue;
-        if (mon != null) {
-            retValue = mon.hashCode();
+        if (mo != null) {
+            retValue = mo.hashCode();
         } else {
             retValue = super.hashCode();
         }
@@ -531,6 +543,19 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     public FeatureAwareRasterService getSupportingRasterService() {
+//        if (featureAwareRasterService == null) {
+//            try {
+//                String tablename = this.getMetaClass().getTableName();
+//                String domain = this.getMetaClass().getDomain();
+//                String lazyClassName = "de.cismet.cids.custom.featuresupportingrasterservices." +
+//                        domain.toLowerCase() + "." + tablename.substring(0, 1).toUpperCase() +
+//                        tablename.substring(1).toLowerCase() + "FeatureSupportingRasterService";
+//                Class lazyClass = BlacklistClassloading.forName(lazyClassName);
+//                Constructor constructor = lazyClass.getConstructor();
+//                featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance();
+//            } catch (Throwable t) {
+//            }
+//        }
         return featureAwareRasterService;
     }
 
@@ -556,7 +581,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {
-                log.error("AttrFieldProblem",e);
+                log.error("AttrFieldProblem", e);
             }
 
         }
@@ -619,5 +644,4 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public void setLinePaint(Paint linePaint) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
 }
