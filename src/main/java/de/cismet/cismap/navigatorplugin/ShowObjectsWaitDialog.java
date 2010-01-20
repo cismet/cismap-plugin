@@ -18,6 +18,7 @@ public class ShowObjectsWaitDialog extends javax.swing.JDialog {
     public ShowObjectsWaitDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        setAlwaysOnTop(true);
     }
     
     /** This method is called from within the constructor to

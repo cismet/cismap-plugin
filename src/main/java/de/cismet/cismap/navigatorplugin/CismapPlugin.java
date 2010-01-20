@@ -29,6 +29,7 @@ import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 import com.vividsolutions.jts.geom.Geometry;
+import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
@@ -37,7 +38,6 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
@@ -73,6 +73,7 @@ import de.cismet.extensions.timeasy.TimEasyListener;
 import de.cismet.extensions.timeasy.TimEasyPureNewFeature;
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
+import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
@@ -89,7 +90,6 @@ import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
 import de.cismet.tools.gui.log4jquickconfig.Log4JQuickConfig;
-import edu.umd.cs.piccolo.util.PBounds;
 import java.applet.AppletContext;
 
 import java.awt.BorderLayout;
@@ -105,7 +105,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -129,6 +128,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -143,6 +143,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.RepaintManager;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -169,6 +170,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -205,9 +207,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
     private ArrayList<JMenuItem> menues = new ArrayList<JMenuItem>();
     private HashMap<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
-    private HashMap<CidsFeature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<CidsFeature, DefaultMetaTreeNode>();
+    private HashMap<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>();
     private String newGeometryMode = CreateNewGeometryListener.LINESTRING;
-    private WFSFormFactory wfsFormFactory = WFSFormFactory.getInstance(mapC);
+    private WFSFormFactory wfsFormFactory;
     private Set<View> wfsFormViews = new HashSet<View>();
     private Vector<View> wfs = new Vector<View>();
     private DockingWindow[] wfsViews;
@@ -245,7 +247,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private String dirExtension = "";
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
-
     private Action searchMenuSelectedAction = new AbstractAction() {
 
         @Override
@@ -279,12 +280,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                                 break;
                         }
                         mniSearchShowLastFeature.setIcon(mniSearchRedo.getIcon());
-                        
+
                         mniSearchRedo.setEnabled(true);
                         mniSearchBuffer.setEnabled(true);
                         mniSearchShowLastFeature.setEnabled(true);
                     }
-                   
+
                     // kopieren nach popupmenu im grünen M
                     mniSearchRectangle1.setSelected(mniSearchRectangle.isSelected());
                     mniSearchPolygon1.setSelected(mniSearchPolygon.isSelected());
@@ -482,8 +483,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                         public void run() {
                             String s = (String) JOptionPane.showInputDialog(
                                     null,
-                                    "Geben Sie den Abstand des zu erzeugenden\n" +
-                                    "Puffers der letzten Suchgeometrie an.",
+                                    "Geben Sie den Abstand des zu erzeugenden\n"
+                                    + "Puffers der letzten Suchgeometrie an.",
                                     "Puffer",
                                     JOptionPane.PLAIN_MESSAGE,
                                     null,
@@ -638,7 +639,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
 
             clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this), true);
-            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), false);
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment().getProgressObserver().setProgress(100, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Erzeugen_der_Widgets"));
@@ -660,7 +661,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             debugPanel.setPCanvas(mapC);
             groovyConsole = new GroovierConsole();
             groovyConsole.setVariable("map", mapC);
-
+            wfsFormFactory = WFSFormFactory.getInstance(mapC);
             overviewComponent = new OverviewComponent();
             overviewComponent.setMasterMap(mapC);
 
@@ -692,9 +693,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 KeyStroke configLoggerKeyStroke = KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK);
                 Action configAction = new AbstractAction() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         java.awt.EventQueue.invokeLater(new Runnable() {
 
+                            @Override
                             public void run() {
                                 Log4JQuickConfig.getSingletonInstance().setVisible(true);
                             }
@@ -904,6 +907,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 menuItem.setIcon(form.getIcon());
                 menuItem.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         log.debug("showOrHideView:" + formView);
                         showOrHideView(formView);
@@ -950,6 +954,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (plugin) {
                             //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
@@ -1124,7 +1129,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 //        }
 //        to.pack();
 //    }
-
     private JMenuItem getScaleMenuItem(String t, final int d) {
         JMenuItem jmi = new JMenuItem(t);
         jmi.addActionListener(new ActionListener() {
@@ -2428,10 +2432,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         }
         fc.setFileFilter(new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".xml");
             }
 
+            @Override
             public String getDescription() {
                 return java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("ConfigDescription");
             }
@@ -2676,7 +2682,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void cmdNodeRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeRemoveActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
-            public void run() {               
+            public void run() {
                 mapC.setHandleInteractionMode(MappingComponent.REMOVE_HANDLE);
                 mapC.setInteractionMode(MappingComponent.SELECT);
             }
@@ -3527,6 +3533,10 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
         return showObjectsMethod.invoke(node, oAttr, editable);
     }
 
+    public CidsFeature showInMap(MetaObject mo, boolean editable) throws Exception {
+        return showObjectsMethod.invoke(mo, editable);
+    }
+
     public void dragOverMap(MapDnDEvent mde) {
 //        if (mde.getDte() instanceof DropTargetDragEvent) {
 //            DropTargetDragEvent dtde=(DropTargetDragEvent)mde.getDte();
@@ -3934,23 +3944,16 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             invoke(nodes, false);
         }
 
-        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-//            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
-//                return null;
-//            }
+        public synchronized CidsFeature invoke(MetaObject mo, boolean editable) throws Exception {
+            CidsFeature cidsFeature = new CidsFeature(mo);
+            invoke(cidsFeature, editable);
+            return cidsFeature;
+        }
+
+        private void invoke(CidsFeature cidsFeature, boolean editable) throws Exception {
             Vector<Feature> v = new Vector<Feature>();
-            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-            CidsFeature cidsFeature;
-            if (oAttr != null) {
-                cidsFeature = new CidsFeature(mon, oAttr);
-            } else {
-                cidsFeature = new CidsFeature(mon);
-            }
             cidsFeature.setEditable(editable);
             v.add(cidsFeature);
-            featuresInMap.put(node, cidsFeature);
-            featuresInMapReverse.put(cidsFeature, node);
             log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
             log.debug("cidsFeature:" + cidsFeature);
             log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature));
@@ -3968,77 +3971,155 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                 mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
                 mapC.showHandles(true);
             }
-            return cidsFeature;
         }
 
-        synchronized public void invoke(final Collection nodes, final boolean editable) throws Exception {
+        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+//            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
+//                return null;
+//            }
+            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+            CidsFeature cidsFeature = invoke(loader, editable);
+            if (oAttr != null) {
+                cidsFeature = new CidsFeature(mon, oAttr);
+            } else {
+                cidsFeature = new CidsFeature(mon);
+            }
+            featuresInMap.put(node, cidsFeature);
+            featuresInMapReverse.put(cidsFeature, node);
+            invoke(cidsFeature, editable);
+            return cidsFeature;
+        }
+//        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+////            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
+////                return null;
+////            }
+//            Vector<Feature> v = new Vector<Feature>();
+//            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+//            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+//            CidsFeature cidsFeature;
+//            if (oAttr != null) {
+//                cidsFeature = new CidsFeature(mon, oAttr);
+//            } else {
+//                cidsFeature = new CidsFeature(mon);
+//            }
+//            cidsFeature.setEditable(editable);
+//            v.add(cidsFeature);
+//            featuresInMap.put(node, cidsFeature);
+//            featuresInMapReverse.put(cidsFeature, node);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
+//            log.debug("cidsFeature:" + cidsFeature);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature));
+//            mapC.getFeatureLayer().setVisible(true);
+////            if (mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)) {
+//            mapC.getFeatureCollection().removeFeature(cidsFeature);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
+//            //          }
+//            mapC.getFeatureCollection().substituteFeatures(v);
+//            if (editable) {
+//                //mapC.getFeatureCollection().holdFeature(cidsFeature);
+//                mapC.getFeatureCollection().select(v);
+//            }
+//            if (!mapC.isFixedMapExtent()) {
+//                mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
+//                mapC.showHandles(true);
+//            }
+//            return cidsFeature;
+//        }
+
+        public synchronized void invoke(final Collection nodes, final boolean editable) throws Exception {
             log.info("invoke zeigt Objekte in der Karte");
-            Thread t = new Thread() {
+            final Runnable showWaitRunnable = new Runnable() {
 
                 @Override
                 public void run() {
-                    EventQueue.invokeLater(new Runnable() {
+                    showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
+                    showObjectsWaitDialog.setVisible(true);
+                    final SwingWorker<Vector<Feature>, Void> addToMapWorker = new SwingWorker<Vector<Feature>, Void>() {
 
-                        public void run() {
-                            showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
-                            showObjectsWaitDialog.setVisible(true);
-                        }
-                    });
+                        @Override
+                        protected Vector<Feature> doInBackground() throws Exception {
+                            Vector tmpFeaturesInMapRemoveCollection = new Vector();
 
-                    try {
-                        Vector tmpFeaturesInMapRemoveCollection = new Vector();
-
-                        for (DefaultMetaTreeNode node : featuresInMap.keySet()) {
-                            Feature f = featuresInMap.get(node);
-                            if (!mapC.getFeatureCollection().isHoldFeature(f)) {
-                                tmpFeaturesInMapRemoveCollection.add(node);
-                                featuresInMapReverse.remove(f);
+                            for (DefaultMetaTreeNode node : featuresInMap.keySet()) {
+                                Feature f = featuresInMap.get(node);
+                                if (!mapC.getFeatureCollection().isHoldFeature(f)) {
+                                    tmpFeaturesInMapRemoveCollection.add(node);
+                                    featuresInMapReverse.remove(f);
+                                }
                             }
-                        }
-                        for (Object o : tmpFeaturesInMapRemoveCollection) {
-                            featuresInMap.remove(o);
-                        }
+                            for (Object o : tmpFeaturesInMapRemoveCollection) {
+                                featuresInMap.remove(o);
+                            }
 
-                        Iterator<DefaultMetaTreeNode> it = nodes.iterator();
-                        Vector<Feature> v = new Vector<Feature>();
-                        while (it.hasNext()) {
-                            DefaultMetaTreeNode node = it.next();
-                            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-                            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-                            CidsFeature cidsFeature = new CidsFeature(mon);
-                            cidsFeature.setEditable(editable);
-                            //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
-                            //log.fatal("feturesInMap:"+featuresInMap);
+                            Iterator it = nodes.iterator();
+                            Vector<Feature> v = new Vector<Feature>();
+                            while (it.hasNext()) {
+                                Object cur = it.next();
+                                CidsFeature cidsFeature;
+                                DefaultMetaTreeNode node = null;
+                                if (cur instanceof DefaultMetaTreeNode) {
+                                    node = (DefaultMetaTreeNode) cur;
+//                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+                                    MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+                                    cidsFeature = new CidsFeature(mon);
+                                } else if (cur instanceof MetaObject) {
+                                    cidsFeature = new CidsFeature((MetaObject) cur);
+                                } else if (cur instanceof CidsBean) {
+                                    cidsFeature = new CidsFeature(((CidsBean) cur).getMetaObject());
+                                } else {
+                                    log.error("Object " + cur + " is not a DefaultMetaTreeNode or a MetaObject!");
+                                    continue;
+                                }
+                                cidsFeature.setEditable(editable);
+                                //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
+                                //log.fatal("feturesInMap:"+featuresInMap);
 //                            log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
-                            if (!(featuresInMap.containsValue(cidsFeature))) {
-                                v.add(cidsFeature);
-                                featuresInMap.put(node, cidsFeature);
-                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
-                                featuresInMapReverse.put(cidsFeature, node);
+                                if (!(featuresInMap.containsValue(cidsFeature))) {
+                                    v.add(cidsFeature);
+                                    if (node != null) {
+                                        featuresInMap.put(node, cidsFeature);
+                                        featuresInMapReverse.put(cidsFeature, node);
+                                    }
+//                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
 //                                log.fatal("feturesInMap:"+featuresInMap);
 //                                log.fatal("featuresInMapReverse:"+featuresInMapReverse);
+                                }
                             }
+                            return v;
                         }
-                        mapC.getFeatureLayer().setVisible(true);
-                        mapC.getFeatureCollection().substituteFeatures(v);
 
-                        if (!mapC.isFixedMapExtent()) {
-                            mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
+                        @Override
+                        protected void done() {
+                            try {
+                                showObjectsWaitDialog.setVisible(false);
+//                                showObjectsWaitDialog.dispose();
+                                Vector<Feature> v = get();
+
+                                mapC.getFeatureLayer().setVisible(true);
+                                mapC.getFeatureCollection().substituteFeatures(v);
+
+                                if (!mapC.isFixedMapExtent()) {
+                                    mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
+                                }
+                            } catch (InterruptedException e) {
+                                log.debug(e, e);
+                            } catch (Exception e) {
+                                log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Anzeigen_der_Objekte"), e);
+                            } 
                         }
-                    } catch (Exception e) {
-                        log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Anzeigen_der_Objekte"), e);
-                    } finally {
-                        EventQueue.invokeLater(new Runnable() {
-
-                            public void run() {
-                                showObjectsWaitDialog.dispose();
-                            }
-                        });
-                    }
+                    };
+                    CismetThreadPool.execute(addToMapWorker);
                 }
             };
-            t.setPriority(Thread.NORM_PRIORITY);
-            t.start();
+
+            if (EventQueue.isDispatchThread()) {
+                showWaitRunnable.run();
+            } else {
+                EventQueue.invokeLater(showWaitRunnable);
+            }
+
+
         }
 
         public String getId() {
@@ -4070,15 +4151,15 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                 pointCoordinates[3][1] = mapC.getCurrentBoundingBox().getY2();
                 return pointCoordinates;
             } else if (propertyName.equalsIgnoreCase("coordinateString")) {
-                return "(" +
-                        mapC.getCurrentBoundingBox().getX1() + "," +
-                        mapC.getCurrentBoundingBox().getX1() + ") (" +
-                        mapC.getCurrentBoundingBox().getX2() + "," +
-                        mapC.getCurrentBoundingBox().getX2() + ") (" +
-                        mapC.getCurrentBoundingBox().getX2() + "," +
-                        mapC.getCurrentBoundingBox().getY2() + ") (" +
-                        mapC.getCurrentBoundingBox().getX1() + "," +
-                        mapC.getCurrentBoundingBox().getY2() + ")";
+                return "("
+                        + mapC.getCurrentBoundingBox().getX1() + ","
+                        + mapC.getCurrentBoundingBox().getX1() + ") ("
+                        + mapC.getCurrentBoundingBox().getX2() + ","
+                        + mapC.getCurrentBoundingBox().getX2() + ") ("
+                        + mapC.getCurrentBoundingBox().getX2() + ","
+                        + mapC.getCurrentBoundingBox().getY2() + ") ("
+                        + mapC.getCurrentBoundingBox().getX1() + ","
+                        + mapC.getCurrentBoundingBox().getY2() + ")";
 //                mapC.getCurrentBoundingBox().getGeometryFromTextCompatibleString()
             } else if (propertyName.equalsIgnoreCase("ogcFeatureString")) {
                 mapC.getCurrentBoundingBox().getGeometryFromTextCompatibleString();

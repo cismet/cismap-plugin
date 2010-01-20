@@ -308,7 +308,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);
         }
         try {
-            String supportingRasterService = getAttribValue("FEATURESUPPORTINGRASTERSERVICE_TYPE", mo, mc).toString();
+            String supportingRasterService = String.valueOf(getAttribValue("FEATURESUPPORTINGRASTERSERVICE_TYPE", mo, mc));
             String supportingRasterServiceUrl = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL", mo, mc);
 
             supportingRasterServiceRasterLayerName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER", mo, mc);
@@ -326,7 +326,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             }
             featureAwareRasterService.setName(serviceName);
         } catch (Throwable t) {
-            log.fatal("Fehler beim Erzeugen des FeaureSupportingRasterService, oder nicht vorhanden.", t);
+            log.debug("Fehler beim Erzeugen des FeaureSupportingRasterService, oder nicht vorhanden.", t);
         }
     }
 
