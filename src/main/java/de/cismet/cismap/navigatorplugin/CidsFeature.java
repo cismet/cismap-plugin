@@ -40,12 +40,17 @@ import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import com.vividsolutions.jts.geom.Geometry;
+import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
+import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.PureFeatureGroup;
 import de.cismet.cismap.commons.features.FeatureRenderer;
 import de.cismet.cismap.commons.features.Highlightable;
 import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
+import de.cismet.cismap.commons.features.SubFeature;
 import de.cismet.cismap.commons.features.XStyledFeature;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
@@ -53,13 +58,16 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 import de.cismet.tools.BlacklistClassloading;
+import de.cismet.tools.collections.TypeSafeCollections;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -68,7 +76,7 @@ import javax.swing.JComponent;
  *
  * @author thorsten.hell@cismet.de
  */
-public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, RasterLayerSupportedFeature {
+public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, RasterLayerSupportedFeature, FeatureGroup, SubFeature {
 
     private Paint featureFG = Color.black;
     private Paint featureBG = Color.gray;
@@ -76,7 +84,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     private Paint featureHighBG = Color.darkGray;
     private float featureTranslucency = 0.5f;
     private float featureBorder = 10.0f;
-    private String renderFeature = null;
+    private String[] renderFeatures = null;
+    private String renderFeatureString = null;
     private String renderMultipleFeatures = null;
     private int renderAllFeatures = 1;
     private boolean hiding = false;
@@ -95,7 +104,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     private Image pointSymbol = null;
     private double pointSymbolSweetSpotX = 0d;
     private double pointSymbolSweetSpotY = 0d;
-
+    private final Collection<Feature> subFeatures = TypeSafeCollections.newArrayList();
+    private Feature parentFeature = null;
+    private String myAttributeStringInParentFeature=null;
     /**
      * Creates a new instance of CidsFeature
      * @param mon
@@ -106,12 +117,15 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         this(mon.getObject());
     }
 
+    public CidsFeature(MetaObject mo) throws IllegalArgumentException {
+        this(mo,null);
+    }
     /**
      * Creates a new instance of CidsFeature
      * @param mon
      * @throws java.lang.IllegalArgumentException
      */
-    public CidsFeature(MetaObject mo) throws IllegalArgumentException {
+    public CidsFeature(MetaObject mo,String localRenderFeatureString) throws IllegalArgumentException {
         log.debug("New CIDSFEATURE");
         try {
 //            this.mon = mon;
@@ -119,12 +133,54 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
             initFeatureSettings();
             //renderFeature auswerten
+
             try {
-                if (renderFeature != null && !renderFeature.trim().equals("")) {
-                    geom = (Geometry) mo.getBean().getProperty(renderFeature);
+                if (localRenderFeatureString!=null){
+                    renderFeatureString=localRenderFeatureString;
+                }
+
+                if (renderFeatureString != null && !renderFeatureString.trim().equals("")) {
+                    renderFeatures = renderFeatureString.split(",");
+                    if (renderFeatures.length == 1) {
+                        geom = (Geometry) mo.getBean().getProperty(renderFeatureString);
+                    } else {
+                        for (String renderFeature : renderFeatures) {
+                            Object tester = mo.getBean().getProperty(renderFeature);
+                            if (tester instanceof Geometry) {
+                                CidsFeature cf=new CidsFeature(this.getMetaObject(),renderFeature);
+                                cf.setParentFeature(this);
+                                cf.setMyAttributeStringInParentFeature(renderFeature);
+                                subFeatures.add(cf);
+                            } else if (tester instanceof Collection) {
+                                Collection<CidsBean> cbc=(Collection<CidsBean>) tester;
+                                final PureFeatureGroup fg=new PureFeatureGroup();
+                                for (CidsBean cb:cbc){
+                                    CidsFeature cf=new CidsFeature(cb.getMetaObject());
+                                    cf.setParentFeature(this); //first we had fg here ;-)
+                                    cf.setMyAttributeStringInParentFeature(renderFeature);
+                                    fg.addFeature(cf);
+                                }
+                                subFeatures.add(fg);
+                                fg.setParentFeature(this);
+                                fg.setMyAttributeStringInParentFeature(renderFeature);
+                            }
+
+                        }
+                        Geometry g=null;
+                        for (Feature f:subFeatures){
+                            if (g==null){
+                                g=f.getGeometry().getEnvelope();
+                            }
+                            else {
+                                g=g.union(f.getGeometry().getEnvelope()).getEnvelope();
+                            }
+                        }
+                        geom=g;
+                        hide(true);
+                    }
                 }
             } catch (Exception e) {
-                log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeature + " konnte nicht gefunden werden", e);
+                log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden", e);
                 geom = null;
             }
 
@@ -148,28 +204,28 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         this(mon.getObject(), oAttr.getMai().getFieldName());
     }
 
-    public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException {
-        log.debug("New CIDSFEATURE");
-        try {
-//            this.mon = mon;
-            this.mo = mo;
-            this.mc = mo.getMetaClass();
-            initFeatureSettings();
-
-            //TODO noch irgendwie sinnvoll den namenszusatz f\u00FCllen
-            Object test = mo.getBean().getProperty(property);
-            if (test instanceof Geometry) {
-                geom = (Geometry) test;
-                if (geom == null) {
-                    throw new IllegalArgumentException("Geometry==null");
-                }
-            } else {
-                throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
-            }
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Fehler_beim_Erstellen_eines_CidsFeatures"), t);
-        }
-    }
+//    public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException {
+//        log.debug("New CIDSFEATURE");
+//        try {
+////            this.mon = mon;
+//            this.mo = mo;
+//            this.mc = mo.getMetaClass();
+//            initFeatureSettings();
+//
+//            //TODO noch irgendwie sinnvoll den namenszusatz f\u00FCllen
+//            Object test = mo.getBean().getProperty(property);
+//            if (test instanceof Geometry) {
+//                geom = (Geometry) test;
+//                if (geom == null) {
+//                    throw new IllegalArgumentException("Geometry==null");
+//                }
+//            } else {
+//                throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
+//            }
+//        } catch (Throwable t) {
+//            throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Fehler_beim_Erstellen_eines_CidsFeatures"), t);
+//        }
+//    }
 
     private void initFeatureSettings() throws Throwable {
         if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
@@ -178,8 +234,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             }
         }
         try {
-            renderFeature = getAttribValue("RENDER_FEATURE", mo, mc).toString();
-            log.debug("RENDER_FEATURE=" + renderFeature);
+            renderFeatureString = getAttribValue("RENDER_FEATURE", mo, mc).toString();
+            log.debug("RENDER_FEATURE=" + renderFeatureString);
         } catch (Throwable t) {
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.RENDER_FEATURE_nicht_vorhanden"), t);
         }
@@ -393,8 +449,6 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public void setCanBeSelected(boolean canBeSelected) {
     }
 
-
-
     public void setHighlighting(boolean highlighting) {
     }
 
@@ -600,8 +654,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     public FeatureAnnotationSymbol getPointAnnotationSymbol() {
-        if (featureRenderer != null &&
-                featureRenderer.getPointSymbol() != null) {
+        if (featureRenderer != null
+                && featureRenderer.getPointSymbol() != null) {
             return featureRenderer.getPointSymbol();
         } else if (pointSymbol != null) {
             FeatureAnnotationSymbol ret = new FeatureAnnotationSymbol(pointSymbol);
@@ -644,4 +698,34 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public void setLinePaint(Paint linePaint) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    public Feature getParentFeature() {
+        return parentFeature;
+    }
+
+    public void setParentFeature(Feature parentFeature) {
+        this.parentFeature = parentFeature;
+    }
+
+    public Collection<Feature> getSubFeatures() {
+        return subFeatures;
+    }
+    public Collection<Feature> getFeatures() {
+        return subFeatures;
+    }
+
+    public String getMyAttributeStringInParentFeature() {
+        return myAttributeStringInParentFeature;
+    }
+
+    public void setMyAttributeStringInParentFeature(String myAttributeStringInParentFeature) {
+        this.myAttributeStringInParentFeature = myAttributeStringInParentFeature;
+    }
+
+    @Override
+    public Iterator<Feature> iterator() {
+        return subFeatures.iterator();
+    }
+
+    
 }

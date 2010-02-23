@@ -21,7 +21,6 @@ import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.navigator.ui.tree.SearchSelectionTree;
-import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
@@ -37,6 +36,7 @@ import de.cismet.cismap.commons.features.DefaultFeatureCollection;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
+import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
@@ -77,6 +77,7 @@ import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
+import de.cismet.tools.collections.TypeSafeCollections;
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.ConfigurationManager;
 import de.cismet.tools.groovysupport.GroovierConsole;
@@ -3529,10 +3530,6 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
         showObjectsMethod.invoke(c, editable);
     }
 
-    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-        return showObjectsMethod.invoke(node, oAttr, editable);
-    }
-
     public CidsFeature showInMap(MetaObject mo, boolean editable) throws Exception {
         return showObjectsMethod.invoke(mo, editable);
     }
@@ -3944,6 +3941,8 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             invoke(nodes, false);
         }
 
+<<<<<<< .mine
+=======
         public synchronized CidsFeature invoke(MetaObject mo, boolean editable) throws Exception {
             CidsFeature cidsFeature = new CidsFeature(mo);
             invoke(cidsFeature, editable);
@@ -4027,6 +4026,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 //            return cidsFeature;
 //        }
 
+>>>>>>> .r905
         public synchronized void invoke(final Collection nodes, final boolean editable) throws Exception {
             log.info("invoke zeigt Objekte in der Karte");
             final Runnable showWaitRunnable = new Runnable() {
@@ -4052,6 +4052,36 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                                 featuresInMap.remove(o);
                             }
 
+<<<<<<< .mine
+                        Iterator<DefaultMetaTreeNode> it = nodes.iterator();
+                        Vector<Feature> v = new Vector<Feature>();
+                        while (it.hasNext()) {
+                            DefaultMetaTreeNode node = it.next();
+                            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+                            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+
+                            //TODO handle multiple geometries
+
+
+                            CidsFeature cidsFeature = new CidsFeature(mon);
+                            cidsFeature.setEditable(editable);
+
+                            ArrayList<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList();
+                            allFeaturesToAdd.addAll(expandFeatureGroup(cidsFeature));
+
+
+
+
+
+
+
+
+
+
+
+                            //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
+                            //log.fatal("feturesInMap:"+featuresInMap);
+=======
                             Iterator it = nodes.iterator();
                             Vector<Feature> v = new Vector<Feature>();
                             while (it.hasNext()) {
@@ -4074,7 +4104,15 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                                 cidsFeature.setEditable(editable);
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
+>>>>>>> .r905
 //                            log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
+<<<<<<< .mine
+                            if (!(featuresInMap.containsValue(cidsFeature))) {
+                                v.addAll(allFeaturesToAdd);
+                                featuresInMap.put(node, cidsFeature);
+                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
+                                featuresInMapReverse.put(cidsFeature, node);
+=======
                                 if (!(featuresInMap.containsValue(cidsFeature))) {
                                     v.add(cidsFeature);
                                     if (node != null) {
@@ -4082,6 +4120,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                                         featuresInMapReverse.put(cidsFeature, node);
                                     }
 //                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
+>>>>>>> .r905
 //                                log.fatal("feturesInMap:"+featuresInMap);
 //                                log.fatal("featuresInMapReverse:"+featuresInMapReverse);
                                 }
@@ -4124,6 +4163,20 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public String getId() {
             return this.getClass().getName();
+        }
+
+        private Collection<Feature> expandFeatureGroup(FeatureGroup fg) {
+            Collection<Feature> cf = TypeSafeCollections.newArrayList();
+            cf.add(fg);
+            for (Feature f : fg.getFeatures()) {
+                if (f instanceof FeatureGroup && ((FeatureGroup) f).getFeatures() != null && ((FeatureGroup) f).getFeatures().size() > 0) {
+                    cf.addAll(expandFeatureGroup((FeatureGroup) f));
+                } else {
+                    cf.add(f);
+                }
+            }
+            return cf;
+
         }
     }
 
