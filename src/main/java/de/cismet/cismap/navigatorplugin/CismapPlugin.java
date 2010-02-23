@@ -21,6 +21,7 @@ import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.navigator.ui.tree.SearchSelectionTree;
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
@@ -3725,6 +3726,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                 public void run() {
                     nodeSelectionEventBlocker = true;
+                    //baumselektion
                     ComponentRegistry.getRegistry().getActiveCatalogue().setSelectedNodes(nodeVector, true);
                     nodeSelectionEventBlocker = false;
                 }
@@ -3941,8 +3943,6 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             invoke(nodes, false);
         }
 
-<<<<<<< .mine
-=======
         public synchronized CidsFeature invoke(MetaObject mo, boolean editable) throws Exception {
             CidsFeature cidsFeature = new CidsFeature(mo);
             invoke(cidsFeature, editable);
@@ -4026,7 +4026,6 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 //            return cidsFeature;
 //        }
 
->>>>>>> .r905
         public synchronized void invoke(final Collection nodes, final boolean editable) throws Exception {
             log.info("invoke zeigt Objekte in der Karte");
             final Runnable showWaitRunnable = new Runnable() {
@@ -4051,76 +4050,42 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                             for (Object o : tmpFeaturesInMapRemoveCollection) {
                                 featuresInMap.remove(o);
                             }
-
-<<<<<<< .mine
-                        Iterator<DefaultMetaTreeNode> it = nodes.iterator();
-                        Vector<Feature> v = new Vector<Feature>();
-                        while (it.hasNext()) {
-                            DefaultMetaTreeNode node = it.next();
-                            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-                            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-
-                            //TODO handle multiple geometries
-
-
-                            CidsFeature cidsFeature = new CidsFeature(mon);
-                            cidsFeature.setEditable(editable);
-
-                            ArrayList<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList();
-                            allFeaturesToAdd.addAll(expandFeatureGroup(cidsFeature));
-
-
-
-
-
-
-
-
-
-
-
-                            //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
-                            //log.fatal("feturesInMap:"+featuresInMap);
-=======
-                            Iterator it = nodes.iterator();
+                            Iterator<DefaultMetaTreeNode> it = nodes.iterator();
                             Vector<Feature> v = new Vector<Feature>();
                             while (it.hasNext()) {
-                                Object cur = it.next();
-                                CidsFeature cidsFeature;
-                                DefaultMetaTreeNode node = null;
-                                if (cur instanceof DefaultMetaTreeNode) {
-                                    node = (DefaultMetaTreeNode) cur;
-//                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-                                    MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-                                    cidsFeature = new CidsFeature(mon);
-                                } else if (cur instanceof MetaObject) {
-                                    cidsFeature = new CidsFeature((MetaObject) cur);
-                                } else if (cur instanceof CidsBean) {
-                                    cidsFeature = new CidsFeature(((CidsBean) cur).getMetaObject());
-                                } else {
-                                    log.error("Object " + cur + " is not a DefaultMetaTreeNode or a MetaObject!");
-                                    continue;
-                                }
+                                DefaultMetaTreeNode node = it.next();
+                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+                                MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+
+                                //TODO handle multiple geometries
+
+
+                                CidsFeature cidsFeature = new CidsFeature(mon);
                                 cidsFeature.setEditable(editable);
+
+                                ArrayList<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList();
+                                allFeaturesToAdd.addAll(expandFeatureGroup(cidsFeature));
+
+
+
+
+
+
+
+
+
+
+
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
->>>>>>> .r905
+
 //                            log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
-<<<<<<< .mine
-                            if (!(featuresInMap.containsValue(cidsFeature))) {
-                                v.addAll(allFeaturesToAdd);
-                                featuresInMap.put(node, cidsFeature);
-                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
-                                featuresInMapReverse.put(cidsFeature, node);
-=======
                                 if (!(featuresInMap.containsValue(cidsFeature))) {
-                                    v.add(cidsFeature);
-                                    if (node != null) {
-                                        featuresInMap.put(node, cidsFeature);
-                                        featuresInMapReverse.put(cidsFeature, node);
-                                    }
-//                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
->>>>>>> .r905
+                                    v.addAll(allFeaturesToAdd);
+                                    featuresInMap.put(node, cidsFeature);
+                                    log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
+                                    featuresInMapReverse.put(cidsFeature, node);
+
 //                                log.fatal("feturesInMap:"+featuresInMap);
 //                                log.fatal("featuresInMapReverse:"+featuresInMapReverse);
                                 }
@@ -4145,7 +4110,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                                 log.debug(e, e);
                             } catch (Exception e) {
                                 log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Anzeigen_der_Objekte"), e);
-                            } 
+                            }
                         }
                     };
                     CismetThreadPool.execute(addToMapWorker);

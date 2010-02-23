@@ -65,7 +65,6 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -80,8 +79,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     private Paint featureFG = Color.black;
     private Paint featureBG = Color.gray;
-    private Paint featureHighFG = Color.blue;
-    private Paint featureHighBG = Color.darkGray;
+//    private Paint featureHighFG = Color.blue;
+//    private Paint featureHighBG = Color.darkGray;
     private float featureTranslucency = 0.5f;
     private float featureBorder = 10.0f;
     private String[] renderFeatures = null;
@@ -252,7 +251,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.RENDER_AKK_FEATURES_nicht_vorhanden_oder_nicht_korrekt_gefuellt"), t);
         }
         try {
-            hiding = new Boolean(getAttribValue("HIDE_FEATURE", mo, mc).toString()).booleanValue();
+//            hiding = new Boolean(getAttribValue("HIDE_FEATURE", mo, mc).toString()).booleanValue();
             log.debug("HIDE_FEATURE=" + hiding);
         } catch (Throwable t) {
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.HIDE_FEATURE_nicht_vorhanden_oder_nicht_korrekt_gefuellt"), t);
@@ -327,7 +326,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             int g = new Integer(t[1]).intValue();
             int b = new Integer(t[2]).intValue();
             log.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");
-            featureHighFG = new Color(r, g, b);
+//            featureHighFG = new Color(r, g, b);
         } catch (Throwable t) {
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.FEATURE_HIGH_FG_nicht_vorhanden_oder_nicht_korrekt_gefuellt"), t);
         }
@@ -337,7 +336,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             int r = new Integer(t[0]).intValue();
             int g = new Integer(t[1]).intValue();
             int b = new Integer(t[2]).intValue();
-            featureHighFG = new Color(r, g, b);
+//            featureHighFG = new Color(r, g, b);
             log.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");
         } catch (Throwable t) {
             log.info(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.FEATURE_HIGH_BG_nicht_vorhanden_oder_nicht_korrekt_gefuellt"), t);
