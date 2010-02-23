@@ -29,7 +29,6 @@ import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 import com.vividsolutions.jts.geom.Geometry;
-import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
@@ -38,6 +37,7 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
@@ -116,21 +116,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -172,7 +170,6 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -201,19 +198,19 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     //private Viewport viewport;
     //private HashMap<View,DockingState> dockingStates=new HashMap<View,DockingState>();
     private RootWindow rootWindow;
-    private StringViewMap viewMap = new StringViewMap();
-    private HashMap<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
+    private final StringViewMap viewMap = new StringViewMap();
+    private final Map<String, JMenuItem> viewMenuMap = TypeSafeCollections.newHashMap();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
     private ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
-    private HashMap<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
+    private final Map<String, PluginMethod> pluginMethods = TypeSafeCollections.newHashMap();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
-    private ArrayList<JMenuItem> menues = new ArrayList<JMenuItem>();
-    private HashMap<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
-    private HashMap<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>();
+    private final List<JMenuItem> menues = TypeSafeCollections.newArrayList();
+    private final Map<DefaultMetaTreeNode, CidsFeature> featuresInMap = TypeSafeCollections.newHashMap();
+    private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = TypeSafeCollections.newHashMap();
     private String newGeometryMode = CreateNewGeometryListener.LINESTRING;
     private WFSFormFactory wfsFormFactory;
-    private Set<View> wfsFormViews = new HashSet<View>();
-    private Vector<View> wfs = new Vector<View>();
+    private final Set<View> wfsFormViews = TypeSafeCollections.newHashSet();
+    private final Vector<View> wfs = TypeSafeCollections.newVector();
     private DockingWindow[] wfsViews;
     private DockingWindow[] legendTab = new DockingWindow[4];
     private ClipboardWaitDialog clipboarder;
@@ -3718,7 +3715,8 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             Collection<Feature> fc = new Vector<Feature>(mapC.getFeatureCollection().getSelectedFeatures());
             final Vector<DefaultMutableTreeNode> nodeVector = new Vector<DefaultMutableTreeNode>();
             for (Feature f : fc) {
-                if (f instanceof CidsFeature) {
+                if (f instanceof CidsFeature || f instanceof FeatureGroup) {
+//                if (f instanceof CidsFeature) {
                     nodeVector.add(featuresInMapReverse.get(f));
                 }
             }
@@ -3726,7 +3724,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                 public void run() {
                     nodeSelectionEventBlocker = true;
-                    //baumselektion
+                    //Baumselektion wird hier propagiert
                     ComponentRegistry.getRegistry().getActiveCatalogue().setSelectedNodes(nodeVector, true);
                     nodeSelectionEventBlocker = false;
                 }
@@ -4026,7 +4024,7 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 //            return cidsFeature;
 //        }
 
-        public synchronized void invoke(final Collection nodes, final boolean editable) throws Exception {
+        public synchronized void invoke(final Collection<DefaultMetaTreeNode> nodes, final boolean editable) throws Exception {
             log.info("invoke zeigt Objekte in der Karte");
             final Runnable showWaitRunnable = new Runnable() {
 
@@ -4038,60 +4036,55 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                         @Override
                         protected Vector<Feature> doInBackground() throws Exception {
-                            Vector tmpFeaturesInMapRemoveCollection = new Vector();
-
-                            for (DefaultMetaTreeNode node : featuresInMap.keySet()) {
+                            Iterator<DefaultMetaTreeNode> mapIter = featuresInMap.keySet().iterator();
+                            while (mapIter.hasNext()) {
+                                DefaultMetaTreeNode node = mapIter.next();
                                 Feature f = featuresInMap.get(node);
                                 if (!mapC.getFeatureCollection().isHoldFeature(f)) {
-                                    tmpFeaturesInMapRemoveCollection.add(node);
+                                    mapIter.remove();
                                     featuresInMapReverse.remove(f);
                                 }
                             }
-                            for (Object o : tmpFeaturesInMapRemoveCollection) {
-                                featuresInMap.remove(o);
-                            }
-                            Iterator<DefaultMetaTreeNode> it = nodes.iterator();
                             Vector<Feature> v = new Vector<Feature>();
-                            while (it.hasNext()) {
-                                DefaultMetaTreeNode node = it.next();
-                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+                            for (DefaultMetaTreeNode node : nodes) {
+//                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
                                 MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
 
                                 //TODO handle multiple geometries
-
-
                                 CidsFeature cidsFeature = new CidsFeature(mon);
                                 cidsFeature.setEditable(editable);
-
-                                ArrayList<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList();
-                                allFeaturesToAdd.addAll(expandFeatureGroup(cidsFeature));
-
-
-
-
-
-
-
-
-
-
-
+                                List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expand(cidsFeature));
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
 
 //                            log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
                                 if (!(featuresInMap.containsValue(cidsFeature))) {
                                     v.addAll(allFeaturesToAdd);
+                                    //node -> masterfeature
                                     featuresInMap.put(node, cidsFeature);
+                                    for (Feature feature : allFeaturesToAdd) {
+                                        //master and all subfeatures -> node
+                                        featuresInMapReverse.put(feature, node);
+                                    }
+//                                    featuresInMap.put(node, cidsFeature);
+//                                    featuresInMapReverse.put(cidsFeature, node);
                                     log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
-                                    featuresInMapReverse.put(cidsFeature, node);
-
 //                                log.fatal("feturesInMap:"+featuresInMap);
 //                                log.fatal("featuresInMapReverse:"+featuresInMapReverse);
                                 }
                             }
                             return v;
                         }
+
+//                        private Feature getFeatureParent(Feature feature) {
+//                            if (feature instanceof SubFeature) {
+//                                SubFeature current = (SubFeature) feature;
+//                                if (current.getParentFeature() != null) {
+//                                    return getFeatureParent(current.getParentFeature());
+//                                }
+//                            }
+//                            return feature;
+//                        }
 
                         @Override
                         protected void done() {
@@ -4128,20 +4121,6 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public String getId() {
             return this.getClass().getName();
-        }
-
-        private Collection<Feature> expandFeatureGroup(FeatureGroup fg) {
-            Collection<Feature> cf = TypeSafeCollections.newArrayList();
-            cf.add(fg);
-            for (Feature f : fg.getFeatures()) {
-                if (f instanceof FeatureGroup && ((FeatureGroup) f).getFeatures() != null && ((FeatureGroup) f).getFeatures().size() > 0) {
-                    cf.addAll(expandFeatureGroup((FeatureGroup) f));
-                } else {
-                    cf.add(f);
-                }
-            }
-            return cf;
-
         }
     }
 

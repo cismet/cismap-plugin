@@ -104,8 +104,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     private double pointSymbolSweetSpotX = 0d;
     private double pointSymbolSweetSpotY = 0d;
     private final Collection<Feature> subFeatures = TypeSafeCollections.newArrayList();
-    private Feature parentFeature = null;
-    private String myAttributeStringInParentFeature=null;
+    private FeatureGroup parentFeature = null;
+    private String myAttributeStringInParentFeature = null;
+
     /**
      * Creates a new instance of CidsFeature
      * @param mon
@@ -117,14 +118,15 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     public CidsFeature(MetaObject mo) throws IllegalArgumentException {
-        this(mo,null);
+        this(mo, null);
     }
+
     /**
      * Creates a new instance of CidsFeature
      * @param mon
      * @throws java.lang.IllegalArgumentException
      */
-    public CidsFeature(MetaObject mo,String localRenderFeatureString) throws IllegalArgumentException {
+    public CidsFeature(MetaObject mo, String localRenderFeatureString) throws IllegalArgumentException {
         log.debug("New CIDSFEATURE");
         try {
 //            this.mon = mon;
@@ -134,8 +136,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             //renderFeature auswerten
 
             try {
-                if (localRenderFeatureString!=null){
-                    renderFeatureString=localRenderFeatureString;
+                if (localRenderFeatureString != null) {
+                    renderFeatureString = localRenderFeatureString;
                 }
 
                 if (renderFeatureString != null && !renderFeatureString.trim().equals("")) {
@@ -146,15 +148,15 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                         for (String renderFeature : renderFeatures) {
                             Object tester = mo.getBean().getProperty(renderFeature);
                             if (tester instanceof Geometry) {
-                                CidsFeature cf=new CidsFeature(this.getMetaObject(),renderFeature);
+                                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature);
                                 cf.setParentFeature(this);
                                 cf.setMyAttributeStringInParentFeature(renderFeature);
                                 subFeatures.add(cf);
                             } else if (tester instanceof Collection) {
-                                Collection<CidsBean> cbc=(Collection<CidsBean>) tester;
-                                final PureFeatureGroup fg=new PureFeatureGroup();
-                                for (CidsBean cb:cbc){
-                                    CidsFeature cf=new CidsFeature(cb.getMetaObject());
+                                Collection<CidsBean> cbc = (Collection<CidsBean>) tester;
+                                final PureFeatureGroup fg = new PureFeatureGroup();
+                                for (CidsBean cb : cbc) {
+                                    CidsFeature cf = new CidsFeature(cb.getMetaObject());
                                     cf.setParentFeature(this); //first we had fg here ;-)
                                     cf.setMyAttributeStringInParentFeature(renderFeature);
                                     fg.addFeature(cf);
@@ -165,16 +167,15 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                             }
 
                         }
-                        Geometry g=null;
-                        for (Feature f:subFeatures){
-                            if (g==null){
-                                g=f.getGeometry().getEnvelope();
-                            }
-                            else {
-                                g=g.union(f.getGeometry().getEnvelope()).getEnvelope();
+                        Geometry g = null;
+                        for (Feature f : subFeatures) {
+                            if (g == null) {
+                                g = f.getGeometry().getEnvelope();
+                            } else {
+                                g = g.union(f.getGeometry().getEnvelope()).getEnvelope();
                             }
                         }
-                        geom=g;
+                        geom = g;
                         hide(true);
                     }
                 }
@@ -225,7 +226,6 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 //            throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Fehler_beim_Erstellen_eines_CidsFeatures"), t);
 //        }
 //    }
-
     private void initFeatureSettings() throws Throwable {
         if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
             if (((ActiveLayerModel) CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs().equalsIgnoreCase("epsg:4326")) {
@@ -698,17 +698,18 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Feature getParentFeature() {
+    public FeatureGroup getParentFeature() {
         return parentFeature;
     }
 
-    public void setParentFeature(Feature parentFeature) {
+    public void setParentFeature(FeatureGroup parentFeature) {
         this.parentFeature = parentFeature;
     }
 
     public Collection<Feature> getSubFeatures() {
         return subFeatures;
     }
+
     public Collection<Feature> getFeatures() {
         return subFeatures;
     }
@@ -726,5 +727,23 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         return subFeatures.iterator();
     }
 
-    
+    @Override
+    public boolean addFeature(Feature toAdd) {
+        return subFeatures.add(toAdd);
+    }
+
+    @Override
+    public boolean addFeatures(Collection<Feature> toAdd) {
+        return subFeatures.addAll(toAdd);
+    }
+
+    @Override
+    public boolean removeFeature(Feature toRemove) {
+        return subFeatures.remove(toRemove);
+    }
+
+    @Override
+    public boolean removeFeatures(Collection<Feature> toRemove) {
+        return subFeatures.removeAll(toRemove);
+    }
 }
