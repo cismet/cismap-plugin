@@ -42,6 +42,7 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import com.vividsolutions.jts.geom.Geometry;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
+import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
 import de.cismet.cismap.commons.features.Feature;
@@ -433,7 +434,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     public Paint getFillingPaint() {
-        if (featureRenderer != null && featureRenderer.getFillingStyle() != null) {
+        if (getParentFeature() instanceof CidsFeature && ((CidsFeature) getParentFeature()).getFeatureRenderer() instanceof SubFeatureAwareFeatureRenderer) {
+            final CidsFeature cf=(CidsFeature) getParentFeature();
+            SubFeatureAwareFeatureRenderer subFeatureRenderer = (SubFeatureAwareFeatureRenderer) cf.getFeatureRenderer();
+            return subFeatureRenderer.getFillingStyle(this);
+        } else if (featureRenderer != null && featureRenderer.getFillingStyle() != null) {
             return featureRenderer.getFillingStyle();
         } else {
             return featureBG;
@@ -745,5 +750,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     @Override
     public boolean removeFeatures(Collection<Feature> toRemove) {
         return subFeatures.removeAll(toRemove);
+    }
+
+    public FeatureRenderer getFeatureRenderer() {
+        return featureRenderer;
     }
 }
