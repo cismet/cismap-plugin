@@ -111,4 +111,6 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
     public Object clone() {
         return new SicadShowMapPlSupporter(this);
     }
+
+
 }

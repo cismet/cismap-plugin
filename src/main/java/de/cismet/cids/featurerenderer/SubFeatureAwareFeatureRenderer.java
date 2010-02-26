@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.cismet.cids.featurerenderer;
 
 import de.cismet.cismap.commons.Refreshable;
@@ -27,16 +26,17 @@ import javax.swing.JComponent;
  *
  * @author thorsten
  */
-public interface SubFeatureAwareFeatureRenderer extends FeatureRenderer{
-    public abstract java.awt.Stroke getLineStyle(CidsFeature subFeature);
+public interface SubFeatureAwareFeatureRenderer extends FeatureRenderer {
 
-    public abstract java.awt.Paint getLinePaint(CidsFeature subFeature);
+    public java.awt.Stroke getLineStyle(CidsFeature subFeature);
 
-    public abstract java.awt.Paint getFillingStyle(CidsFeature subFeature);
+    public java.awt.Paint getLinePaint(CidsFeature subFeature);
 
-    public abstract float getTransparency(CidsFeature subFeature);
+    public java.awt.Paint getFillingStyle(CidsFeature subFeature);
 
-    public abstract FeatureAnnotationSymbol getPointSymbol(CidsFeature subFeature);
+    public float getTransparency(CidsFeature subFeature);
 
-    public abstract JComponent getInfoComponent(Refreshable refresh,CidsFeature subFeature);
+    public FeatureAnnotationSymbol getPointSymbol(CidsFeature subFeature);
+
+    public JComponent getInfoComponent(Refreshable refresh, CidsFeature subFeature);
 }

@@ -2592,7 +2592,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void cmdPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPrintActionPerformed
         String oldMode = mapC.getInteractionMode();
         log.debug("oldInteractionMode:" + oldMode);
-        Enumeration en = cmdGroupPrimaryInteractionMode.getElements();
         togInvisible.setSelected(true);
         mapC.showPrintingSettingsDialog(oldMode);
     }//GEN-LAST:event_cmdPrintActionPerformed
@@ -4047,13 +4046,14 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                             }
                             Vector<Feature> v = new Vector<Feature>();
                             for (DefaultMetaTreeNode node : nodes) {
-//                                MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
                                 MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-
-                                //TODO handle multiple geometries
-                                CidsFeature cidsFeature = new CidsFeature(mon);
+                                MetaObject mo = mon.getObject();
+                                if (mo == null) {
+                                    mo = ((ObjectTreeNode) node).getMetaObject();
+                                }
+                                final CidsFeature cidsFeature = new CidsFeature(mo);
                                 cidsFeature.setEditable(editable);
-                                List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expand(cidsFeature));
+                                List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expandAll(cidsFeature));
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
 
@@ -4085,7 +4085,6 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 //                            }
 //                            return feature;
 //                        }
-
                         @Override
                         protected void done() {
                             try {
