@@ -130,8 +130,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
      * @throws java.lang.IllegalArgumentException
      */
     private CidsFeature(MetaObject mo, String localRenderFeatureString) throws IllegalArgumentException {
-        log.debug("New CIDSFEATURE");
-        log.fatal(mo);
+//        log.debug("New CIDSFEATURE");
+//        log.fatal(mo + " of " + mo.getMetaClass());
         try {
 //            this.mon = mon;
             this.mo = mo;
@@ -151,9 +151,13 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                         if (tester instanceof Collection) {
                             //single renderer attribute, multiple geometries case
                             createSubFeatures(renderFeatures);
-                        } else {
+                        } else if (tester instanceof Geometry) {
                             //old default case, single atribute and geometry
                             geom = (Geometry) tester;
+                        } else if (tester instanceof CidsBean) {
+                            geom = searchGeometryInMetaObject(((CidsBean)tester).getMetaObject());
+                        } else {
+                            log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden");
                         }
                     } else {
                         //multi renderer attribute case
@@ -167,17 +171,22 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
             if (geom == null) {
                 //Defaultfall: Es ist kein Geometriefeld angegeben
-                Collection c = mo.getAttributesByType(Geometry.class, 1);
-                for (Object elem : c) {
-                    ObjectAttribute oa = (ObjectAttribute) elem;
-                    geom = (Geometry) oa.getValue();
-                }
+                geom = searchGeometryInMetaObject(mo);
             }
 
         } catch (Throwable t) {
             log.error("Error CidsFeature(MetaObjectNode mon)", t);
             throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.log.Fehler_beim_Erstellen_eines_CidsFeatures"), t);
         }
+    }
+
+    private Geometry searchGeometryInMetaObject(MetaObject mo) {
+        Collection c = mo.getAttributesByType(Geometry.class, 1);
+        for (Object elem : c) {
+            ObjectAttribute oa = (ObjectAttribute) elem;
+            return (Geometry) oa.getValue();
+        }
+        return null;
     }
 
     private void createSubFeatures(String[] renderFeatures) {
@@ -447,7 +456,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 return featureFG;
             }
         } else {
-            return new Color(255,255,255,0);
+            return new Color(255, 255, 255, 0);
         }
     }
 
