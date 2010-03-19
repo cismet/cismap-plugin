@@ -41,6 +41,8 @@ import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
+import de.cismet.cismap.commons.gui.ToolbarComponentsProvider;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
 import de.cismet.cismap.commons.gui.capabilitywidget.CapabilityWidget;
 import de.cismet.cismap.commons.gui.featurecontrolwidget.FeatureControl;
@@ -170,6 +172,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -1094,7 +1097,37 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
         layerInfo.initDividerLocation();
+        initPluginToolbarComponents();
+    }
 
+    private void initPluginToolbarComponents() {
+        Collection<? extends ToolbarComponentsProvider> toolbarCompProviders = Lookup.getDefault().lookupAll(ToolbarComponentsProvider.class);
+        if (toolbarCompProviders != null) {
+            for (ToolbarComponentsProvider toolbarCompProvider : toolbarCompProviders) {
+                log.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName());
+                Collection<ToolbarComponentDescription> componentDescriptions = toolbarCompProvider.getToolbarComponents();
+                if (componentDescriptions != null) {
+                    for (ToolbarComponentDescription componentDescription : componentDescriptions) {
+                        int insertionIndex = tlbMain.getComponentCount();
+                        String anchor = componentDescription.getAnchorComponentName();
+                        if (anchor != null) {
+                            for (int i = tlbMain.getComponentCount(); --i >= 0;) {
+                                Component currentAnchorCandidate = tlbMain.getComponent(i);
+                                if (anchor.equals(currentAnchorCandidate.getName())) {
+                                    if (ToolbarComponentsProvider.ToolbarPositionHint.BEFORE.equals(componentDescription.getPositionHint())) {
+                                        insertionIndex = i;
+                                    } else {
+                                        insertionIndex = i + 1;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        tlbMain.add(componentDescription.getComponent(), insertionIndex);
+                    }
+                }
+            }
+        }
     }
 
 //    private JMenuItem copyMenuItem(JMenuItem from) {
@@ -1555,9 +1588,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator6);
 
         cmdPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/frameprint.png"))); // NOI18N
-        cmdPrint.setText(bundle.getString("CismapPlugin.cmdPrint.text")); // NOI18N
-        cmdPrint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.toolTipText")); // NOI18N
+        cmdPrint.setText(bundle.getString("CismapPlugin.print.text")); // NOI18N
+        cmdPrint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.print.toolTipText")); // NOI18N
         cmdPrint.setBorderPainted(false);
+        cmdPrint.setName("print"); // NOI18N
         cmdPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdPrintActionPerformed(evt);
