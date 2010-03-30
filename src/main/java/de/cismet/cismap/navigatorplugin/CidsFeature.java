@@ -66,6 +66,7 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -146,6 +147,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
                 if (renderFeatureString != null && !renderFeatureString.trim().equals("")) {
                     final String[] renderFeatures = renderFeatureString.split(",");
+                    log.debug("renderFeatures: "+Arrays.asList(renderFeatures));
                     if (renderFeatures.length == 1) {
                         Object tester = mo.getBean().getProperty(renderFeatureString);
                         if (tester instanceof Collection) {
@@ -191,12 +193,15 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     private void createSubFeatures(String[] renderFeatures) {
         for (String renderFeature : renderFeatures) {
+            log.debug("in createsubFeature: "+renderFeature);
             Object tester = mo.getBean().getProperty(renderFeature);
+
             if (tester instanceof Geometry) {
                 CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature);
                 cf.setParentFeature(this);
                 cf.setMyAttributeStringInParentFeature(renderFeature);
                 subFeatures.add(cf);
+                log.debug("added: "+cf);
             } else if (tester instanceof Collection) {
                 Collection<CidsBean> cbc = (Collection<CidsBean>) tester;
                 final PureFeatureGroup fg = new PureFeatureGroup();
@@ -214,6 +219,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         }
         geom = FeatureGroups.getEnclosingGeometry(subFeatures);
         hide(true);
+        log.debug("subFeatures: "+ subFeatures);
+        
     }
 
     @Deprecated
@@ -569,8 +576,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             return false;
         } else {
             try {
-                String thisString = mo.getID() + "@" + mo.getMetaClass().getID();
-                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID();
+                String thisString = mo.getID() + "@" + mo.getMetaClass().getID()+"("+this.renderFeatureString+")";
+                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID()+"("+((CidsFeature) o).renderFeatureString+")";
                 return thisString.equals(thatString);
             } catch (Exception e) {
                 return false;

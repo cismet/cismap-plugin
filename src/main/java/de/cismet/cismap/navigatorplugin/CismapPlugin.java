@@ -4088,6 +4088,8 @@ private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//G
                                 final CidsFeature cidsFeature = new CidsFeature(mo);
                                 cidsFeature.setEditable(editable);
                                 List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expandAll(cidsFeature));
+                                log.debug("allFeaturesToAdd:"+allFeaturesToAdd);
+
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
 
