@@ -46,14 +46,14 @@ public class NetworkOptionsDialog extends javax.swing.JDialog {
         chkUseProxy = new javax.swing.JCheckBox();
         butOk = new javax.swing.JButton();
 
-        setTitle("Netzwerk Optionen");
+        setTitle(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.JDialog.title")); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
             }
         });
 
-        butCancel.setText("Abbrechen");
+        butCancel.setText(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.butCancel.text")); // NOI18N
         butCancel.setPreferredSize(new java.awt.Dimension(50, 29));
         butCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -61,7 +61,7 @@ public class NetworkOptionsDialog extends javax.swing.JDialog {
             }
         });
 
-        labHost.setText("Host:");
+        labHost.setText(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.labHost.text")); // NOI18N
 
         txtHost.setMinimumSize(new java.awt.Dimension(100, 27));
 
@@ -71,9 +71,9 @@ public class NetworkOptionsDialog extends javax.swing.JDialog {
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, chkUseProxy, org.jdesktop.beansbinding.ELProperty.create("${selected}"), chkPort, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
-        labPort.setText("Port:");
+        labPort.setText(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.labPort.text")); // NOI18N
 
-        chkUseProxy.setText("Proxy benutzen");
+        chkUseProxy.setText(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.chkUseProxy.text")); // NOI18N
         chkUseProxy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chkUseProxyActionPerformed(evt);
@@ -111,12 +111,12 @@ public class NetworkOptionsDialog extends javax.swing.JDialog {
                     .addComponent(txtHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chkPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(labPort))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
-        tabOptions.addTab("Proxy-Einstellungen", panProxy);
+        tabOptions.addTab(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.panProxy.tabTitle"), panProxy); // NOI18N
 
-        butOk.setText("OK");
+        butOk.setText(org.openide.util.NbBundle.getMessage(NetworkOptionsDialog.class, "NetworkOptionsDialog.butOK.text")); // NOI18N
         butOk.setPreferredSize(new java.awt.Dimension(50, 29));
         butOk.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

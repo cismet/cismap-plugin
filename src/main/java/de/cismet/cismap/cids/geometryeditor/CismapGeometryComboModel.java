@@ -23,7 +23,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
 
     public CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor editor, Feature currentObjectFeature) {        
         this.editor = editor;
-        log.debug("xxxlaa editor (con): "+editor);
+        log.debug("xxxlaa editor (con): "+editor);//NOI18N
         this.currentObjectFeature = currentObjectFeature;
         refresh();
     }
@@ -111,12 +111,12 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     }
 
     public void refresh() {
-        log.debug("xxxlaaa refreshing: "+editor.getCismap());
+        log.debug("xxxlaaa refreshing: "+editor.getCismap());//NOI18N
         newFeaturesInMap = getAllNewFeatures();
         try {
             this.fireContentsChanged(this, 0, getSize() - 1);
         } catch (Throwable t) {
-            log.error("Fehler in refresh()", t);
+            log.error("Error in refresh()", t);//NOI18N
         }
     }
 
@@ -133,9 +133,9 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
             }
 
         } else {
-            log.error("cismap not found. No content in the editor.");
+            log.error("cismap not found. No content in the editor.");//NOI18N
         }
-        log.debug("getAllNewFeatures "+allNewFeatures,new CurrentStackTrace());
+        log.debug("getAllNewFeatures "+allNewFeatures,new CurrentStackTrace());//NOI18N
         return allNewFeatures;
     }
 

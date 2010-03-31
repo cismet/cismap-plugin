@@ -17,6 +17,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.tools.StaticCidsUtilities;
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.navigatorplugin.CidsFeature;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.lang.reflect.Field;
@@ -27,7 +28,7 @@ import javax.swing.JPanel;
  *
  * @author hell
  */
-public abstract class CustomCidsFeatureRenderer extends JPanel implements FeatureRenderer {
+public abstract class CustomCidsFeatureRenderer extends JPanel implements SubFeatureAwareFeatureRenderer {
 
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     protected MetaObject metaObject;
@@ -85,7 +86,7 @@ public abstract class CustomCidsFeatureRenderer extends JPanel implements Featur
                         Object value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, metaObject);
                         f.set(this, value);
                     } catch (Exception e) {
-                        log.warn("Fehler beim Zuweisen im Renderer", e);
+                        log.warn("Fehler beim Zuweisen im Renderer", e);//NOI18N
                     }
                 }
 //            else if (f.isAnnotationPresent(CidsRendererTitle.class)){
@@ -98,7 +99,7 @@ public abstract class CustomCidsFeatureRenderer extends JPanel implements Featur
             }
             assign();
         } catch (Throwable t) {
-            log.fatal("Fehler in refrehhValues()", t);
+            log.fatal("Error in refrehhValues()", t);//NOI18N
         }
     }
 
@@ -109,6 +110,37 @@ public abstract class CustomCidsFeatureRenderer extends JPanel implements Featur
     public Refreshable getRefreshable() {
         return refreshable;
     }
+
+    @Override
+    public Paint getFillingStyle(CidsFeature subFeature) {
+        return getFillingStyle();
+    }
+
+    @Override
+    public JComponent getInfoComponent(Refreshable refresh, CidsFeature subFeature) {
+        return getInfoComponent(refresh);
+    }
+
+    @Override
+    public Paint getLinePaint(CidsFeature subFeature) {
+        return getLinePaint();
+    }
+
+    @Override
+    public Stroke getLineStyle(CidsFeature subFeature) {
+        return getLineStyle();
+    }
+
+    @Override
+    public FeatureAnnotationSymbol getPointSymbol(CidsFeature subFeature) {
+        return getPointSymbol();
+    }
+
+    @Override
+    public float getTransparency(CidsFeature subFeature) {
+        return getTransparency();
+    }
+
 
 }
 

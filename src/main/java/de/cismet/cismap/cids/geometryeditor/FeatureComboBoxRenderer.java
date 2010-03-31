@@ -54,8 +54,8 @@ import javax.swing.UIManager;
 public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements ListCellRenderer{
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     
-    Color background=UIManager.getDefaults().getColor("ComboBox.background");
-    Color selectedBackground=UIManager.getDefaults().getColor("ComboBox.selectionBackground");
+    Color background=UIManager.getDefaults().getColor("ComboBox.background");//NOI18N
+    Color selectedBackground=UIManager.getDefaults().getColor("ComboBox.selectionBackground");//NOI18N
     
     /** Creates a new instance of FeatureComboBoxRenderer */
     public FeatureComboBoxRenderer() {
@@ -66,7 +66,7 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
         try {
             if (value!=null) {
                 if (value instanceof CidsFeature&&((CidsFeature)value).getGeometry()!=null) {
-                    setText("momentan zugeordnete Geometrie ("+((CidsFeature)value).getGeometry().getGeometryType()+")");
+                    setText("currently assigned Geometrie ("+((CidsFeature)value).getGeometry().getGeometryType()+")");//NOI18N
                 }
                 else if (value instanceof XStyledFeature&&((XStyledFeature)value).getGeometry()!=null) {
                     setText(((XStyledFeature)value).getName());
@@ -82,20 +82,20 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
                         clonePf.removeAllChildren();
                     }
                     
-                    setToolTipText("@@@@"+getText());
+                    setToolTipText("@@@@"+getText());//NOI18N
                     //i=clonePf.toImage(100,55,null);
                     
                 } else {
-                    setText(value.getClass()+":"+value.toString());
+                    setText(value.getClass()+":"+value.toString());//NOI18N
                     setIcon(null);
                 }
             } else {
-                setText("keine Geometrie zugeordnet");
+                setText("no geometry assigned");//NOI18N
             }
         } catch (Throwable t) {
-            log.error("Fehler im Renderer der ComboBox",t);
+            log.error("Error in the renderer of the ComboBox",t);//NOI18N
             
-            setText("--->value:"+((Feature)value).getGeometry());
+            setText("--->value:"+((Feature)value).getGeometry());//NOI18N
         }
         return this;
         

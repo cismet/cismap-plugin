@@ -43,7 +43,7 @@ public class DefaultMetaTreeNodeVisualizationServiceForNavigator implements Defa
 
 
     private CismapPlugin getPlugin(){
-        Object o=PluginRegistry.getRegistry().getPlugin("cismap");
+        Object o=PluginRegistry.getRegistry().getPlugin("cismap");//NOI18N
         return (CismapPlugin)o;
     }
 }

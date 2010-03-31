@@ -32,11 +32,17 @@ import com.vividsolutions.jts.geom.Geometry;
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
+import de.cismet.cismap.commons.features.DefaultFeatureCollection;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
+import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.FeatureGroups;
+import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
+import de.cismet.cismap.commons.gui.ToolbarComponentsProvider;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
 import de.cismet.cismap.commons.gui.capabilitywidget.CapabilityWidget;
 import de.cismet.cismap.commons.gui.featurecontrolwidget.FeatureControl;
@@ -48,7 +54,9 @@ import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 //import de.cismet.cismap.commons.gui.overviewwidget.OverviewWidget;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
-import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.printing.Scale;
 import de.cismet.cismap.commons.gui.statusbar.StatusBar;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -68,9 +76,11 @@ import de.cismet.extensions.timeasy.TimEasyListener;
 import de.cismet.extensions.timeasy.TimEasyPureNewFeature;
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
+import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
+import de.cismet.tools.collections.TypeSafeCollections;
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.ConfigurationManager;
 import de.cismet.tools.groovysupport.GroovierConsole;
@@ -84,7 +94,6 @@ import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
 import de.cismet.tools.gui.log4jquickconfig.Log4JQuickConfig;
-import edu.umd.cs.piccolo.util.PBounds;
 import java.applet.AppletContext;
 
 import java.awt.BorderLayout;
@@ -109,16 +118,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -137,6 +145,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.RepaintManager;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -163,6 +172,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -191,54 +201,371 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     //private Viewport viewport;
     //private HashMap<View,DockingState> dockingStates=new HashMap<View,DockingState>();
     private RootWindow rootWindow;
-    private StringViewMap viewMap = new StringViewMap();
-    private HashMap<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
+    private final StringViewMap viewMap = new StringViewMap();
+    private final Map<String, JMenuItem> viewMenuMap = TypeSafeCollections.newHashMap();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
     private ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
-    private HashMap<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
+    private final Map<String, PluginMethod> pluginMethods = TypeSafeCollections.newHashMap();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
-    private ArrayList<JMenuItem> menues = new ArrayList<JMenuItem>();
-    private HashMap<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
-    private HashMap<CidsFeature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<CidsFeature, DefaultMetaTreeNode>();
-    private String newGeometryMode = CreateGeometryListener.LINESTRING;
-    private WFSFormFactory wfsFormFactory = WFSFormFactory.getInstance(mapC);
-    private Set<View> wfsFormViews = new HashSet<View>();
-    private Vector<View> wfs = new Vector<View>();
+    private final List<JMenuItem> menues = TypeSafeCollections.newArrayList();
+    private final Map<DefaultMetaTreeNode, CidsFeature> featuresInMap = TypeSafeCollections.newHashMap();
+    private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = TypeSafeCollections.newHashMap();
+    private String newGeometryMode = CreateNewGeometryListener.LINESTRING;
+    private WFSFormFactory wfsFormFactory;
+    private final Set<View> wfsFormViews = TypeSafeCollections.newHashSet();
+    private final Vector<View> wfs = TypeSafeCollections.newVector();
     private DockingWindow[] wfsViews;
     private DockingWindow[] legendTab = new DockingWindow[4];
     private ClipboardWaitDialog clipboarder;
     private PluginContext context;
     private boolean plugin = false;
     //private HashMap<String,View> viewsHM=new HashMap<String,View>(8);
-    private String home = System.getProperty("user.home");
-    private String fs = System.getProperty("file.separator");
-    private String standaloneLayoutName = "cismap.layout";
-    private String pluginLayoutName = "plugin.layout";
+    private String home = System.getProperty("user.home");//NOI18N
+    private String fs = System.getProperty("file.separator");//NOI18N
+    private String standaloneLayoutName = "cismap.layout";//NOI18N
+    private String pluginLayoutName = "plugin.layout";//NOI18N
     private ShowObjectsWaitDialog showObjectsWaitDialog;
-    private String cismapDirectory = home + fs + ".cismap";
-    private javax.swing.ImageIcon miniBack = new javax.swing.ImageIcon(getClass().getResource("/images/miniBack.png"));
-    private javax.swing.ImageIcon miniForward = new javax.swing.ImageIcon(getClass().getResource("/images/miniForward.png"));
-    private javax.swing.ImageIcon current = new javax.swing.ImageIcon(getClass().getResource("/images/current.png"));
-    private javax.swing.ImageIcon logo = new javax.swing.ImageIcon(getClass().getResource("/images/cismetlogo16.png"));
+    private String cismapDirectory = home + fs + ".cismap";//NOI18N
+    private javax.swing.ImageIcon miniBack = new javax.swing.ImageIcon(getClass().getResource("/images/miniBack.png"));//NOI18N
+    private javax.swing.ImageIcon miniForward = new javax.swing.ImageIcon(getClass().getResource("/images/miniForward.png"));//NOI18N
+    private javax.swing.ImageIcon current = new javax.swing.ImageIcon(getClass().getResource("/images/current.png"));//NOI18N
+    private javax.swing.ImageIcon logo = new javax.swing.ImageIcon(getClass().getResource("/images/cismetlogo16.png"));//NOI18N
     private AppletContext appletContext;
     private boolean isInit = true;
     private String helpUrl;
     private String newsUrl;
-    private final static String VERSION = "cismapPlugin.jar Version:2 ($Date: 2009-09-04 15:36:19 $(+1) $Revision: 1.1.1.1.2.1 $";
+    private final static String VERSION = "cismapPlugin.jar Version:2 ($Date: 2009-09-04 15:36:19 $(+1) $Revision: 1.1.1.1.2.1 $";//NOI18N
     private AboutDialog about;
     int httpInterfacePort = 9098;
     boolean nodeSelectionEventBlocker = false;
     boolean featureCollectionEventBlocker = false;
-    DataFlavor fromCapabilityWidget = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "SelectionAndCapabilities");
-    DataFlavor fromNavigatorNode = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + DefaultMetaTreeNode.class.getName(), "a DefaultMetaTreeNode");
-    DataFlavor fromNavigatorCollection = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + java.util.Collection.class.getName(), "a java.util.Collection of Sirius.navigator.types.treenode.DefaultMetaTreeNode objects");
+    DataFlavor fromCapabilityWidget = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "SelectionAndCapabilities");//NOI18N
+    DataFlavor fromNavigatorNode = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + DefaultMetaTreeNode.class.getName(), "a DefaultMetaTreeNode");//NOI18N
+    DataFlavor fromNavigatorCollection = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + java.util.Collection.class.getName(), "a java.util.Collection of Sirius.navigator.types.treenode.DefaultMetaTreeNode objects");//NOI18N
     private OverviewComponent overviewComponent = null;
     private Dimension oldWindowDimension = new Dimension(-1, -1);
     private int oldWindowPositionX = -1;
     private int oldWindowPositionY = -1;
-    private String dirExtension = "";
+    private String dirExtension = "";//NOI18N
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
+    private Action searchMenuSelectedAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchMenuSelectedAction");//NOI18N
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    PureNewFeature lastGeometry = searchListener.getLastSearchFeature();
+                    if (lastGeometry == null) {
+                        mniSearchShowLastFeature.setIcon(null);
+                        mniSearchShowLastFeature.setEnabled(false);
+                        mniSearchRedo.setIcon(null);
+                        mniSearchRedo.setEnabled(false);
+                        mniSearchBuffer.setEnabled(false);
+                    } else {
+                        switch (lastGeometry.getGeometryType()) {
+                            case ELLIPSE:
+                                mniSearchRedo.setIcon(mniSearchEllipse.getIcon());
+                                break;
+                            case LINESTRING:
+                                mniSearchRedo.setIcon(mniSearchPolyline.getIcon());
+                                break;
+                            case POLYGON:
+                                mniSearchRedo.setIcon(mniSearchPolygon.getIcon());
+                                break;
+                            case RECTANGLE:
+                                mniSearchRedo.setIcon(mniSearchRectangle.getIcon());
+                                break;
+                        }
+                        mniSearchShowLastFeature.setIcon(mniSearchRedo.getIcon());
+
+                        mniSearchRedo.setEnabled(true);
+                        mniSearchBuffer.setEnabled(true);
+                        mniSearchShowLastFeature.setEnabled(true);
+                    }
+
+                    // kopieren nach popupmenu im grünen M
+                    mniSearchRectangle1.setSelected(mniSearchRectangle.isSelected());
+                    mniSearchPolygon1.setSelected(mniSearchPolygon.isSelected());
+                    mniSearchEllipse1.setSelected(mniSearchEllipse.isSelected());
+                    mniSearchPolyline1.setSelected(mniSearchPolyline.isSelected());
+                    mniSearchRedo1.setIcon(mniSearchRedo.getIcon());
+                    mniSearchRedo1.setEnabled(mniSearchRedo.isEnabled());
+                    mniSearchBuffer1.setEnabled(mniSearchBuffer.isEnabled());
+                    mniSearchShowLastFeature1.setIcon(mniSearchShowLastFeature.getIcon());
+                    mniSearchShowLastFeature1.setEnabled(mniSearchShowLastFeature.isEnabled());
+
+//                    for (int index = 0; index < menSearch.getMenuComponentCount(); index++) {
+//                        Component component = popMenSearch.getComponent(index);
+//                        if (component instanceof JRadioButtonMenuItem) {
+//                            ((JRadioButtonMenuItem)component).setSelected(((JRadioButtonMenuItem)menSearch.getMenuComponent(index)).isSelected());
+//                        } else if (component instanceof JCheckBoxMenuItem) {
+//                            ((JCheckBoxMenuItem)component).setSelected(((JCheckBoxMenuItem)menSearch.getMenuComponent(index)).isSelected());
+//                        }
+//                    }
+
+                }
+            });
+        }
+    };
+    private Action searchAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchAction");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            if (mniSearchRectangle.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.RECTANGLE);
+                            } else if (mniSearchPolygon.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.POLYGON);
+                            } else if (mniSearchEllipse.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.ELLIPSE);
+                            } else if (mniSearchPolyline.isSelected()) {
+                                ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.LINESTRING);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchRectangleAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchRectangleAction");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchRectangle.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png")));//NOI18N
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.RECTANGLE);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchPolygonAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchPolygonAction");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchPolygon.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolygon.png")));//NOI18N
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.POLYGON);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchEllipseAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchEllipseAction");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchEllipse.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchEllipse.png")));//NOI18N
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.ELLIPSE);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchPolylineAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchPolylineAction");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    mniSearchPolyline.setSelected(true);
+                    cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolyline.png")));//NOI18N
+
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                            ((CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON)).setMode(CreateSearchGeometryListener.LINESTRING);
+                        }
+                    });
+                }
+            });
+        }
+    };
+    private Action searchRedoAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("redoSearchAction");//NOI18N
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    searchListener.redoLastSearch();
+                }
+            });
+        }
+    };
+    private Action searchShowLastFeatureAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("searchShowLastFeatureAction");//NOI18N
+                    CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                    searchListener.showLastFeature();
+                }
+            });
+        }
+    };
+    private Action searchBufferAction = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    log.debug("bufferSearchGeometry");//NOI18N
+                    cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            String s = (String) JOptionPane.showInputDialog(
+                                    null,
+                                    "Geben Sie den Abstand des zu erzeugenden\n"    //NOI18N
+                                    + "Puffers der letzten Suchgeometrie an.",      //NOI18N
+                                    "Puffer",                                       //NOI18N
+                                    JOptionPane.PLAIN_MESSAGE,
+                                    null,
+                                    null,
+                                    "");                                            //NOI18N
+                            log.debug(s);
+
+                            // , statt . ebenfalls erlauben
+                            if (s.matches("\\d*,\\d*")) {//NOI18N
+                                s.replace(",", ".");                                //NOI18N
+                            }
+
+                            try {
+                                float buffer = Float.valueOf(s);
+
+                                CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                                PureNewFeature lastFeature = searchListener.getLastSearchFeature();
+
+                                if (lastFeature != null) {
+                                    // Geometrie-Daten holen
+                                    Geometry geom = lastFeature.getGeometry();
+                                    // Puffer-Geometrie holen
+                                    Geometry bufferGeom = geom.buffer(buffer);
+                                    // und setzen
+                                    lastFeature.setGeometry(bufferGeom);
+
+                                    // Geometrie ist jetzt eine Polygon (keine Linie, Ellipse, oder ähnliches mehr)
+                                    lastFeature.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+
+                                    for (Object feature : mapC.getFeatureCollection().getAllFeatures()) {
+
+                                        PFeature sel = (PFeature) mapC.getPFeatureHM().get(feature);
+                                        if (sel.getFeature().equals(lastFeature)) {
+                                            // Koordinaten der Puffer-Geometrie als Feature-Koordinaten setzen
+                                            sel.setCoordArr(bufferGeom.getCoordinates());
+
+                                            // refresh
+                                            sel.syncGeometry();
+                                            Vector v = new Vector();
+                                            v.add(sel.getFeature());
+                                            ((DefaultFeatureCollection) mapC.getFeatureCollection()).fireFeaturesChanged(v);
+                                        }
+                                    }
+
+                                    searchListener.search(lastFeature);
+                                }
+
+//                for (Object feature : mapC.getFeatureCollection().getSelectedFeatures()) {
+//                    PFeature sel = (PFeature)mapC.getPFeatureHM().get(feature);
+//                    if (sel.getFeature() instanceof SearchFeature) {
+//                        // Geometrie-Daten holen
+//                        Geometry geom = ((SearchFeature)sel.getFeature()).getGeometry();
+//                        // Puffer-Geometrie holen
+//                        Geometry bufferGeom = geom.buffer(buffer);
+//
+//                        // Koordinaten der Puffer-Geometrie als Feature-Koordinaten setzen
+//                        sel.setCoordArr(bufferGeom.getCoordinates());
+//
+//                        // Geometrie ist jetzt eine Polygon (keine Linie, Ellipse, oder ähnliches mehr)
+//                        ((PureNewFeature)sel.getFeature()).setGeometryType(PureNewFeature.geomTypes.POLYGON);
+//
+//                        // refresh
+//                        sel.syncGeometry();
+//                        Vector v = new Vector();
+//                        v.add(sel.getFeature());
+//                        ((DefaultFeatureCollection) mapC.getFeatureCollection()).fireFeaturesChanged(v);
+//                    }
+//                }
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(null, "The given value was not a floating point value.!", "Error", JOptionPane.ERROR_MESSAGE);//NOI18N
+                            } catch (Exception ex) {
+                                log.debug("", ex);//NOI18N
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
 
     public CismapPlugin() {
         this(null);
@@ -246,25 +573,25 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
     public CismapPlugin(final PluginContext context) {
         try {
-            String l = System.getProperty("user.language");
-            String c = System.getProperty("user.country");
-            System.out.println("Locale=" + l + "_" + c);
+            String l = System.getProperty("user.language");//NOI18N
+            String c = System.getProperty("user.country");//NOI18N
+            System.out.println("Locale=" + l + "_" + c);//NOI18N
             Locale.setDefault(new Locale(l, c));
         } catch (Exception e) {
-            log.warn("Error while changing the user language and country");
+            log.warn("Error while changing the user language and country");//NOI18N
         }
 
         try {
-            String ext = System.getProperty("directory.extension");
+            String ext = System.getProperty("directory.extension");//NOI18N
 
-            System.out.println("SystemdirExtension=:" + ext);
+            System.out.println("SystemdirExtension=:" + ext);//NOI18N
 
             if (ext != null) {
                 dirExtension = ext;
                 cismapDirectory += ext;
             }
         } catch (Exception e) {
-            log.warn("Error while adding DirectoryExtension");
+            log.warn("Error while adding DirectoryExtension");//NOI18N
         }
 
         CismapBroker.getInstance().setCismapFolderPath(cismapDirectory);
@@ -277,22 +604,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         try {
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(0, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin_initialisieren"));
+                this.context.getEnvironment().getProgressObserver().setProgress(0, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).initializingCismapPlugin"));//NOI18N
             }
             if (!plugin) {
                 try {
-                    org.apache.log4j.PropertyConfigurator.configure(getClass().getResource("/cismap.log4j.properties"));
-                    if (StaticDebuggingTools.checkHomeForFile("cismetDebuggingInitEventDispatchThreadHangMonitor")) {
+                    org.apache.log4j.PropertyConfigurator.configure(getClass().getResource("/cismap.log4j.properties"));//NOI18N
+                    if (StaticDebuggingTools.checkHomeForFile("cismetDebuggingInitEventDispatchThreadHangMonitor")) {//NOI18N
                         EventDispatchThreadHangMonitor.initMonitoring();
                     }
-                    if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) {
+                    if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) {//NOI18N
                         RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
                     }
 
 
 
                 } catch (Exception e) {
-                    System.err.println(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.LOG4J_ist_nicht_richtig_konfiguriert"));
+                    System.err.println("LOG4J is not configured propperly\n\n");//NOI18N
                     e.printStackTrace();
                 }
 
@@ -310,14 +637,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 // UIManager.setLookAndFeel(new PlasticLookAndFeel());
                 //javax.swing.UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
             } catch (Exception e) {
-                log.warn(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Einstellen_des_Lock_Feels"), e);
+                log.warn("Error while creating Look&Feel's!", e);//NOI18N
             }
 
             clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this), true);
-            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), false);
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(100, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Erzeugen_der_Widgets"));
+                this.context.getEnvironment().getProgressObserver().setProgress(100, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).createWidgets"));//NOI18N
             }
             //Erzeugen der Widgets
             serverInfo = new ServerInfo();
@@ -335,8 +662,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             debugPanel = new DebugPanel();
             debugPanel.setPCanvas(mapC);
             groovyConsole = new GroovierConsole();
-            groovyConsole.setVariable("map", mapC);
-
+            groovyConsole.setVariable("map", mapC);//NOI18N
+            wfsFormFactory = WFSFormFactory.getInstance(mapC);
             overviewComponent = new OverviewComponent();
             overviewComponent.setMasterMap(mapC);
 
@@ -354,36 +681,40 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 //            getRootPane().getActionMap().put("UPSIDEDOWN", upsidedownAction);
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(200, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Oberflaeche_initialisieren"));
+                this.context.getEnvironment().getProgressObserver().setProgress(200, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).initializingGUI"));//NOI18N
             }
             try {
                 initComponents();
             } catch (Exception e) {
-                log.fatal("Fehler in initComponents. Das wird nix.", e);
+                log.fatal("Error in initComponents.", e);//NOI18N
             }
 
             if (!plugin) {
+                menSearch.setVisible(false);
                 cmdPluginSearch.setVisible(false);
                 KeyStroke configLoggerKeyStroke = KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK);
                 Action configAction = new AbstractAction() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         java.awt.EventQueue.invokeLater(new Runnable() {
 
+                            @Override
                             public void run() {
                                 Log4JQuickConfig.getSingletonInstance().setVisible(true);
                             }
                         });
                     }
                 };
-                getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(configLoggerKeyStroke, "CONFIGLOGGING");
-                getRootPane().getActionMap().put("CONFIGLOGGING", configAction);
+                getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(configLoggerKeyStroke, "CONFIGLOGGING");//NOI18N
+                getRootPane().getActionMap().put("CONFIGLOGGING", configAction);//NOI18N
             }
 
             //Menu
             menues.add(menFile);
             menues.add(menEdit);
             menues.add(menHistory);
+            menues.add(menSearch);
             menues.add(menBookmarks);
             menues.add(menExtras);
             menues.add(menWindows);
@@ -391,12 +722,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
             panStatus.add(statusBar, BorderLayout.CENTER);
 
-            tlbMain.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
+            tlbMain.putClientProperty("JToolBar.isRollover", Boolean.TRUE);//NOI18N
             tlbMain.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
             tlbMain.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(300, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Widgets_verbinden"));
+                this.context.getEnvironment().getProgressObserver().setProgress(300, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).connectingWidgets"));//NOI18N
             }
 
             //Wire the components
@@ -431,54 +762,54 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             String cismapconfig = null;
             String fallBackConfig = null;
             try {
-                String prefix = "cismapconfig:";
+                String prefix = "cismapconfig:";//NOI18N
                 String username = Sirius.navigator.connection.SessionManager.getSession().getUser().getName();
                 String groupname = Sirius.navigator.connection.SessionManager.getSession().getUser().getUserGroup().getName();
                 String domainname = Sirius.navigator.connection.SessionManager.getSession().getUser().getUserGroup().getDomain();
 
                 //First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment().getParameter(prefix + username + "@" + groupname + "@" + domainname);
+                    cismapconfig = context.getEnvironment().getParameter(prefix + username + "@" + groupname + "@" + domainname);//NOI18N
                 }
                 //Second try: cismapconfig:*@usergroup@domainserver
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment().getParameter(prefix + "*" + "@" + groupname + "@" + domainname);
+                    cismapconfig = context.getEnvironment().getParameter(prefix + "*" + "@" + groupname + "@" + domainname);//NOI18N
                 }
-                //Third try: cismapconfig:*@*@domainserver
+                //Third try: cismapconfig:*@*@domainserver//NOI18N
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment().getParameter(prefix + "*" + "@" + "*" + "@" + domainname);
+                    cismapconfig = context.getEnvironment().getParameter(prefix + "*" + "@" + "*" + "@" + domainname);//NOI18N
                 }
                 //Default from pluginXML
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment().getParameter(prefix + "default");
+                    cismapconfig = context.getEnvironment().getParameter(prefix + "default");//NOI18N
                 }
-                fallBackConfig = context.getEnvironment().getParameter(prefix + "default");
+                fallBackConfig = context.getEnvironment().getParameter(prefix + "default");//NOI18N
             } catch (Throwable t) {
-                log.info("cismap started standalone", t);
+                log.info("cismap started standalone", t);//NOI18N
             }
             //Default
             if (cismapconfig == null) {
-                cismapconfig = "defaultCismapProperties.xml";
+                cismapconfig = "defaultCismapProperties.xml";//NOI18N
 
             }
             if (fallBackConfig == null) {
-                fallBackConfig = "defaultCismapProperties.xml";
+                fallBackConfig = "defaultCismapProperties.xml";//NOI18N
 
             }
 
-            log.info("ServerConfigFile=" + cismapconfig);
+            log.info("ServerConfigFile=" + cismapconfig);//NOI18N
             configurationManager.setDefaultFileName(cismapconfig);
             configurationManager.setFallBackFileName(fallBackConfig);
 
             if (!plugin) {
-                configurationManager.setFileName("configuration.xml");
+                configurationManager.setFileName("configuration.xml");//NOI18N
 
             } else {
-                configurationManager.setFileName("configurationPlugin.xml");
+                configurationManager.setFileName("configurationPlugin.xml");//NOI18N
                 configurationManager.addConfigurable(metaSearch);
             }
-            configurationManager.setClassPathFolder("/");
-            configurationManager.setFolder(".cismap" + dirExtension);
+            configurationManager.setClassPathFolder("/");//NOI18N
+            configurationManager.setFolder(".cismap" + dirExtension);//NOI18N
             configurationManager.addConfigurable(this);
 
             configurationManager.addConfigurable(capabilities);
@@ -490,71 +821,81 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             configurationManager.addConfigurable(OptionsClient.getInstance());
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(400, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Dockingsystem_initialisieren"));
+                this.context.getEnvironment().getProgressObserver().setProgress(400, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).initializingDockingsystem"));//NOI18N
             }
 
             // Flexdock stuff
             //// DockingManager.setFloatingEnabled(false);
-            Icon icoLayers = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/layers.png"));
-            Icon icoServer = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/server.png"));
-            Icon icoServerInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/serverInfo.png"));
-            Icon icoLayerInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/layerInfo.png"));
-            Icon icoFeatureInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/featureinfowidget/res/featureInfo16.png"));
-            Icon icoLegend = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png"));
-            Icon icoClassSelection = new javax.swing.ImageIcon(getClass().getResource("/images/classSelection.png"));
-            Icon icoMap = new javax.swing.ImageIcon(getClass().getResource("/images/map.png"));
-            Icon icoFeatureControl = new javax.swing.ImageIcon(getClass().getResource("/images/objects.png"));
+            Icon icoLayers = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/layers.png"));//NOI18N
+            Icon icoServer = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/server.png"));//NOI18N
+            Icon icoServerInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/serverInfo.png"));//NOI18N
+            Icon icoLayerInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/layerInfo.png"));//NOI18N
+            Icon icoFeatureInfo = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/featureinfowidget/res/featureInfo16.png"));//NOI18N
+            Icon icoLegend = new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png"));//NOI18N
+            Icon icoClassSelection = new javax.swing.ImageIcon(getClass().getResource("/images/classSelection.png"));//NOI18N
+            Icon icoMap = new javax.swing.ImageIcon(getClass().getResource("/images/map.png"));//NOI18N
+            Icon icoFeatureControl = new javax.swing.ImageIcon(getClass().getResource("/images/objects.png"));//NOI18N
 
             //-------------------------InfoNode initialization-------------------------------------------//
             rootWindow = DockingUtil.createRootWindow(viewMap, true);
 
 
-            vMap = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Karte"), Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), mapC);
-            viewMap.addView("map", vMap);
-            viewMenuMap.put("map", mniMap);
+            vMap = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vMap.title"), //NOI18N
+                    Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), mapC);
+            viewMap.addView("map", vMap);//NOI18N
+            viewMenuMap.put("map", mniMap);//NOI18N
 
-            vLayers = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Layer"), Static2DTools.borderIcon(icoLayers, 0, 3, 0, 1), activeLayers);
-            viewMap.addView("activeLayers", vLayers);
-            viewMenuMap.put("activeLayers", mniLayer);
+            vLayers = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vLayer.title"), //NOI18N
+                    Static2DTools.borderIcon(icoLayers, 0, 3, 0, 1), activeLayers);
+            viewMap.addView("activeLayers", vLayers);//NOI18N
+            viewMenuMap.put("activeLayers", mniLayer);//NOI18N
 
-            vCaps = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Capabilities"), Static2DTools.borderIcon(icoServer, 0, 3, 0, 1), capabilities);
-            viewMap.addView("capabilities", vCaps);
-            viewMenuMap.put("capabilities", mniCapabilities);
+            vCaps = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vCapabilities.title"), //NOI18N
+                    Static2DTools.borderIcon(icoServer, 0, 3, 0, 1), capabilities);
+            viewMap.addView("capabilities", vCaps);//NOI18N
+            viewMenuMap.put("capabilities", mniCapabilities);//NOI18N
 
-            vServerInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Server_Info"), Static2DTools.borderIcon(icoServerInfo, 0, 3, 0, 1), serverInfo);
-            viewMap.addView("serverinfo", vServerInfo);
-            viewMenuMap.put("serverinfo", mniServerInfo);
+            vServerInfo = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vServerInfo.title"), //NOI18N
+                    Static2DTools.borderIcon(icoServerInfo, 0, 3, 0, 1), serverInfo);
+            viewMap.addView("serverinfo", vServerInfo);//NOI18N
+            viewMenuMap.put("serverinfo", mniServerInfo);//NOI18N
 
-            vOverview = new View("Overview", Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), overviewComponent);
-            viewMap.addView("overview", vOverview);
-            viewMenuMap.put("overview", mniOverview);
+            vOverview = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vOverview.title"), //NOI18N
+                    Static2DTools.borderIcon(icoMap, 0, 3, 0, 1), overviewComponent);
+            viewMap.addView("overview", vOverview);//NOI18N
+            viewMenuMap.put("overview", mniOverview);//NOI18N
             legendTab[2] = vOverview;
 
-            vLayerInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Layerinfo"), Static2DTools.borderIcon(icoLayerInfo, 0, 3, 0, 1), layerInfo);
-            viewMap.addView("layerinfo", vLayerInfo);
-            viewMenuMap.put("layerinfo", mniLayerInfo);
+            vLayerInfo = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vLayerInfo.title"), //NOI18N
+                    Static2DTools.borderIcon(icoLayerInfo, 0, 3, 0, 1), layerInfo);
+            viewMap.addView("layerinfo", vLayerInfo);//NOI18N
+            viewMenuMap.put("layerinfo", mniLayerInfo);//NOI18N
             legendTab[3] = vLayerInfo;
 
-            vLegend = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Legende"), Static2DTools.borderIcon(icoLegend, 0, 3, 0, 1), legend);
-            viewMap.addView("legend", vLegend);
-            viewMenuMap.put("legend", mniLegend);
+            vLegend = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vLegende.title"), //NOI18N
+                    Static2DTools.borderIcon(icoLegend, 0, 3, 0, 1), legend);
+            viewMap.addView("legend", vLegend);//NOI18N
+            viewMenuMap.put("legend", mniLegend);//NOI18N
             if (plugin) {
-                vMetaSearch = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Suchauswahl"), Static2DTools.borderIcon(icoClassSelection, 0, 3, 0, 1), metaSearch);
-                viewMap.addView("metaSearch", vMetaSearch);
+                vMetaSearch = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vMetaSearch.title"), //NOI18N
+                        Static2DTools.borderIcon(icoClassSelection, 0, 3, 0, 1), metaSearch);
+                viewMap.addView("metaSearch", vMetaSearch);//NOI18N
                 legendTab[1] = vMetaSearch;
             } else {
                 legendTab[1] = vLegend;
             }
 
             mniClassTree.setVisible(plugin);
-            viewMenuMap.put("metaSearch", mniClassTree);
-            vFeatureInfo = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Sachdatenabfrage"), Static2DTools.borderIcon(icoFeatureInfo, 0, 3, 0, 1), featureInfo);
-            viewMap.addView("featureInfo", vFeatureInfo);
-            viewMenuMap.put("featureInfo", mniFeatureInfo);
+            viewMenuMap.put("metaSearch", mniClassTree);//NOI18N
+            vFeatureInfo = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vFeatureInfo.title"), //NOI18N
+                    Static2DTools.borderIcon(icoFeatureInfo, 0, 3, 0, 1), featureInfo);
+            viewMap.addView("featureInfo", vFeatureInfo);//NOI18N
+            viewMenuMap.put("featureInfo", mniFeatureInfo);//NOI18N
 
-            vFeatureControl = new View(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Objekte"), Static2DTools.borderIcon(icoFeatureControl, 0, 3, 0, 1), featureControl);
-            viewMap.addView("featureControl", vFeatureControl);
-            viewMenuMap.put("featureControl", mniFeatureControl);
+            vFeatureControl = new View(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).vFeatureControl.title"), //NOI18N
+                    Static2DTools.borderIcon(icoFeatureControl, 0, 3, 0, 1), featureControl);
+            viewMap.addView("featureControl", vFeatureControl);//NOI18N
+            viewMenuMap.put("featureControl", mniFeatureControl);//NOI18N
 
             //vDebug=createView("debug","DebugPanel",debugPanel);
             //vGroovy=createView("groovy","Groovy Console",groovyConsole);
@@ -562,14 +903,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             configurationManager.configure(wfsFormFactory);
             //WFSForms
             Set<String> keySet = wfsFormFactory.getForms().keySet();
-            JMenu wfsFormsMenu = new JMenu(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("wfsFormMenuTitle"));
+            JMenu wfsFormsMenu = new JMenu(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).wfsFormMenu.title"));//NOI18N
             for (String key : keySet) {
                 //View
                 final AbstractWFSForm form = wfsFormFactory.getForms().get(key);
                 form.setMappingComponent(mapC);
-                log.debug("WFSForms: key,form" + key + "," + form);
+                log.debug("WFSForms: key,form" + key + "," + form);//NOI18N
                 final View formView = new View(form.getTitle(), Static2DTools.borderIcon(form.getIcon(), 0, 3, 0, 1), form);
-                log.debug("WFSForms: formView" + formView);
+                log.debug("WFSForms: formView" + formView);//NOI18N
                 viewMap.addView(form.getId(), formView);
                 wfsFormViews.add(formView);
                 wfs.add(formView);
@@ -578,8 +919,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 menuItem.setIcon(form.getIcon());
                 menuItem.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
-                        log.debug("showOrHideView:" + formView);
+                        log.debug("showOrHideView:" + formView);//NOI18N
                         showOrHideView(formView);
                     }
                 });
@@ -624,6 +966,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (plugin) {
                             //DockingManager.setDefaultPersistenceKey("pluginPerspectives.xml");
@@ -647,11 +990,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             }
 
             if (plugin && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                this.context.getEnvironment().getProgressObserver().setProgress(500, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Einstellungen_laden"));
+                this.context.getEnvironment().getProgressObserver().setProgress(500, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).loadPreferences"));//NOI18N
             }
         } catch (Exception ex) {
-            log.fatal("Fehler im Constructor von CismapPlugin", ex);
-            System.err.println("Fehler im Constructor von CismapPlugin");
+            log.fatal("Error in Constructor of CismapPlugin", ex);//NOI18N
+            System.err.println("Error in Constructor of CismapPlugin");//NOI18N
             ex.printStackTrace();
         }
 
@@ -663,17 +1006,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 try {
                     synchronized (blocker) {
                         if (context != null && context.getEnvironment() != null && context.getEnvironment().getProgressObserver() != null && this.context.getEnvironment().isProgressObservable()) {
-                            this.context.getEnvironment().getProgressObserver().setProgress(500, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Methoden_laden"));
+                            this.context.getEnvironment().getProgressObserver().setProgress(500, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).loadMethods"));//NOI18N
                         }
                     }
                 } catch (Exception e) {
-                    log.warn(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Keine_Progressmeldung_moeglich"), e);
+                    log.warn("No progress report available", e);//NOI18N
                 }
                 mniClose.setVisible(false);
                 pluginMethods.put(showObjectsMethod.getId(), showObjectsMethod);
                 appletContext = context.getEnvironment().getAppletContext();
                 if (context != null && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                    this.context.getEnvironment().getProgressObserver().setProgress(600, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Suchbaum_laden"));
+                    this.context.getEnvironment().getProgressObserver().setProgress(600, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).searchTree"));//NOI18N
                 }
                 this.context.getMetadata().addMetaNodeSelectionListener(new NodeChangeListener());
                 Node[] classNodes = Sirius.navigator.connection.SessionManager.getProxy().getClassTreeNodes();
@@ -697,22 +1040,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 });
                 metaSearch.setSearchTree(sst);
                 if (context != null && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                    this.context.getEnvironment().getProgressObserver().setProgress(700, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin:_Konfiguration_laden"));
+                    this.context.getEnvironment().getProgressObserver().setProgress(700, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).loadConfiguration"));//NOI18N
                 }
 
 //                configureApp(false);
                 if (context != null && context.getEnvironment() != null && this.context.getEnvironment().isProgressObservable()) {
-                    this.context.getEnvironment().getProgressObserver().setProgress(1000, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.cismap_Plugin_fertig"));
+                    this.context.getEnvironment().getProgressObserver().setProgress(1000, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.CismapPlugin(PluginContext).cismapPluginReady"));//NOI18N
                 }
                 if (context != null && context.getEnvironment() != null && context.getEnvironment().isProgressObservable()) {
                     this.context.getEnvironment().getProgressObserver().setFinished(true);
                 }
             } catch (Throwable t) {
-                context.getLogger().fatal(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_im_Constructor_von_CismapPlugin"), t);
+                context.getLogger().fatal("Error in CismapPlugin constructor", t);//NOI18N
             }
 
             //TimEasy
-            ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setGeometryFeatureClass(TimEasyPureNewFeature.class);
+            ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setGeometryFeatureClass(TimEasyPureNewFeature.class);
             TimEasyDialog.addTimTimEasyListener(new TimEasyListener() {
 
                 public void timEasyObjectInserted(TimEasyEvent tee) {
@@ -722,7 +1065,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             });
         }
 
-        log.info("add InfoNode main component to the panMain Panel");
+        log.info("add InfoNode main component to the panMain Panel");//NOI18N
         panMain.add(rootWindow, BorderLayout.CENTER);
 
         vMap.doLayout();
@@ -742,7 +1085,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         jSeparator1.setVisible(false);
         mapC.getFeatureCollection().addFeatureCollectionListener(this);
         repaint();
-        if (!StaticDebuggingTools.checkHomeForFile("cismetTurnOffInternalWebserver")) {
+        if (!StaticDebuggingTools.checkHomeForFile("cismetTurnOffInternalWebserver")) {//NOI18N
             initHttpServer();
         }
 
@@ -758,15 +1101,76 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 //            public void componentShown(ComponentEvent e) {
 //            }
 //        });
-        log.debug("CismapPlugin als Observer anmelden");
+        log.debug("CismapPlugin als Observer anmelden");//NOI18N
         ((Observable) mapC.getMemUndo()).addObserver(CismapPlugin.this);
         ((Observable) mapC.getMemRedo()).addObserver(CismapPlugin.this);
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
         layerInfo.initDividerLocation();
-
+        initPluginToolbarComponents();
     }
 
+    private void initPluginToolbarComponents() {
+        Collection<? extends ToolbarComponentsProvider> toolbarCompProviders = Lookup.getDefault().lookupAll(ToolbarComponentsProvider.class);
+        if (toolbarCompProviders != null) {
+            for (ToolbarComponentsProvider toolbarCompProvider : toolbarCompProviders) {
+                log.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName());//NOI18N
+                Collection<ToolbarComponentDescription> componentDescriptions = toolbarCompProvider.getToolbarComponents();
+                if (componentDescriptions != null) {
+                    for (ToolbarComponentDescription componentDescription : componentDescriptions) {
+                        int insertionIndex = tlbMain.getComponentCount();
+                        String anchor = componentDescription.getAnchorComponentName();
+                        if (anchor != null) {
+                            for (int i = tlbMain.getComponentCount(); --i >= 0;) {
+                                Component currentAnchorCandidate = tlbMain.getComponent(i);
+                                if (anchor.equals(currentAnchorCandidate.getName())) {
+                                    if (ToolbarComponentsProvider.ToolbarPositionHint.BEFORE.equals(componentDescription.getPositionHint())) {
+                                        insertionIndex = i;
+                                    } else {
+                                        insertionIndex = i + 1;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        tlbMain.add(componentDescription.getComponent(), insertionIndex);
+                    }
+                }
+            }
+        }
+    }
+
+//    private JMenuItem copyMenuItem(JMenuItem from) {
+//        JMenuItem to;
+//        if (from instanceof JMenuItem) {
+//            to = new JMenuItem();
+//        } else if (from instanceof JCheckBoxMenuItem) {
+//            to = new JCheckBoxMenuItem();
+//        } else if (from instanceof JRadioButtonMenuItem) {
+//            to = new JRadioButtonMenuItem();
+//        } else {
+//            return null;
+//        }
+//        to.setText(from.getText());
+//        to.setToolTipText(from.getToolTipText());
+//        to.setIcon(from.getIcon());
+//        to.setAction(from.getAction());
+//        to.setAccelerator(from.getAccelerator());
+//        return to;
+//    }
+//
+//    private void copyMenu(JMenu from, JPopupMenu to) {
+//        for (Component fromComponent : from.getMenuComponents()) {
+//            try {
+//                to.add(copyMenuItem((JMenuItem)fromComponent));
+//            } catch (ClassCastException ex) {
+//                if (fromComponent instanceof JSeparator) {
+//                    to.addSeparator();
+//                }
+//            }
+//        }
+//        to.pack();
+//    }
     private JMenuItem getScaleMenuItem(String t, final int d) {
         JMenuItem jmi = new JMenuItem(t);
         jmi.addActionListener(new ActionListener() {
@@ -849,19 +1253,19 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 de.cismet.tools.BrowserLauncher.openURL(url);
             } else {
                 java.net.URL u = new java.net.URL(url);
-                appletContext.showDocument(u, "cismetBrowser");
+                appletContext.showDocument(u, "cismetBrowser");//NOI18N
             }
         } catch (Exception e) {
-            log.warn(java.util.ResourceBundle.getBundle("de/cismet/cismap/commons/GuiBundle").getString("FeatureInfoDisplay.log.Fehler_beim_Oeffnen_von") + url + java.util.ResourceBundle.getBundle("de/cismet/cismap/commons/GuiBundle").getString("FeatureInfoDisplay.log.Neuer_Versuch"), e);
+            log.warn("Error while opening: " + url + ". Try again", e);//NOI18N
             //Nochmal zur Sicherheit mit dem BrowserLauncher probieren
             try {
                 de.cismet.tools.BrowserLauncher.openURL(url);
             } catch (Exception e2) {
-                log.warn(java.util.ResourceBundle.getBundle("de/cismet/cismap/commons/GuiBundle").getString("FeatureInfoDisplay.log.Auch_das_2te_Mal_ging_schief.Fehler_beim_Oeffnen_von") + url + java.util.ResourceBundle.getBundle("de/cismet/cismap/commons/GuiBundle").getString("FeatureInfoDisplay.log.Letzter_Versuch"), e2);
+                log.warn("The second time failed, too. Error while trying to open: " + url + " last attempt", e2);//NOI18N
                 try {
-                    de.cismet.tools.BrowserLauncher.openURL("file://" + url);
+                    de.cismet.tools.BrowserLauncher.openURL("file://" + url);//NOI18N
                 } catch (Exception e3) {
-                    log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/commons/GuiBundle").getString("FeatureInfoDisplay.log.Auch_das_3te_Mal_ging_schief.Fehler_beim_Oeffnen_von:file://") + url, e3);
+                    log.error("3rd time fail:file://" + url, e3);//NOI18N
                 }
             }
         }
@@ -886,6 +1290,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniAddBookmark = new javax.swing.JMenuItem();
         mniBookmarkManager = new javax.swing.JMenuItem();
         mniBookmarkSidebar = new javax.swing.JMenuItem();
+        popMenSearch = new javax.swing.JPopupMenu();
+        mniSearchRectangle1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolygon1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchEllipse1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolyline1 = new javax.swing.JRadioButtonMenuItem();
+        jSeparator12 = new javax.swing.JSeparator();
+        mniSearchShowLastFeature1 = new javax.swing.JMenuItem();
+        mniSearchRedo1 = new javax.swing.JMenuItem();
+        mniSearchBuffer1 = new javax.swing.JMenuItem();
+        cmdGroupSearch = new javax.swing.ButtonGroup();
+        cmdGroupSearch1 = new javax.swing.ButtonGroup();
         panAll = new javax.swing.JPanel();
         panToolbar = new javax.swing.JPanel();
         panMain = new javax.swing.JPanel();
@@ -921,7 +1336,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         cmdZoom = new javax.swing.JToggleButton();
         cmdPan = new javax.swing.JToggleButton();
         cmdFeatureInfo = new javax.swing.JToggleButton();
-        cmdPluginSearch = new javax.swing.JToggleButton();
+        cmdPluginSearch = new JPopupMenuButton();
         cmdNewPolygon = new javax.swing.JToggleButton();
         cmdNewLinestring = new javax.swing.JToggleButton();
         cmdNewPoint = new javax.swing.JToggleButton();
@@ -968,6 +1383,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         sepBeforePos = new javax.swing.JSeparator();
         sepAfterPos = new javax.swing.JSeparator();
         mniHistorySidebar = new javax.swing.JMenuItem();
+        menSearch = new javax.swing.JMenu();
+        mniSearchRectangle = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolygon = new javax.swing.JRadioButtonMenuItem();
+        mniSearchEllipse = new javax.swing.JRadioButtonMenuItem();
+        mniSearchPolyline = new javax.swing.JRadioButtonMenuItem();
+        jSeparator8 = new javax.swing.JSeparator();
+        mniSearchShowLastFeature = new javax.swing.JMenuItem();
+        mniSearchRedo = new javax.swing.JMenuItem();
+        mniSearchBuffer = new javax.swing.JMenuItem();
         menExtras = new javax.swing.JMenu();
         mniOptions = new javax.swing.JMenuItem();
         jSeparator16 = new javax.swing.JSeparator();
@@ -993,8 +1417,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniAbout = new javax.swing.JMenuItem();
 
         mnuConfigServer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/server.png"))); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle"); // NOI18N
-        mnuConfigServer.setText(bundle.getString("CismapPlugin.mnuConfigServer.text")); // NOI18N
+        mnuConfigServer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mnuConfigServer.text")); // NOI18N
         mnuConfigServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnuConfigServerActionPerformed(evt);
@@ -1003,25 +1426,84 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         popMen.add(mnuConfigServer);
 
         menBookmarks.setMnemonic('L');
-        menBookmarks.setText(bundle.getString("CismapPlugin.menBookmarks.text")); // NOI18N
+        menBookmarks.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menBookmarks.text")); // NOI18N
 
         mniAddBookmark.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/bookmark_add.png"))); // NOI18N
-        mniAddBookmark.setText(bundle.getString("CismapPlugin.mniAddBookmark.text")); // NOI18N
+        mniAddBookmark.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAddBookmark.text")); // NOI18N
         mniAddBookmark.setEnabled(false);
         menBookmarks.add(mniAddBookmark);
 
         mniBookmarkManager.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/bookmark_folder.png"))); // NOI18N
-        mniBookmarkManager.setText(bundle.getString("CismapPlugin.mniBookmarkManager.text")); // NOI18N
+        mniBookmarkManager.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniBookmarkManager.text")); // NOI18N
         mniBookmarkManager.setEnabled(false);
         menBookmarks.add(mniBookmarkManager);
 
         mniBookmarkSidebar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/bookmark.png"))); // NOI18N
-        mniBookmarkSidebar.setText(bundle.getString("CismapPlugin.mniBookmarkSidebar.text")); // NOI18N
+        mniBookmarkSidebar.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniBookmarkSidebar.text")); // NOI18N
         mniBookmarkSidebar.setEnabled(false);
         menBookmarks.add(mniBookmarkSidebar);
 
+        popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            }
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
+            }
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                popMenSearchPopupMenuWillBecomeVisible(evt);
+            }
+        });
+
+        mniSearchRectangle1.setAction(searchRectangleAction);
+        cmdGroupSearch1.add(mniSearchRectangle1);
+        mniSearchRectangle1.setSelected(true);
+        mniSearchRectangle1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRectangle1.text")); // NOI18N
+        mniSearchRectangle1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rectangle.png"))); // NOI18N
+        mniSearchRectangle1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniSearchRectangle1ActionPerformed(evt);
+            }
+        });
+        popMenSearch.add(mniSearchRectangle1);
+
+        mniSearchPolygon1.setAction(searchPolygonAction);
+        cmdGroupSearch1.add(mniSearchPolygon1);
+        mniSearchPolygon1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolygon1.text")); // NOI18N
+        mniSearchPolygon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        popMenSearch.add(mniSearchPolygon1);
+
+        mniSearchEllipse1.setAction(searchEllipseAction);
+        cmdGroupSearch1.add(mniSearchEllipse1);
+        mniSearchEllipse1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchEllipse1.text")); // NOI18N
+        mniSearchEllipse1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ellipse.png"))); // NOI18N
+        popMenSearch.add(mniSearchEllipse1);
+
+        mniSearchPolyline1.setAction(searchPolylineAction);
+        cmdGroupSearch1.add(mniSearchPolyline1);
+        mniSearchPolyline1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolyline1.text")); // NOI18N
+        mniSearchPolyline1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
+        popMenSearch.add(mniSearchPolyline1);
+        popMenSearch.add(jSeparator12);
+
+        mniSearchShowLastFeature1.setAction(searchShowLastFeatureAction);
+        mniSearchShowLastFeature1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchShowLastFeature1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature1.text")); // NOI18N
+        mniSearchShowLastFeature1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchShowLastFeature1);
+
+        mniSearchRedo1.setAction(searchRedoAction);
+        mniSearchRedo1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchRedo1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo1.text")); // NOI18N
+        mniSearchRedo1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchRedo1);
+
+        mniSearchBuffer1.setAction(searchBufferAction);
+        mniSearchBuffer1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buffer.png"))); // NOI18N
+        mniSearchBuffer1.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer1.text")); // NOI18N
+        mniSearchBuffer1.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer1.toolTipText")); // NOI18N
+        popMenSearch.add(mniSearchBuffer1);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(bundle.getString("CismapPlugin.Form.title")); // NOI18N
+        setTitle(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.Form.title")); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
@@ -1060,7 +1542,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         });
 
         cmdReconfig.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/open.gif"))); // NOI18N
-        cmdReconfig.setToolTipText(bundle.getString("CismapPlugin.cmdReconfig.toolTipText")); // NOI18N
+        cmdReconfig.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdReconfig.toolTipText")); // NOI18N
         cmdReconfig.setBorderPainted(false);
         cmdReconfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1075,7 +1557,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator1);
 
         cmdBack.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/back.png"))); // NOI18N
-        cmdBack.setToolTipText(bundle.getString("CismapPlugin.cmdBack.toolTipText")); // NOI18N
+        cmdBack.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdBack.toolTipText")); // NOI18N
         cmdBack.setBorderPainted(false);
         cmdBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1085,7 +1567,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(cmdBack);
 
         cmdHome.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home.gif"))); // NOI18N
-        cmdHome.setToolTipText(bundle.getString("CismapPlugin.cmdHome.toolTipText")); // NOI18N
+        cmdHome.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdHome.toolTipText")); // NOI18N
         cmdHome.setBorderPainted(false);
         cmdHome.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1095,7 +1577,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(cmdHome);
 
         cmdForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/forward.png"))); // NOI18N
-        cmdForward.setToolTipText(bundle.getString("CismapPlugin.cmdForward.toolTipText")); // NOI18N
+        cmdForward.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdForward.toolTipText")); // NOI18N
         cmdForward.setBorderPainted(false);
         tlbMain.add(cmdForward);
 
@@ -1105,7 +1587,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator2);
 
         cmdRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/reload.gif"))); // NOI18N
-        cmdRefresh.setToolTipText(bundle.getString("CismapPlugin.cmdRefresh.toolTipText")); // NOI18N
+        cmdRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdRefresh.toolTipText")); // NOI18N
         cmdRefresh.setBorderPainted(false);
         cmdRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1120,9 +1602,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator6);
 
         cmdPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/frameprint.png"))); // NOI18N
-        cmdPrint.setText(bundle.getString("CismapPlugin.cmdPrint.text")); // NOI18N
+        cmdPrint.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.text")); // NOI18N
         cmdPrint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.toolTipText")); // NOI18N
         cmdPrint.setBorderPainted(false);
+        cmdPrint.setName("print"); // NOI18N
         cmdPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdPrintActionPerformed(evt);
@@ -1131,8 +1614,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(cmdPrint);
 
         cmdClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard.png"))); // NOI18N
-        cmdClipboard.setText(bundle.getString("CismapPlugin.cmdClipboard.text")); // NOI18N
-        cmdClipboard.setToolTipText(bundle.getString("CismapPlugin.cmdClipboard.toolTipText")); // NOI18N
+        cmdClipboard.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdClipboard.text")); // NOI18N
+        cmdClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdClipboard.toolTipText")); // NOI18N
         cmdClipboard.setBorderPainted(false);
         cmdClipboard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1147,13 +1630,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator4);
 
         cmdGroupPrimaryInteractionMode.add(togInvisible);
-        togInvisible.setText(bundle.getString("CismapPlugin.togInvisible.text")); // NOI18N
+        togInvisible.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.togInvisible.text")); // NOI18N
         tlbMain.add(togInvisible);
 
         cmdGroupPrimaryInteractionMode.add(cmdSelect);
         cmdSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.png"))); // NOI18N
         cmdSelect.setSelected(true);
-        cmdSelect.setToolTipText(bundle.getString("CismapPlugin.cmdSelect.toolTipText")); // NOI18N
+        cmdSelect.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdSelect.toolTipText")); // NOI18N
         cmdSelect.setBorderPainted(false);
         cmdSelect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1164,7 +1647,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdZoom);
         cmdZoom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/zoom.gif"))); // NOI18N
-        cmdZoom.setToolTipText(bundle.getString("CismapPlugin.cmdZoom.toolTipText")); // NOI18N
+        cmdZoom.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdZoom.toolTipText")); // NOI18N
         cmdZoom.setBorderPainted(false);
         cmdZoom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1175,7 +1658,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdPan);
         cmdPan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pan.gif"))); // NOI18N
-        cmdPan.setToolTipText(bundle.getString("CismapPlugin.cmdPan.toolTipText")); // NOI18N
+        cmdPan.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPan.toolTipText")); // NOI18N
         cmdPan.setBorderPainted(false);
         cmdPan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1186,7 +1669,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdFeatureInfo);
         cmdFeatureInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/featureInfos.gif"))); // NOI18N
-        cmdFeatureInfo.setToolTipText(bundle.getString("CismapPlugin.cmdFeatureInfo.toolTipText")); // NOI18N
+        cmdFeatureInfo.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdFeatureInfo.toolTipText")); // NOI18N
         cmdFeatureInfo.setBorderPainted(false);
         cmdFeatureInfo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1195,20 +1678,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         });
         tlbMain.add(cmdFeatureInfo);
 
+        cmdPluginSearch.setAction(searchAction);
+        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
+        cmdPluginSearch.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPluginSearch.toolTipText")); // NOI18N
         cmdGroupPrimaryInteractionMode.add(cmdPluginSearch);
-        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearch.gif"))); // NOI18N
-        cmdPluginSearch.setToolTipText(bundle.getString("CismapPlugin.cmdPluginSearch.toolTipText")); // NOI18N
-        cmdPluginSearch.setBorderPainted(false);
-        cmdPluginSearch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdPluginSearchActionPerformed(evt);
-            }
-        });
         tlbMain.add(cmdPluginSearch);
 
         cmdGroupPrimaryInteractionMode.add(cmdNewPolygon);
         cmdNewPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newPolygon.png"))); // NOI18N
-        cmdNewPolygon.setToolTipText(bundle.getString("CismapPlugin.cmdNewPolygon.toolTipText")); // NOI18N
+        cmdNewPolygon.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNewPolygon.toolTipText")); // NOI18N
         cmdNewPolygon.setBorderPainted(false);
         cmdNewPolygon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1219,7 +1697,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdNewLinestring);
         cmdNewLinestring.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newLinestring.png"))); // NOI18N
-        cmdNewLinestring.setToolTipText(bundle.getString("CismapPlugin.cmdNewLinestring.toolTipText")); // NOI18N
+        cmdNewLinestring.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNewLinestring.toolTipText")); // NOI18N
         cmdNewLinestring.setBorderPainted(false);
         cmdNewLinestring.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1230,7 +1708,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdNewPoint);
         cmdNewPoint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newPoint.png"))); // NOI18N
-        cmdNewPoint.setToolTipText(bundle.getString("CismapPlugin.cmdNewPoint.toolTipText")); // NOI18N
+        cmdNewPoint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNewPoint.toolTipText")); // NOI18N
         cmdNewPoint.setBorderPainted(false);
         cmdNewPoint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1241,7 +1719,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdMoveGeometry);
         cmdMoveGeometry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/move.png"))); // NOI18N
-        cmdMoveGeometry.setToolTipText(bundle.getString("CismapPlugin.cmdMoveGeometry.toolTipText")); // NOI18N
+        cmdMoveGeometry.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdMoveGeometry.toolTipText")); // NOI18N
         cmdMoveGeometry.setBorderPainted(false);
         cmdMoveGeometry.setMaximumSize(new java.awt.Dimension(29, 29));
         cmdMoveGeometry.setMinimumSize(new java.awt.Dimension(29, 29));
@@ -1255,7 +1733,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupPrimaryInteractionMode.add(cmdRemoveGeometry);
         cmdRemoveGeometry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/remove.png"))); // NOI18N
-        cmdRemoveGeometry.setToolTipText(bundle.getString("CismapPlugin.cmdRemoveGeometry.toolTipText")); // NOI18N
+        cmdRemoveGeometry.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdRemoveGeometry.toolTipText")); // NOI18N
         cmdRemoveGeometry.setBorderPainted(false);
         cmdRemoveGeometry.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1272,7 +1750,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         cmdGroupNodes.add(cmdNodeMove);
         cmdNodeMove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/moveNodes.png"))); // NOI18N
         cmdNodeMove.setSelected(true);
-        cmdNodeMove.setToolTipText(bundle.getString("CismapPlugin.cmdNodeMove.toolTipText")); // NOI18N
+        cmdNodeMove.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNodeMove.toolTipText")); // NOI18N
         cmdNodeMove.setBorderPainted(false);
         cmdNodeMove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1283,7 +1761,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupNodes.add(cmdNodeAdd);
         cmdNodeAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/insertNodes.png"))); // NOI18N
-        cmdNodeAdd.setToolTipText(bundle.getString("CismapPlugin.cmdNodeAdd.toolTipText")); // NOI18N
+        cmdNodeAdd.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNodeAdd.toolTipText")); // NOI18N
         cmdNodeAdd.setBorderPainted(false);
         cmdNodeAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1294,7 +1772,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupNodes.add(cmdNodeRemove);
         cmdNodeRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/removeNodes.png"))); // NOI18N
-        cmdNodeRemove.setToolTipText(bundle.getString("CismapPlugin.cmdNodeRemove.toolTipText")); // NOI18N
+        cmdNodeRemove.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNodeRemove.toolTipText")); // NOI18N
         cmdNodeRemove.setBorderPainted(false);
         cmdNodeRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1305,7 +1783,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         cmdGroupNodes.add(cmdNodeRotateGeometry);
         cmdNodeRotateGeometry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rotate.png"))); // NOI18N
-        cmdNodeRotateGeometry.setToolTipText(bundle.getString("CismapPlugin.cmdNodeRotateGeometry.toolTipText")); // NOI18N
+        cmdNodeRotateGeometry.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdNodeRotateGeometry.toolTipText")); // NOI18N
         cmdNodeRotateGeometry.setBorderPainted(false);
         cmdNodeRotateGeometry.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1320,7 +1798,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator5);
 
         cmdSnap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/snap.png"))); // NOI18N
-        cmdSnap.setToolTipText(bundle.getString("CismapPlugin.cmdSnap.toolTipText")); // NOI18N
+        cmdSnap.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdSnap.toolTipText")); // NOI18N
         cmdSnap.setBorderPainted(false);
         cmdSnap.setMaximumSize(new java.awt.Dimension(29, 29));
         cmdSnap.setMinimumSize(new java.awt.Dimension(29, 29));
@@ -1340,7 +1818,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(jSeparator11);
 
         cmdUndo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/undo.png"))); // NOI18N
-        cmdUndo.setToolTipText(bundle.getString("CismapPlugin.cmdUndo.toolTipText")); // NOI18N
+        cmdUndo.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdUndo.toolTipText")); // NOI18N
         cmdUndo.setBorderPainted(false);
         cmdUndo.setEnabled(false);
         cmdUndo.addActionListener(new java.awt.event.ActionListener() {
@@ -1351,7 +1829,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         tlbMain.add(cmdUndo);
 
         cmdRedo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/redo.png"))); // NOI18N
-        cmdRedo.setToolTipText(bundle.getString("CismapPlugin.cmdRedo.toolTipText")); // NOI18N
+        cmdRedo.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdRedo.toolTipText")); // NOI18N
         cmdRedo.setBorderPainted(false);
         cmdRedo.setEnabled(false);
         cmdRedo.addActionListener(new java.awt.event.ActionListener() {
@@ -1372,11 +1850,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         getContentPane().add(panAll, java.awt.BorderLayout.CENTER);
 
         menFile.setMnemonic('D');
-        menFile.setText(bundle.getString("CismapPlugin.menFile.text")); // NOI18N
+        menFile.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menFile.text")); // NOI18N
 
         mniLoadConfig.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         mniLoadConfig.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/config.png"))); // NOI18N
-        mniLoadConfig.setText(bundle.getString("CismapPlugin.mniLoadConfig.text")); // NOI18N
+        mniLoadConfig.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadConfig.text")); // NOI18N
         mniLoadConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLoadConfigActionPerformed(evt);
@@ -1386,7 +1864,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniSaveConfig.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_K, java.awt.event.InputEvent.CTRL_MASK));
         mniSaveConfig.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/config.png"))); // NOI18N
-        mniSaveConfig.setText(bundle.getString("CismapPlugin.mniSaveConfig.text")); // NOI18N
+        mniSaveConfig.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSaveConfig.text")); // NOI18N
         mniSaveConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniSaveConfigActionPerformed(evt);
@@ -1395,7 +1873,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menFile.add(mniSaveConfig);
 
         mniLoadConfigFromServer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/config.png"))); // NOI18N
-        mniLoadConfigFromServer.setText(bundle.getString("CismapPlugin.mniLoadConfigFromServer.text")); // NOI18N
+        mniLoadConfigFromServer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadConfigFromServer.text")); // NOI18N
         mniLoadConfigFromServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLoadConfigFromServerActionPerformed(evt);
@@ -1411,7 +1889,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniSaveLayout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         mniSaveLayout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/layout.png"))); // NOI18N
-        mniSaveLayout.setText(bundle.getString("CismapPlugin.mniSaveLayout.text")); // NOI18N
+        mniSaveLayout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSaveLayout.text")); // NOI18N
         mniSaveLayout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniSaveLayoutActionPerformed(evt);
@@ -1421,7 +1899,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniLoadLayout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         mniLoadLayout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/layout.png"))); // NOI18N
-        mniLoadLayout.setText(bundle.getString("CismapPlugin.mniLoadLayout.text")); // NOI18N
+        mniLoadLayout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadLayout.text")); // NOI18N
         mniLoadLayout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLoadLayoutActionPerformed(evt);
@@ -1432,7 +1910,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
         mniClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png"))); // NOI18N
-        mniClipboard.setText(bundle.getString("CismapPlugin.mniClipboard.text")); // NOI18N
+        mniClipboard.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniClipboard.text")); // NOI18N
         mniClipboard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniClipboardActionPerformed(evt);
@@ -1442,7 +1920,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniGeoLinkClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         mniGeoLinkClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png"))); // NOI18N
-        mniGeoLinkClipboard.setText(bundle.getString("CismapPlugin.mniGeoLinkClipboard.text")); // NOI18N
+        mniGeoLinkClipboard.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniGeoLinkClipboard.text")); // NOI18N
         mniGeoLinkClipboard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniGeoLinkClipboardActionPerformed(evt);
@@ -1452,7 +1930,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniPrint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         mniPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/frameprint16.png"))); // NOI18N
-        mniPrint.setText(bundle.getString("CismapPlugin.mniPrint.text")); // NOI18N
+        mniPrint.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniPrint.text")); // NOI18N
         mniPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniPrintActionPerformed(evt);
@@ -1462,7 +1940,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menFile.add(jSeparator10);
 
         mniClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
-        mniClose.setText(bundle.getString("CismapPlugin.mniClose.text")); // NOI18N
+        mniClose.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniClose.text")); // NOI18N
         mniClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniCloseActionPerformed(evt);
@@ -1473,7 +1951,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mnuBar.add(menFile);
 
         menEdit.setMnemonic('B');
-        menEdit.setText(bundle.getString("CismapPlugin.menEdit.text")); // NOI18N
+        menEdit.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menEdit.text")); // NOI18N
         menEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 menEditActionPerformed(evt);
@@ -1481,7 +1959,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         });
 
         mniRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/reload16.gif"))); // NOI18N
-        mniRefresh.setText(bundle.getString("CismapPlugin.mniRefresh.text")); // NOI18N
+        mniRefresh.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniRefresh.text")); // NOI18N
         mniRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniRefreshActionPerformed(evt);
@@ -1491,7 +1969,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menEdit.add(jSeparator13);
 
         mniZoomToSelectedObjects.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/res/zoomToSelection.png"))); // NOI18N
-        mniZoomToSelectedObjects.setText(bundle.getString("CismapPlugin.mniZoomToSelectedObjects.text")); // NOI18N
+        mniZoomToSelectedObjects.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniZoomToSelectedObjects.text")); // NOI18N
         mniZoomToSelectedObjects.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniZoomToSelectedObjectsActionPerformed(evt);
@@ -1500,7 +1978,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menEdit.add(mniZoomToSelectedObjects);
 
         mniZoomToAllObjects.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/res/zoomToAll.png"))); // NOI18N
-        mniZoomToAllObjects.setText(bundle.getString("CismapPlugin.mniZoomToAllObjects.text")); // NOI18N
+        mniZoomToAllObjects.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniZoomToAllObjects.text")); // NOI18N
         mniZoomToAllObjects.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniZoomToAllObjectsActionPerformed(evt);
@@ -1510,7 +1988,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menEdit.add(jSeparator15);
 
         mniRemoveSelectedObject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/res/removerow.png"))); // NOI18N
-        mniRemoveSelectedObject.setText(bundle.getString("CismapPlugin.mniRemoveSelectedObject.text")); // NOI18N
+        mniRemoveSelectedObject.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniRemoveSelectedObject.text")); // NOI18N
         mniRemoveSelectedObject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniRemoveSelectedObjectActionPerformed(evt);
@@ -1519,7 +1997,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menEdit.add(mniRemoveSelectedObject);
 
         mniRemoveAllObjects.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/res/removeAll.png"))); // NOI18N
-        mniRemoveAllObjects.setText(bundle.getString("CismapPlugin.mniRemoveAllObjects.text")); // NOI18N
+        mniRemoveAllObjects.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniRemoveAllObjects.text")); // NOI18N
         mniRemoveAllObjects.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniRemoveAllObjectsActionPerformed(evt);
@@ -1530,11 +2008,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mnuBar.add(menEdit);
 
         menHistory.setMnemonic('C');
-        menHistory.setText(bundle.getString("CismapPlugin.menHistory.text")); // NOI18N
+        menHistory.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menHistory.text")); // NOI18N
 
         mniBack.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.CTRL_MASK));
         mniBack.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/back16.png"))); // NOI18N
-        mniBack.setText(bundle.getString("CismapPlugin.mniBack.text")); // NOI18N
+        mniBack.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniBack.text")); // NOI18N
         mniBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniBackActionPerformed(evt);
@@ -1544,7 +2022,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniForward.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.CTRL_MASK));
         mniForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/forward16.png"))); // NOI18N
-        mniForward.setText(bundle.getString("CismapPlugin.mniForward.text")); // NOI18N
+        mniForward.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniForward.text")); // NOI18N
         mniForward.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniForwardActionPerformed(evt);
@@ -1554,7 +2032,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniHome.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_HOME, 0));
         mniHome.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home16.png"))); // NOI18N
-        mniHome.setText(bundle.getString("CismapPlugin.mniHome.text")); // NOI18N
+        mniHome.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniHome.text")); // NOI18N
         mniHome.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniHomeActionPerformed(evt);
@@ -1564,17 +2042,76 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menHistory.add(sepBeforePos);
         menHistory.add(sepAfterPos);
 
-        mniHistorySidebar.setText(bundle.getString("CismapPlugin.mniHistorySidebar.text")); // NOI18N
+        mniHistorySidebar.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniHistorySidebar.text")); // NOI18N
         mniHistorySidebar.setEnabled(false);
         menHistory.add(mniHistorySidebar);
 
         mnuBar.add(menHistory);
 
+        menSearch.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menSearch.text")); // NOI18N
+        menSearch.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                menSearchMenuSelected(evt);
+            }
+        });
+
+        mniSearchRectangle.setAction(searchRectangleAction);
+        cmdGroupSearch.add(mniSearchRectangle);
+        mniSearchRectangle.setSelected(true);
+        mniSearchRectangle.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRectangle.text")); // NOI18N
+        mniSearchRectangle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rectangle.png"))); // NOI18N
+        menSearch.add(mniSearchRectangle);
+
+        mniSearchPolygon.setAction(searchPolygonAction);
+        cmdGroupSearch.add(mniSearchPolygon);
+        mniSearchPolygon.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolygon.text")); // NOI18N
+        mniSearchPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        menSearch.add(mniSearchPolygon);
+
+        mniSearchEllipse.setAction(searchEllipseAction);
+        cmdGroupSearch.add(mniSearchEllipse);
+        mniSearchEllipse.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchEllipse.text_1")); // NOI18N
+        mniSearchEllipse.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ellipse.png"))); // NOI18N
+        menSearch.add(mniSearchEllipse);
+
+        mniSearchPolyline.setAction(searchPolylineAction);
+        cmdGroupSearch.add(mniSearchPolyline);
+        mniSearchPolyline.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchPolyline.text_1")); // NOI18N
+        mniSearchPolyline.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
+        menSearch.add(mniSearchPolyline);
+        menSearch.add(jSeparator8);
+
+        mniSearchShowLastFeature.setAction(searchShowLastFeatureAction);
+        mniSearchShowLastFeature.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchShowLastFeature.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature.text")); // NOI18N
+        mniSearchShowLastFeature.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchShowLastFeature.toolTipText")); // NOI18N
+        menSearch.add(mniSearchShowLastFeature);
+
+        mniSearchRedo.setAction(searchRedoAction);
+        mniSearchRedo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        mniSearchRedo.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo.text")); // NOI18N
+        mniSearchRedo.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchRedo.toolTipText")); // NOI18N
+        menSearch.add(mniSearchRedo);
+
+        mniSearchBuffer.setAction(searchBufferAction);
+        mniSearchBuffer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buffer.png"))); // NOI18N
+        mniSearchBuffer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer.text_1")); // NOI18N
+        mniSearchBuffer.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSearchBuffer.toolTipText")); // NOI18N
+        menSearch.add(mniSearchBuffer);
+
+        mnuBar.add(menSearch);
+        //copyMenu(menSearch, popMenSearch);
+        ((JPopupMenuButton)cmdPluginSearch).setPopupMenu(popMenSearch);
+
         menExtras.setMnemonic('E');
-        menExtras.setText(bundle.getString("CismapPlugin.menExtras.text")); // NOI18N
+        menExtras.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menExtras.text")); // NOI18N
 
         mniOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/tooloptions.png"))); // NOI18N
-        mniOptions.setText(bundle.getString("CismapPlugin.mniOptions.text")); // NOI18N
+        mniOptions.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniOptions.text")); // NOI18N
         mniOptions.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniOptionsActionPerformed(evt);
@@ -1585,7 +2122,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniGotoPoint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
         mniGotoPoint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/goto.png"))); // NOI18N
-        mniGotoPoint.setText(bundle.getString("CismapPlugin.mniGotoPoint.text")); // NOI18N
+        mniGotoPoint.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniGotoPoint.text")); // NOI18N
         mniGotoPoint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniGotoPointActionPerformed(evt);
@@ -1596,7 +2133,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniScale.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
         mniScale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/scale.png"))); // NOI18N
-        mniScale.setText(bundle.getString("CismapPlugin.mniScale.text")); // NOI18N
+        mniScale.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniScale.text")); // NOI18N
         mniScale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniScaleActionPerformed(evt);
@@ -1607,7 +2144,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mnuBar.add(menExtras);
 
         menWindows.setMnemonic('F');
-        menWindows.setText(bundle.getString("CismapPlugin.menWindows.text")); // NOI18N
+        menWindows.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menWindows.text")); // NOI18N
         menWindows.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 menWindowsActionPerformed(evt);
@@ -1617,7 +2154,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniLayer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
         mniLayer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/layers.png"))); // NOI18N
         mniLayer.setMnemonic('L');
-        mniLayer.setText(bundle.getString("CismapPlugin.mniLayer.text")); // NOI18N
+        mniLayer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLayer.text")); // NOI18N
         mniLayer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLayerActionPerformed(evt);
@@ -1628,7 +2165,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniCapabilities.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
         mniCapabilities.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/server.png"))); // NOI18N
         mniCapabilities.setMnemonic('C');
-        mniCapabilities.setText(bundle.getString("CismapPlugin.mniCapabilities.text")); // NOI18N
+        mniCapabilities.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniCapabilities.text")); // NOI18N
         mniCapabilities.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniCapabilitiesActionPerformed(evt);
@@ -1639,7 +2176,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniFeatureInfo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
         mniFeatureInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/featureinfowidget/res/featureInfo16.png"))); // NOI18N
         mniFeatureInfo.setMnemonic('F');
-        mniFeatureInfo.setText(bundle.getString("CismapPlugin.mniFeatureInfo.text")); // NOI18N
+        mniFeatureInfo.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniFeatureInfo.text")); // NOI18N
         mniFeatureInfo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniFeatureInfoActionPerformed(evt);
@@ -1650,7 +2187,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniClassTree.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
         mniClassTree.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/classSelection.png"))); // NOI18N
         mniClassTree.setMnemonic('a');
-        mniClassTree.setText(bundle.getString("CismapPlugin.mniClassTree.text")); // NOI18N
+        mniClassTree.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniClassTree.text")); // NOI18N
         mniClassTree.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniClassTreeActionPerformed(evt);
@@ -1661,7 +2198,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniServerInfo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_5, java.awt.event.InputEvent.CTRL_MASK));
         mniServerInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/serverInfo.png"))); // NOI18N
         mniServerInfo.setMnemonic('S');
-        mniServerInfo.setText(bundle.getString("CismapPlugin.mniServerInfo.text")); // NOI18N
+        mniServerInfo.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniServerInfo.text")); // NOI18N
         mniServerInfo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniServerInfoActionPerformed(evt);
@@ -1672,7 +2209,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniLayerInfo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_6, java.awt.event.InputEvent.CTRL_MASK));
         mniLayerInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/capabilitywidget/res/layerInfo.png"))); // NOI18N
         mniLayerInfo.setMnemonic('L');
-        mniLayerInfo.setText(bundle.getString("CismapPlugin.mniLayerInfo.text")); // NOI18N
+        mniLayerInfo.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLayerInfo.text")); // NOI18N
         mniLayerInfo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLayerInfoActionPerformed(evt);
@@ -1683,7 +2220,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniLegend.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_7, java.awt.event.InputEvent.CTRL_MASK));
         mniLegend.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png"))); // NOI18N
         mniLegend.setMnemonic('L');
-        mniLegend.setText(bundle.getString("CismapPlugin.mniLegend.text")); // NOI18N
+        mniLegend.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLegend.text")); // NOI18N
         mniLegend.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniLegendActionPerformed(evt);
@@ -1694,7 +2231,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniFeatureControl.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_8, java.awt.event.InputEvent.CTRL_MASK));
         mniFeatureControl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/objects.png"))); // NOI18N
         mniFeatureControl.setMnemonic('O');
-        mniFeatureControl.setText(bundle.getString("CismapPlugin.mniFeatureControl.text")); // NOI18N
+        mniFeatureControl.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniFeatureControl.text")); // NOI18N
         mniFeatureControl.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniFeatureControlActionPerformed(evt);
@@ -1705,7 +2242,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniMap.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_9, java.awt.event.InputEvent.CTRL_MASK));
         mniMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/map.png"))); // NOI18N
         mniMap.setMnemonic('M');
-        mniMap.setText(bundle.getString("CismapPlugin.mniMap.text")); // NOI18N
+        mniMap.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniMap.text")); // NOI18N
         mniMap.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniMapActionPerformed(evt);
@@ -1716,7 +2253,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mniOverview.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
         mniOverview.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/map.png"))); // NOI18N
         mniOverview.setMnemonic('M');
-        mniOverview.setText(bundle.getString("CismapPlugin.mniOverview.text")); // NOI18N
+        mniOverview.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniOverview.text")); // NOI18N
         mniOverview.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniOverviewActionPerformed(evt);
@@ -1727,8 +2264,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniResetWindowLayout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         mniResetWindowLayout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/layout.png"))); // NOI18N
-        mniResetWindowLayout.setText(bundle.getString("CismapPlugin.mniResetWindowLayout.text")); // NOI18N
-        mniResetWindowLayout.setToolTipText(bundle.getString("CismapPlugin.mniResetWindowLayout.toolTipText")); // NOI18N
+        mniResetWindowLayout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniResetWindowLayout.text")); // NOI18N
+        mniResetWindowLayout.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniResetWindowLayout.toolTipText")); // NOI18N
         mniResetWindowLayout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniResetWindowLayoutActionPerformed(evt);
@@ -1739,7 +2276,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mnuBar.add(menWindows);
 
         menHelp.setMnemonic('H');
-        menHelp.setText(bundle.getString("CismapPlugin.menHelp.text")); // NOI18N
+        menHelp.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menHelp.text")); // NOI18N
         menHelp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 menHelpActionPerformed(evt);
@@ -1748,7 +2285,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         mniOnlineHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
         mniOnlineHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help.png"))); // NOI18N
-        mniOnlineHelp.setText(bundle.getString("CismapPlugin.mniOnlineHelp.text")); // NOI18N
+        mniOnlineHelp.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniOnlineHelp.text")); // NOI18N
         mniOnlineHelp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniOnlineHelpActionPerformed(evt);
@@ -1757,7 +2294,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menHelp.add(mniOnlineHelp);
 
         mniNews.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/news.png"))); // NOI18N
-        mniNews.setText(bundle.getString("CismapPlugin.mniNews.text")); // NOI18N
+        mniNews.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniNews.text")); // NOI18N
         mniNews.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniNewsActionPerformed(evt);
@@ -1766,7 +2303,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menHelp.add(mniNews);
 
         mniAbout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        mniAbout.setText(bundle.getString("CismapPlugin.mniAbout.text")); // NOI18N
+        mniAbout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAbout.text")); // NOI18N
         mniAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniAboutActionPerformed(evt);
@@ -1779,33 +2316,33 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         setJMenuBar(mnuBar);
     }// </editor-fold>//GEN-END:initComponents
     private void mniRedoPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRedoPerformed
-        log.info("REDO");
+        log.info("REDO");//NOI18N
         CustomAction a = mapC.getMemRedo().getLastAction();
-        log.debug("... Aktion ausf\u00FChren: " + a.info());
+        log.debug("... execute action: " + a.info());//NOI18N
         try {
             a.doAction();
         } catch (Exception e) {
-            log.error("Error beim Ausf\u00FChren der Aktion", e);
+            log.error("Error while executing an action", e);//NOI18N
         }
         CustomAction inverse = a.getInverse();
         mapC.getMemUndo().addAction(inverse);
-        log.debug("... neue Aktion auf UNDO-Stack: " + inverse);
-        log.debug("... fertig");
+        log.debug("... new action on UNDO stack: " + inverse);//NOI18N
+        log.debug("... completed");//NOI18N
     }//GEN-LAST:event_mniRedoPerformed
 
     private void mniUndoPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniUndoPerformed
-        log.info("UNDO");
+        log.info("UNDO");//NOI18N
         CustomAction a = mapC.getMemUndo().getLastAction();
-        log.debug("... Aktion ausf\u00FChren: " + a.info());
+        log.debug("... execute action: " + a.info());//NOI18N
         try {
             a.doAction();
         } catch (Exception e) {
-            log.error("Error beim Ausf\u00FChren der Aktion", e);
+            log.error("Error while executing action", e);//NOI18N
         }
         CustomAction inverse = a.getInverse();
         mapC.getMemRedo().addAction(inverse);
-        log.debug("... neue Aktion auf REDO-Stack: " + inverse);
-        log.debug("... fertig");
+        log.debug("... new action on REDO stack: " + inverse);//NOI18N
+        log.debug("... completed");//NOI18N
     }//GEN-LAST:event_mniUndoPerformed
 
     private void mniGeoLinkClipboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniGeoLinkClipboardActionPerformed
@@ -1819,7 +2356,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 //                    }
 //                });
                 BoundingBox bb = mapC.getCurrentBoundingBox();
-                String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1=" + bb.getX1() + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2();
+                String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1=" + bb.getX1() + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2();//NOI18N
                 GeoLinkUrl url = new GeoLinkUrl(u);
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(url, null);
                 EventQueue.invokeLater(new Runnable() {
@@ -1854,30 +2391,30 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     }//GEN-LAST:event_mniOnlineHelpActionPerformed
 
     private void mniGotoPointActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniGotoPointActionPerformed
-        log.debug("mniGotoPointActionPerformed");
+        log.debug("mniGotoPointActionPerformed");//NOI18N
         try {
             BoundingBox c = mapC.getCurrentBoundingBox();
             double x = (c.getX1() + c.getX2()) / 2;
             double y = (c.getY1() + c.getY2()) / 2;
-            String s = JOptionPane.showInputDialog(this, "Zentriere auf folgendem Punkt: x,y", StaticDecimalTools.round(x) + "," + StaticDecimalTools.round(y));
+            String s = JOptionPane.showInputDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniGotoPointActionPerformed.JOptionPane.message"), StaticDecimalTools.round(x) + "," + StaticDecimalTools.round(y));//NOI18N
 
-            String[] sa = s.split(",");
+            String[] sa = s.split(",");//NOI18N
             Double gotoX = new Double(sa[0]);
             Double gotoY = new Double(sa[1]);
             BoundingBox bb = new BoundingBox(gotoX, gotoY, gotoX, gotoY);
             mapC.gotoBoundingBox(bb, true, false, mapC.getAnimationDuration());
         } catch (Exception skip) {
-            log.error("Fehler in mniGotoPointActionPerformed", skip);
+            log.error("Error in mniGotoPointActionPerformed", skip);//NOI18N
         }
     }//GEN-LAST:event_mniGotoPointActionPerformed
 
     private void mniScaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniScaleActionPerformed
         try {
-            String s = JOptionPane.showInputDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("Massstab_manuell_auswaehlen"), ((int) mapC.getScaleDenominator()) + "");
+            String s = JOptionPane.showInputDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.scaleManually"), ((int) mapC.getScaleDenominator()) + "");//NOI18N
             Integer i = new Integer(s);
             mapC.gotoBoundingBoxWithHistory(mapC.getBoundingBoxFromScale(i));
         } catch (Exception skip) {
-            log.error("Fehler in mniScaleActionPerformed", skip);
+            log.error("Error in mniScaleActionPerformed", skip);//NOI18N
         }
     }//GEN-LAST:event_mniScaleActionPerformed
 
@@ -1942,12 +2479,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         }
         fc.setFileFilter(new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".xml");
+                return f.getName().toLowerCase().endsWith(".xml");//NOI18N
             }
 
+            @Override
             public String getDescription() {
-                return java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("ConfigDescription");
+                return org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadConfigActionPerformed.FileFiltergetDescription.return");//NOI18N
             }
         });
         int state = fc.showOpenDialog(this);
@@ -1955,14 +2494,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             File file = fc.getSelectedFile();
             String name = file.getAbsolutePath();
             name = name.toLowerCase();
-            if (name.endsWith(".xml")) {
+            if (name.endsWith(".xml")) {//NOI18N
                 activeLayers.removeAllLayers();
                 mapC.getRasterServiceLayer().removeAllChildren();
                 configurationManager.configure(name);
             } else {
                 activeLayers.removeAllLayers();
                 mapC.getRasterServiceLayer().removeAllChildren();
-                configurationManager.configure(name + ".xml");
+                configurationManager.configure(name + ".xml");//NOI18N
             }
         }
     }//GEN-LAST:event_mniLoadConfigActionPerformed
@@ -1978,23 +2517,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         fc.setFileFilter(new FileFilter() {
 
             public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".xml");
+                return f.getName().toLowerCase().endsWith(".xml");//NOI18N
             }
 
             public String getDescription() {
-                return java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("ConfigDescription");
+                return org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniSaveConfigActionPerformed.FileFilter.getDescription.return");//NOI18N
             }
         });
         int state = fc.showSaveDialog(this);
-        log.debug("state:" + state);
+        log.debug("state:" + state);//NOI18N
         if (state == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             String name = file.getAbsolutePath();
             name = name.toLowerCase();
-            if (name.endsWith(".xml")) {
+            if (name.endsWith(".xml")) {//NOI18N
                 configurationManager.writeConfiguration(name);
             } else {
-                configurationManager.writeConfiguration(name + ".xml");
+                configurationManager.writeConfiguration(name + ".xml");//NOI18N
             }
         }
     }//GEN-LAST:event_mniSaveConfigActionPerformed
@@ -2020,25 +2559,25 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         fc.setFileFilter(new FileFilter() {
 
             public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".layout");
+                return f.getName().toLowerCase().endsWith(".layout");//NOI18N
             }
 
             public String getDescription() {
-                return "Layout";
+                return "Layout";//NOI18N
             }
         });
         fc.setMultiSelectionEnabled(false);
         int state = fc.showSaveDialog(this);
-        log.debug("state:" + state);
+        log.debug("state:" + state);//NOI18N
         if (state == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            log.debug("file:" + file);
+            log.debug("file:" + file);//NOI18N
             String name = file.getAbsolutePath();
             name = name.toLowerCase();
-            if (name.endsWith(".layout")) {
+            if (name.endsWith(".layout")) {//NOI18N
                 saveLayout(name);
             } else {
-                saveLayout(name + ".layout");
+                saveLayout(name + ".layout");//NOI18N
             }
         }
     }//GEN-LAST:event_mniSaveLayoutActionPerformed
@@ -2054,11 +2593,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         fc.setFileFilter(new FileFilter() {
 
             public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".layout");
+                return f.getName().toLowerCase().endsWith(".layout");//NOI18N
             }
 
             public String getDescription() {
-                return "Layout";
+                return "Layout";//NOI18N
             }
         });
         fc.setMultiSelectionEnabled(false);
@@ -2067,10 +2606,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             File file = fc.getSelectedFile();
             String name = file.getAbsolutePath();
             name = name.toLowerCase();
-            if (name.endsWith(".layout")) {
+            if (name.endsWith(".layout")) {//NOI18N
                 loadLayout(name);
             } else {
-                JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.format_failure_message"), java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.message_title"), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadLayoutActionPerformed(ActionEvent).JOptionPane.msg"), //NOI18N
+                        org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLoadLayoutActionPerformed(ActionEvent).JOptionPane.title"), //NOI18N
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }//GEN-LAST:event_mniLoadLayoutActionPerformed
@@ -2100,8 +2641,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
     private void cmdPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPrintActionPerformed
         String oldMode = mapC.getInteractionMode();
-        log.debug("oldInteractionMode:" + oldMode);
-        Enumeration en = cmdGroupPrimaryInteractionMode.getElements();
+        log.debug("oldInteractionMode:" + oldMode);//NOI18N
         togInvisible.setSelected(true);
         mapC.showPrintingSettingsDialog(oldMode);
     }//GEN-LAST:event_cmdPrintActionPerformed
@@ -2161,7 +2701,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.POINT);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.POINT);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2171,7 +2711,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.POLYGON);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.POLYGON);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2181,7 +2721,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateGeometryListener.LINESTRING);
+                ((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(CreateNewGeometryListener.LINESTRING);
                 mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
             }
         });
@@ -2190,7 +2730,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void cmdNodeRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeRemoveActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
-            public void run() {               
+            public void run() {
                 mapC.setHandleInteractionMode(MappingComponent.REMOVE_HANDLE);
                 mapC.setInteractionMode(MappingComponent.SELECT);
             }
@@ -2233,17 +2773,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     private void mniFeatureControlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniFeatureControlActionPerformed
         showOrHideView(vFeatureControl);
     }//GEN-LAST:event_mniFeatureControlActionPerformed
-
-    private void cmdPluginSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPluginSearchActionPerformed
-        mapC.setInteractionMode(MappingComponent.BOUNDING_BOX_SEARCH);
-    }//GEN-LAST:event_cmdPluginSearchActionPerformed
-
-    private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuConfigServerActionPerformed
-        activeLayers.removeAllLayers();
-        mapC.getRasterServiceLayer().removeAllChildren();
-        //mapC.resetWtst();
-        configureApp(true);
-    }//GEN-LAST:event_mnuConfigServerActionPerformed
 
     private void cmdReconfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconfigActionPerformed
         activeLayers.removeAllLayers();
@@ -2288,7 +2817,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
     }//GEN-LAST:event_formComponentShown
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        log.info("CLOSE");
+        log.info("CLOSE");//NOI18N
     }//GEN-LAST:event_formWindowClosed
 
     private void showOrHideView(View v) {
@@ -2365,6 +2894,25 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     od.setVisible(true);
 }//GEN-LAST:event_mniOptionsActionPerformed
 
+private void popMenSearchPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    searchMenuSelectedAction.actionPerformed(new ActionEvent(popMenSearch, ActionEvent.ACTION_PERFORMED, null));
+}//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+
+private void menSearchMenuSelected(javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_menSearchMenuSelected
+    searchMenuSelectedAction.actionPerformed(new ActionEvent(menSearch, ActionEvent.ACTION_PERFORMED, null));
+}//GEN-LAST:event_menSearchMenuSelected
+
+private void mnuConfigServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuConfigServerActionPerformed
+    activeLayers.removeAllLayers();
+    mapC.getRasterServiceLayer().removeAllChildren();
+    //mapC.resetWtst();
+    configureApp(true);
+}//GEN-LAST:event_mnuConfigServerActionPerformed
+
+private void mniSearchRectangle1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchRectangle1ActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_mniSearchRectangle1ActionPerformed
+
 //    private void addShutdownHook() {
 //        ShutdownHook shutdownHook = new ShutdownHook();
 //        Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -2404,7 +2952,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             java.awt.EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    log.warn("Fehler in validateTree()", t);
+                    log.warn("Error in validateTree()", t);//NOI18N
                     validateTree();
                 }
             });
@@ -2428,6 +2976,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton cmdForward;
     private javax.swing.ButtonGroup cmdGroupNodes;
     private javax.swing.ButtonGroup cmdGroupPrimaryInteractionMode;
+    private javax.swing.ButtonGroup cmdGroupSearch;
+    private javax.swing.ButtonGroup cmdGroupSearch1;
     private javax.swing.JButton cmdHome;
     private javax.swing.JToggleButton cmdMoveGeometry;
     private javax.swing.JToggleButton cmdNewLinestring;
@@ -2438,7 +2988,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JToggleButton cmdNodeRemove;
     private javax.swing.JToggleButton cmdNodeRotateGeometry;
     private javax.swing.JToggleButton cmdPan;
-    private javax.swing.JToggleButton cmdPluginSearch;
+    private javax.swing.JButton cmdPluginSearch;
     private javax.swing.JButton cmdPrint;
     private javax.swing.JButton cmdReconfig;
     private javax.swing.JButton cmdRedo;
@@ -2452,6 +3002,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JSeparator jSeparator12;
     private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator14;
     private javax.swing.JSeparator jSeparator15;
@@ -2462,6 +3013,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenu menBookmarks;
     private javax.swing.JMenu menEdit;
@@ -2469,6 +3021,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JMenu menFile;
     private javax.swing.JMenu menHelp;
     private javax.swing.JMenu menHistory;
+    private javax.swing.JMenu menSearch;
     private javax.swing.JMenu menWindows;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniAddBookmark;
@@ -2505,6 +3058,20 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JMenuItem mniSaveConfig;
     private javax.swing.JMenuItem mniSaveLayout;
     private javax.swing.JMenuItem mniScale;
+    private javax.swing.JMenuItem mniSearchBuffer;
+    private javax.swing.JMenuItem mniSearchBuffer1;
+    private javax.swing.JRadioButtonMenuItem mniSearchEllipse;
+    private javax.swing.JRadioButtonMenuItem mniSearchEllipse1;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolygon;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolygon1;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolyline;
+    private javax.swing.JRadioButtonMenuItem mniSearchPolyline1;
+    private javax.swing.JRadioButtonMenuItem mniSearchRectangle;
+    private javax.swing.JRadioButtonMenuItem mniSearchRectangle1;
+    private javax.swing.JMenuItem mniSearchRedo;
+    private javax.swing.JMenuItem mniSearchRedo1;
+    private javax.swing.JMenuItem mniSearchShowLastFeature;
+    private javax.swing.JMenuItem mniSearchShowLastFeature1;
     private javax.swing.JMenuItem mniServerInfo;
     private javax.swing.JMenuItem mniZoomToAllObjects;
     private javax.swing.JMenuItem mniZoomToSelectedObjects;
@@ -2516,6 +3083,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JPanel panStatus;
     private javax.swing.JPanel panToolbar;
     private javax.swing.JPopupMenu popMen;
+    private javax.swing.JPopupMenu popMenSearch;
     private javax.swing.JSeparator sepAfterPos;
     private javax.swing.JSeparator sepBeforePos;
     private javax.swing.JSeparator sepServerProfilesEnd;
@@ -2533,7 +3101,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void setActive(boolean param) {
-        log.debug("setActive:" + param);
+        log.debug("setActive:" + param);//NOI18N
         if (!param) {
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
@@ -2573,7 +3141,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public String getId() {
-        return "cismap";
+        return "cismap";//NOI18N
     }
 
     public JComponent getComponent() {
@@ -2601,7 +3169,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     @Override
     public void dispose() {
         try {
-            log.debug("dispose().CIAO");
+            log.debug("dispose().CIAO");//NOI18N
             saveLayout(cismapDirectory + fs + standaloneLayoutName);
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
@@ -2609,13 +3177,13 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             super.dispose();
             System.exit(0);
         } catch (Throwable t) {
-            log.fatal("Fehler beim Beenden. Abschuss freigegeben ;-)", t);
+            log.fatal("Error during disposing frame.", t);//NOI18N
         }
     }
 
     public Element getConfiguration() {
-        Element ret = new Element("cismapPluginUIPreferences");
-        Element window = new Element("window");
+        Element ret = new Element("cismapPluginUIPreferences");//NOI18N
+        Element window = new Element("window");//NOI18N
 
         int windowHeight = this.getHeight();
         int windowWidth = this.getWidth();
@@ -2623,19 +3191,19 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         int windowY = (int) this.getLocation().getY();
         boolean windowMaximised = (this.getExtendedState() == MAXIMIZED_BOTH);
         if (windowMaximised) {
-            window.setAttribute("height", "" + (int) oldWindowDimension.getHeight());
-            window.setAttribute("width", "" + (int) oldWindowDimension.getWidth());
-            window.setAttribute("x", "" + oldWindowPositionX);
-            window.setAttribute("y", "" + oldWindowPositionY);
+            window.setAttribute("height", "" + (int) oldWindowDimension.getHeight());//NOI18N
+            window.setAttribute("width", "" + (int) oldWindowDimension.getWidth());//NOI18N
+            window.setAttribute("x", "" + oldWindowPositionX);//NOI18N
+            window.setAttribute("y", "" + oldWindowPositionY);//NOI18N
         } else {
-            window.setAttribute("height", "" + windowHeight);
-            window.setAttribute("width", "" + windowWidth);
-            window.setAttribute("x", "" + windowX);
-            window.setAttribute("y", "" + windowY);
+            window.setAttribute("height", "" + windowHeight);//NOI18N
+            window.setAttribute("width", "" + windowWidth);//NOI18N
+            window.setAttribute("x", "" + windowX);//NOI18N
+            window.setAttribute("y", "" + windowY);//NOI18N
         }
 
 
-        window.setAttribute("max", "" + windowMaximised);
+        window.setAttribute("max", "" + windowMaximised);//NOI18N
 
         ret.addContent(window);
         //Iterator<View> it=viewport.getViewset().iterator();
@@ -2655,33 +3223,33 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     @Override
     public void masterConfigure(Element e) {
-        Element prefs = e.getChild("cismapPluginUIPreferences");
+        Element prefs = e.getChild("cismapPluginUIPreferences");//NOI18N
         cismapPluginUIPreferences = prefs;
         try {
-            Element help_url_element = prefs.getChild("help_url");
-            Element news_url_element = prefs.getChild("news_url");
-            Element httpInterfacePortElement = prefs.getChild("httpInterfacePort");
+            Element help_url_element = prefs.getChild("help_url");//NOI18N
+            Element news_url_element = prefs.getChild("news_url");//NOI18N
+            Element httpInterfacePortElement = prefs.getChild("httpInterfacePort");//NOI18N
             try {
                 httpInterfacePort = new Integer(httpInterfacePortElement.getText());
             } catch (Throwable t) {
-                log.warn("httpInterface wurde nicht konfiguriert. Wird auf Standardwert gesetzt:" + httpInterfacePort, t);
+                log.warn("httpInterface was not configured. Set default value: " + httpInterfacePort, t);//NOI18N
             }
             helpUrl = help_url_element.getText();
-            log.debug("helpUrl:" + helpUrl);
+            log.debug("helpUrl:" + helpUrl);//NOI18N
 
             newsUrl = news_url_element.getText();
 
         } catch (Throwable t) {
-            log.error("Fehler beim Laden der Hilfeurls (" + prefs.getChildren() + ")", t);
+            log.error("Error while loading the help urls (" + prefs.getChildren() + ")", t);//NOI18N
         }
 
         windows2skip = new Vector<String>();
         try {
-            Element windows2SkipElement = e.getChild("skipWindows");
-            Iterator<Element> it = windows2SkipElement.getChildren("skip").iterator();
+            Element windows2SkipElement = e.getChild("skipWindows");//NOI18N
+            Iterator<Element> it = windows2SkipElement.getChildren("skip").iterator();//NOI18N
             while (it.hasNext()) {
                 Element next = it.next();
-                String id = next.getAttributeValue("windowid");
+                String id = next.getAttributeValue("windowid");//NOI18N
                 windows2skip.add(id);
                 View v = viewMap.getView(id);
                 if (v != null) {
@@ -2693,7 +3261,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
             }
         } catch (Exception x) {
-            log.info("Keine skipWindow Info vorhanden oder Fehler beim Lesen der Einstellungen", x);
+            log.info("No skipWindow Info available or error while reading the configuration", x);//NOI18N
         }
 
 
@@ -2717,9 +3285,9 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     active.add(comp);
                 }
 
-                if (active == before && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesStart")) { //erster Separator
+                if (active == before && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesStart")) { //erster Separator//NOI18N
                     active = null;
-                } else if (active == null && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesEnd")) { //zweiter Separator
+                } else if (active == null && comp.getName() != null && comp.getName().trim().equals("sepServerProfilesEnd")) { //zweiter Separator//NOI18N
                     active = after;
                 }
 
@@ -2729,19 +3297,19 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Vector<JMenuItem> serverProfileItems = new Vector<JMenuItem>();
 
 
-            Element serverprofiles = e.getChild("serverProfiles");
-            Iterator<Element> it = serverprofiles.getChildren("profile").iterator();
+            Element serverprofiles = e.getChild("serverProfiles");//NOI18N
+            Iterator<Element> it = serverprofiles.getChildren("profile").iterator();//NOI18N
             while (it.hasNext()) {
                 final Element next = it.next();
-                final String id = next.getAttributeValue("id");
-                final String sorter = next.getAttributeValue("sorter");
-                final String name = next.getAttributeValue("name");
-                final String path = next.getAttributeValue("path");
-                final String icon = next.getAttributeValue("icon");
-                final String descr = next.getAttributeValue("descr");
-                final String descrWidth = next.getAttributeValue("descrwidth");
+                final String id = next.getAttributeValue("id");//NOI18N
+                final String sorter = next.getAttributeValue("sorter");//NOI18N
+                final String name = next.getAttributeValue("name");//NOI18N
+                final String path = next.getAttributeValue("path");//NOI18N
+                final String icon = next.getAttributeValue("icon");//NOI18N
+                final String descr = next.getAttributeValue("descr");//NOI18N
+                final String descrWidth = next.getAttributeValue("descrwidth");//NOI18N
                 final String complexDescriptionText = next.getTextTrim();
-                final String complexDescriptionSwitch = next.getAttributeValue("complexdescr");
+                final String complexDescriptionSwitch = next.getAttributeValue("complexdescr");//NOI18N
 
                 JMenuItem serverProfileMenuItem = new JMenuItem();
                 serverProfileMenuItem.setText(name);
@@ -2754,16 +3322,16 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                             configurationManager.configureFromClasspath(path, null);
                             setButtonSelectionAccordingToMappingComponent();
                         } catch (Throwable ex) {
-                            log.fatal("Nix ServerProfile", ex);
+                            log.fatal("No ServerProfile", ex);//NOI18N
                         }
                     }
                 });
-                serverProfileMenuItem.setName("ServerProfile:" + sorter + ":" + name);
+                serverProfileMenuItem.setName("ServerProfile:" + sorter + ":" + name);//NOI18N
 
-                if (complexDescriptionSwitch != null && complexDescriptionSwitch.equalsIgnoreCase("true") && complexDescriptionText != null) {
+                if (complexDescriptionSwitch != null && complexDescriptionSwitch.equalsIgnoreCase("true") && complexDescriptionText != null) {//NOI18N
                     serverProfileMenuItem.setToolTipText(complexDescriptionText);
                 } else if (descrWidth != null) {
-                    serverProfileMenuItem.setToolTipText("<html><table width=\"" + descrWidth + "\" border=\"0\"><tr><td>" + descr + "</p></td></tr></table></html>");
+                    serverProfileMenuItem.setToolTipText("<html><table width=\"" + descrWidth + "\" border=\"0\"><tr><td>" + descr + "</p></td></tr></table></html>");//NOI18N
                 } else {
                     serverProfileMenuItem.setToolTipText(descr);
                 }
@@ -2774,7 +3342,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 try {
                     serverProfileMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource(icon)));
                 } catch (Exception iconE) {
-                    log.warn("Could not create Icon for ServerProfile.", iconE);
+                    log.warn("Could not create Icon for ServerProfile.", iconE);//NOI18N
                 }
 
                 serverProfileItems.add(serverProfileMenuItem);
@@ -2807,24 +3375,24 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
 
         } catch (Exception x) {
-            log.info("Keine Serverprofile vorhanden, oder Fehler bei der Auswertung", x);
+            log.info("No server profile available, or error while cerating analysis.", x);//NOI18N
         }
     }
 
     @Override
     public void configure(Element e) {
-        Element prefs = e.getChild("cismapPluginUIPreferences");
+        Element prefs = e.getChild("cismapPluginUIPreferences");//NOI18N
         cismapPluginUIPreferences = prefs;
         try {
-            Element window = prefs.getChild("window");
-            final int windowHeight = window.getAttribute("height").getIntValue();
-            final int windowWidth = window.getAttribute("width").getIntValue();
-            final int windowX = window.getAttribute("x").getIntValue();
-            final int windowY = window.getAttribute("y").getIntValue();
+            Element window = prefs.getChild("window");//NOI18N
+            final int windowHeight = window.getAttribute("height").getIntValue();//NOI18N
+            final int windowWidth = window.getAttribute("width").getIntValue();//NOI18N
+            final int windowX = window.getAttribute("x").getIntValue();//NOI18N
+            final int windowY = window.getAttribute("y").getIntValue();//NOI18N
             oldWindowDimension.setSize(windowWidth, windowHeight);
             oldWindowPositionX = windowX;
             oldWindowPositionY = windowY;
-            final boolean windowMaximised = window.getAttribute("max").getBooleanValue();
+            final boolean windowMaximised = window.getAttribute("max").getBooleanValue();//NOI18N
 //            log.fatal("is EDT?"+EventQueue.isDispatchThread());
             EventQueue.invokeLater(new Runnable() {
 
@@ -2839,7 +3407,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
             });
         } catch (Throwable t) {
-            log.error("Fehler beim Laden der Fenstergroesse", t);
+            log.error("Error while loading the sie of the window.", t);//NOI18N
         }
     }
 
@@ -2875,21 +3443,21 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         @Override
         public void run() {
-            log.debug("CIAO");
+            log.debug("CIAO");//NOI18N
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
-            log.debug("Shutdownhook --> saving layout");
+            log.debug("Shutdownhook --> saving layout");//NOI18N
             saveLayout(cismapDirectory + fs + standaloneLayoutName);
         }
     }
 
     public void loadLayout(String file) {
         setupDefaultLayout();
-        log.debug("Load Layout.. from " + file);
+        log.debug("Load Layout.. from " + file);//NOI18N
         File layoutFile = new File(file);
 
         if (layoutFile.exists()) {
-            log.debug("Layout File exists");
+            log.debug("Layout File exists");//NOI18N
             try {
                 FileInputStream layoutInput = new FileInputStream(layoutFile);
                 ObjectInputStream in = new ObjectInputStream(layoutInput);
@@ -2906,19 +3474,23 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
                 }
                 }*/
-                log.debug("Loading Layout successfull");
+                log.debug("Loading Layout successfull");//NOI18N
             } catch (IOException ex) {
-                log.error("Layout File IO Exception --> loading default Layout", ex);
+                log.error("Layout File IO Exception --> loading default Layout", ex);//NOI18N
                 if (isInit) {
-                    JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.loading_layout_failure_message_init"), java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.message_title"), JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.message1"), //NOI18N
+                            org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.title"), //NOI18N
+                            JOptionPane.INFORMATION_MESSAGE);
                     setupDefaultLayout();
                 } else {
-                    JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.loading_layout_failure_message"), java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.message_title"), JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.message2"), //NOI18N
+                            org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.title"),//NOI18N
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         } else {
             if (isInit) {
-                log.fatal("Datei exitstiert nicht --> default layout (init)");
+                log.fatal("File does not exist --> default layout (init)");//NOI18N
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -2930,62 +3502,65 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     }
                 });
             } else {
-                log.fatal("Datei exitstiert nicht)");
-                JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.layout_does_not_exist"), java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.message_title"), JOptionPane.INFORMATION_MESSAGE);
+                log.fatal("File does not exist)");//NOI18N
+                JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.message3"), //NOI18N
+                        org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.loadLayout(String).JOptionPane.title"), JOptionPane.INFORMATION_MESSAGE);//NOI18N
             }
         }
     }
 
     public void saveLayout(String file) {
-        log.debug("Saving Layout.. to " + file, new CurrentStackTrace());
+        log.debug("Saving Layout.. to " + file, new CurrentStackTrace());//NOI18N
         File layoutFile = new File(file);
         try {
             if (!layoutFile.exists()) {
-                log.debug("Saving Layout.. File does not exit");
+                log.debug("Saving Layout.. File does not exit");//NOI18N
                 layoutFile.createNewFile();
             } else {
-                log.debug("Saving Layout.. File does exit");
+                log.debug("Saving Layout.. File does exit");//NOI18N
             }
             FileOutputStream layoutOutput = new FileOutputStream(layoutFile);
             ObjectOutputStream out = new ObjectOutputStream(layoutOutput);
             rootWindow.write(out);
             out.flush();
             out.close();
-            log.debug("Saving Layout.. to " + file + " successfull");
+            log.debug("Saving Layout.. to " + file + " successfull");//NOI18N
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.saving_layout_failure"), java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.InfoNode.message_title"), JOptionPane.INFORMATION_MESSAGE);
-            log.error("A failure occured during writing the layout file", ex);
+            JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.saveLayout(String).JOptionPane.message"), //NOI18N
+                    org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.saveLayout(String).JOptionPane.title"), //NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            log.error("A failure occured during writing the layout file", ex);//NOI18N
         }
     }
 
     public void mapSearchStarted(MapSearchEvent mse) {
-        initMetaSearch(mse.getBounds(),mse.getGeometry());
+        initMetaSearch(mse.getGeometry());
     }
 
-    private void initMetaSearch(PBounds bounds,Geometry geom) {
-        String geosuche = "";
+    private void initMetaSearch(Geometry geom) {
+        String geosuche = "";//NOI18N
         try {
-            geosuche = context.getEnvironment().getParameter("geosuche");
+            geosuche = context.getEnvironment().getParameter("geosuche");//NOI18N
         } catch (Exception e) {
-            log.warn("Parameter geosuche nicht in plugin.xml gefunden, verwende " + geosuche, e);
+            log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e);//NOI18N
         }
         Object object = context.getSearch().getDataBeans().get(geosuche);
         FormDataBean coordinatesDataBean = (FormDataBean) object;
-        double[] boundingBox = new double[4];
-        boundingBox[0] = mapC.getWtst().getWorldX(bounds.getX());
-        boundingBox[1] = mapC.getWtst().getWorldY(bounds.getY() + bounds.getHeight());
-        boundingBox[2] = mapC.getWtst().getWorldX(bounds.getX() + bounds.getWidth());
-        boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY());
-        double[][] pointCoordinates = context.getToolkit().getPointCoordinates(boundingBox);
-        String ogcPolygon = Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
-        log.error("ogcPolygon:"+ogcPolygon);
-        log.fatal("newStuff:"+ geom.toText());
-        coordinatesDataBean.setBeanParameter("featureString", ogcPolygon);
+//        double[] boundingBox = new double[4];
+//        boundingBox[0] = mapC.getWtst().getWorldX(bounds.getX());
+//        boundingBox[1] = mapC.getWtst().getWorldY(bounds.getY() + bounds.getHeight());
+//        boundingBox[2] = mapC.getWtst().getWorldX(bounds.getX() + bounds.getWidth());
+//        boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY());
+//        double[][] pointCoordinates = context.getToolkit().getPointCoordinates(boundingBox);
+//        String ogcPolygon = Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
+//        log.error("ogcPolygon:"+ogcPolygon);
+//        log.fatal("newStuff:"+ geom.toText());
+        coordinatesDataBean.setBeanParameter("featureString", geom.toText());//NOI18N
         context.getSearch().performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(), coordinatesDataBean, context.getUserInterface().getFrameFor((PluginUI) this), false);
     }
 
     public void dropOnMap(MapDnDEvent mde) {
-        log.fatal("drop on map");
+        log.fatal("drop on map");//NOI18N
         if (mde.getDte() instanceof DropTargetDropEvent) {
             DropTargetDropEvent dtde = (DropTargetDropEvent) mde.getDte();
             if (dtde.getTransferable().isDataFlavorSupported(fromCapabilityWidget)) {
@@ -2999,11 +3574,11 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         showObjectsMethod.invoke(c);
                     }
                 } catch (Throwable t) {
-                    log.fatal(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Drop"), t);
+                    log.fatal("Error on drop", t);//NOI18N
                 }
             } else {
-                JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Das_cismap_Plugin_konnte_den_Datentyp_nicht_verarbeiten."));
-                log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.Das_cismap_Plugin_konnte_den_Datentyp_nicht_verarbeiten.") + dtde.getTransferable().getTransferDataFlavors()[0]);
+                JOptionPane.showMessageDialog(this, org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.dropOnMap(MapDnDEvent).JOptionPane.message"));//NOI18N
+                log.error("Unable to process the datatype." + dtde.getTransferable().getTransferDataFlavors()[0]);//NOI18N
             }
         }
 
@@ -3012,10 +3587,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public void showInMap(Collection c, boolean editable) throws Exception {
         showObjectsMethod.invoke(c, editable);
     }
-//
-//    public CidsFeature showInMap(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-//        return showObjectsMethod.invoke(node, oAttr, editable);
-//    }
+
+    public CidsFeature showInMap(MetaObject mo, boolean editable) throws Exception {
+        return showObjectsMethod.invoke(mo, editable);
+    }
 
     public void dragOverMap(MapDnDEvent mde) {
 //        if (mde.getDte() instanceof DropTargetDragEvent) {
@@ -3041,7 +3616,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             if (!cmdFeatureInfo.isSelected()) {
                 cmdFeatureInfo.setSelected(true);
             }
-        } else if (mapC.getInteractionMode().equals(MappingComponent.BOUNDING_BOX_SEARCH)) {
+        } else if (mapC.getInteractionMode().equals(MappingComponent.CREATE_SEARCH_POLYGON)) {
             if (!cmdPluginSearch.isSelected()) {
                 cmdPluginSearch.setSelected(true);
             }
@@ -3050,15 +3625,15 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 cmdSelect.setSelected(true);
             }
         } else if (mapC.getInteractionMode().equals(MappingComponent.NEW_POLYGON)) {
-            if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.POLYGON)) {
+            if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.POLYGON)) {
                 if (!cmdNewPolygon.isSelected()) {
                     cmdNewPolygon.setSelected(true);
                 }
-            } else if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.LINESTRING)) {
+            } else if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.LINESTRING)) {
                 if (!cmdNewLinestring.isSelected()) {
                     cmdNewLinestring.setSelected(true);
                 }
-            } else if (((CreateGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateGeometryListener.POINT)) {
+            } else if (((CreateNewGeometryListener) mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(CreateNewGeometryListener.POINT)) {
                 if (!cmdNewPoint.isSelected()) {
                     cmdNewPoint.setSelected(true);
                 }
@@ -3175,7 +3750,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void historyActionPerformed() {
-        log.fatal("historyActionPerformed");
+        log.fatal("historyActionPerformed");//NOI18N
     }
 
     public void forwardStatusChanged() {
@@ -3200,7 +3775,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Collection<Feature> fc = new Vector<Feature>(mapC.getFeatureCollection().getSelectedFeatures());
             final Vector<DefaultMutableTreeNode> nodeVector = new Vector<DefaultMutableTreeNode>();
             for (Feature f : fc) {
-                if (f instanceof CidsFeature) {
+                if (f instanceof CidsFeature || f instanceof FeatureGroup) {
+//                if (f instanceof CidsFeature) {
                     nodeVector.add(featuresInMapReverse.get(f));
                 }
             }
@@ -3208,6 +3784,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
                 public void run() {
                     nodeSelectionEventBlocker = true;
+                    //Baumselektion wird hier propagiert
                     ComponentRegistry.getRegistry().getActiveCatalogue().setSelectedNodes(nodeVector, true);
                     nodeSelectionEventBlocker = false;
                 }
@@ -3229,7 +3806,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     try {
                         Thread.sleep(1500); //Bugfix Try Deadlock 
 
-                        log.debug("Http Interface initialisieren");
+                        log.debug("Http Interface initialisieren");//NOI18N
                         Server server = new Server();
                         Connector connector = new SelectChannelConnector();
                         connector.setPort(9098);
@@ -3240,9 +3817,9 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                             public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
                                 Request base_request = (request instanceof Request) ? (Request) request : HttpConnection.getCurrentConnection().getRequest();
                                 base_request.setHandled(true);
-                                response.setContentType("text/html");
+                                response.setContentType("text/html");//NOI18N
                                 response.setStatus(HttpServletResponse.SC_ACCEPTED);
-                                response.getWriter().println("<html><head><title>HTTP interface</title></head><body><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"80%\"><tr><td width=\"30%\" align=\"center\" valign=\"middle\"><img border=\"0\" src=\"http://www.cismet.de/images/cismetLogo250M.png\" ><br></td><td width=\"%\">&nbsp;</td><td width=\"50%\" align=\"left\" valign=\"middle\"><font face=\"Arial\" size=\"3\" color=\"#1c449c\">... and <b><font face=\"Arial\" size=\"3\" color=\"#1c449c\">http://</font></b> just works</font><br><br><br></td></tr></table></body></html>");
+                                response.getWriter().println("<html><head><title>HTTP interface</title></head><body><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"80%\"><tr><td width=\"30%\" align=\"center\" valign=\"middle\"><img border=\"0\" src=\"http://www.cismet.de/images/cismetLogo250M.png\" ><br></td><td width=\"%\">&nbsp;</td><td width=\"50%\" align=\"left\" valign=\"middle\"><font face=\"Arial\" size=\"3\" color=\"#1c449c\">... and <b><font face=\"Arial\" size=\"3\" color=\"#1c449c\">http://</font></b> just works</font><br><br><br></td></tr></table></body></html>");//NOI18N
                             }
                         };
                         Handler hello = new AbstractHandler() {
@@ -3251,48 +3828,48 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                                 try {
                                     if (request.getLocalAddr().equals(request.getRemoteAddr())) {
 
-                                        log.info("HttpInterface angesprochen");
-                                        if (target.equalsIgnoreCase("/gotoBoundingBox")) {
-                                            String x1 = request.getParameter("x1");
-                                            String y1 = request.getParameter("y1");
-                                            String x2 = request.getParameter("x2");
-                                            String y2 = request.getParameter("y2");
+                                        log.info("HttpInterface connected");//NOI18N
+                                        if (target.equalsIgnoreCase("/gotoBoundingBox")) {//NOI18N
+                                            String x1 = request.getParameter("x1");//NOI18N
+                                            String y1 = request.getParameter("y1");//NOI18N
+                                            String x2 = request.getParameter("x2");//NOI18N
+                                            String y2 = request.getParameter("y2");//NOI18N
                                             try {
                                                 BoundingBox bb = new BoundingBox(new Double(x1), new Double(y1), new Double(x2), new Double(y2));
                                                 mapC.gotoBoundingBoxWithHistory(bb);
                                             } catch (Exception e) {
-                                                log.warn("gotoBoundingBox ging schief", e);
+                                                log.warn("gotoBoundingBox failed", e);//NOI18N
                                             }
                                         }
-                                        if (target.equalsIgnoreCase("/gotoScale")) {
-                                            String x1 = request.getParameter("x1");
-                                            String y1 = request.getParameter("y1");
-                                            String scaleDenominator = request.getParameter("scaleDenominator");
+                                        if (target.equalsIgnoreCase("/gotoScale")) {//NOI18N
+                                            String x1 = request.getParameter("x1");//NOI18N
+                                            String y1 = request.getParameter("y1");//NOI18N
+                                            String scaleDenominator = request.getParameter("scaleDenominator");//NOI18N
                                             try {
                                                 BoundingBox bb = new BoundingBox(new Double(x1), new Double(y1), new Double(x1), new Double(y1));
 
                                                 mapC.gotoBoundingBoxWithHistory(mapC.getScaledBoundingBox(new Double(scaleDenominator).doubleValue(), bb));
                                             } catch (Exception e) {
-                                                log.warn("gotoBoundingBox ging schief", e);
+                                                log.warn("gotoBoundingBox failed", e);//NOI18N
                                             }
                                         }
-                                        if (target.equalsIgnoreCase("/centerOnPoint")) {
-                                            String x1 = request.getParameter("x1");
-                                            String y1 = request.getParameter("y1");
+                                        if (target.equalsIgnoreCase("/centerOnPoint")) {//NOI18N
+                                            String x1 = request.getParameter("x1");//NOI18N
+                                            String y1 = request.getParameter("y1");//NOI18N
                                             try {
                                                 BoundingBox bb = new BoundingBox(new Double(x1), new Double(y1), new Double(x1), new Double(y1));
                                                 mapC.gotoBoundingBoxWithHistory(bb);
                                             } catch (Exception e) {
-                                                log.warn("centerOnPoint ging schief", e);
+                                                log.warn("centerOnPoint failed", e);//NOI18N
                                             }
                                         } else {
-                                            log.warn("Unbekanntes Target: " + target);
+                                            log.warn("Unknown target: " + target);//NOI18N
                                         }
                                     } else {
-                                        log.warn("Jemand versucht von einem anderen Rechner auf das Http Interface zuzugreifen. Abgelehnt.");
+                                        log.warn("Someone tries to access the http interface from an other computer. Access denied.");//NOI18N
                                     }
                                 } catch (Throwable t) {
-                                    log.error("Fehler im Behandeln von HttpRequests", t);
+                                    log.error("Error while handle http requests", t);//NOI18N
                                 }
                             }
                         };
@@ -3303,14 +3880,14 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         server.start();
                         server.join();
                     } catch (Throwable t) {
-                        log.error("Fehler im HttpInterface von cismap", t);
+                        log.error("Error in the HttpInterface of cismap", t);//NOI18N
                     }
                 }
             });
             http.start();
-            log.debug("Http Interface initialisieren");
+            log.debug("Initialise HTTP interface");//NOI18N
         } catch (Throwable t) {
-            log.fatal("GAAR NIX", t);
+            log.fatal("Nothing at all", t);//NOI18N
         }
     }
 
@@ -3320,7 +3897,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public void update(Observable o, Object arg) {
         if (o.equals(mapC.getMemUndo())) {
             if (arg.equals(MementoInterface.ACTIVATE) && !cmdUndo.isEnabled()) {
-                log.debug("UNDO-Button aktivieren");
+                log.debug("activate UNDO button");//NOI18N
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -3328,7 +3905,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     }
                 });
             } else if (arg.equals(MementoInterface.DEACTIVATE) && cmdUndo.isEnabled()) {
-                log.debug("UNDO-Button deaktivieren");
+                log.debug("deactivate UNDO button");//NOI18N
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -3338,7 +3915,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         } else if (o.equals(mapC.getMemRedo())) {
             if (arg.equals(MementoInterface.ACTIVATE) && !cmdRedo.isEnabled()) {
-                log.debug("REDO-Button aktivieren");
+                log.debug("activate REDO button");//NOI18N
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -3346,7 +3923,7 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     }
                 });
             } else if (arg.equals(MementoInterface.DEACTIVATE) && cmdRedo.isEnabled()) {
-                log.debug("REDO-Button deaktivieren");
+                log.debug("deactivate REDO button");//NOI18N
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -3364,10 +3941,10 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         private final Collection attributeNames;
 
         private NodeChangeListener() {
-            this.classNames = context.getEnvironment().getAttributeMappings("className");
-            this.attributeNames = context.getEnvironment().getAttributeMappings("attributeName");
+            this.classNames = context.getEnvironment().getAttributeMappings("className");//NOI18N
+            this.attributeNames = context.getEnvironment().getAttributeMappings("attributeName");//NOI18N
             if (this.attributeNames.size() == 0) {
-                this.attributeNames.add("id");
+                this.attributeNames.add("id");//NOI18N
             }
             AttributeRestriction attributeRestriction = new ComplexAttributeRestriction(AttributeRestriction.OBJECT, AttributeRestriction.IGNORE, null, this.attributeNames, null);
             this.attributeIterator = new SingleAttributeIterator(attributeRestriction, false);
@@ -3401,13 +3978,12 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                                 featureCollectionEventBlocker = true;
                                 mapC.getFeatureCollection().unselectAll();
                                 featureCollectionEventBlocker = false;
-                                log.debug("featuresInMap:" + featuresInMap);
-                                //log.debug(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Node_nicht_in_Karte")+":"+node);
+                                log.debug("featuresInMap:" + featuresInMap);//NOI18N
                             }
                         }
                     }
                 } catch (Throwable t) {
-                    log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_im_WizardMode"), t);
+                    log.error("Error in WizardMode:", t);//NOI18N
                 }
             }
         }
@@ -3424,30 +4000,23 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             invoke(nodes, false);
         }
 
-        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
-//            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
-//                return null;
-//            }
+        public synchronized CidsFeature invoke(MetaObject mo, boolean editable) throws Exception {
+            CidsFeature cidsFeature = new CidsFeature(mo);
+            invoke(cidsFeature, editable);
+            return cidsFeature;
+        }
+
+        private void invoke(CidsFeature cidsFeature, boolean editable) throws Exception {
             Vector<Feature> v = new Vector<Feature>();
-            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-            CidsFeature cidsFeature;
-            if (oAttr != null) {
-                cidsFeature = new CidsFeature(mon, oAttr);
-            } else {
-                cidsFeature = new CidsFeature(mon);
-            }
             cidsFeature.setEditable(editable);
             v.add(cidsFeature);
-            featuresInMap.put(node, cidsFeature);
-            featuresInMapReverse.put(cidsFeature, node);
-            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
-            log.debug("cidsFeature:" + cidsFeature);
-            log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature));
+            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());//NOI18N
+            log.debug("cidsFeature:" + cidsFeature);//NOI18N
+            log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature));//NOI18N
             mapC.getFeatureLayer().setVisible(true);
 //            if (mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)) {
             mapC.getFeatureCollection().removeFeature(cidsFeature);
-            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
+            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());//NOI18N
             //          }
             mapC.getFeatureCollection().substituteFeatures(v);
             if (editable) {
@@ -3458,77 +4027,155 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
                 mapC.showHandles(true);
             }
-            return cidsFeature;
         }
 
-        synchronized public void invoke(final Collection nodes, final boolean editable) throws Exception {
-            log.info("invoke zeigt Objekte in der Karte");
-            Thread t = new Thread() {
+        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+//            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
+//                return null;
+//            }
+            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+            CidsFeature cidsFeature = invoke(loader, editable);
+            if (oAttr != null) {
+                cidsFeature = new CidsFeature(mon, oAttr);
+            } else {
+                cidsFeature = new CidsFeature(mon);
+            }
+            featuresInMap.put(node, cidsFeature);
+            featuresInMapReverse.put(cidsFeature, node);
+            invoke(cidsFeature, editable);
+            return cidsFeature;
+        }
+//        public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws Exception {
+////            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
+////                return null;
+////            }
+//            Vector<Feature> v = new Vector<Feature>();
+//            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
+//            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+//            CidsFeature cidsFeature;
+//            if (oAttr != null) {
+//                cidsFeature = new CidsFeature(mon, oAttr);
+//            } else {
+//                cidsFeature = new CidsFeature(mon);
+//            }
+//            cidsFeature.setEditable(editable);
+//            v.add(cidsFeature);
+//            featuresInMap.put(node, cidsFeature);
+//            featuresInMapReverse.put(cidsFeature, node);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
+//            log.debug("cidsFeature:" + cidsFeature);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature));
+//            mapC.getFeatureLayer().setVisible(true);
+////            if (mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)) {
+//            mapC.getFeatureCollection().removeFeature(cidsFeature);
+//            log.debug("mapC.getFeatureCollection().getAllFeatures():" + mapC.getFeatureCollection().getAllFeatures());
+//            //          }
+//            mapC.getFeatureCollection().substituteFeatures(v);
+//            if (editable) {
+//                //mapC.getFeatureCollection().holdFeature(cidsFeature);
+//                mapC.getFeatureCollection().select(v);
+//            }
+//            if (!mapC.isFixedMapExtent()) {
+//                mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
+//                mapC.showHandles(true);
+//            }
+//            return cidsFeature;
+//        }
+
+        public synchronized void invoke(final Collection<DefaultMetaTreeNode> nodes, final boolean editable) throws Exception {
+            log.info("invoke shows objects in the map");//NOI18N
+            final Runnable showWaitRunnable = new Runnable() {
 
                 @Override
                 public void run() {
-                    EventQueue.invokeLater(new Runnable() {
+                    showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
+                    showObjectsWaitDialog.setVisible(true);
+                    final SwingWorker<Vector<Feature>, Void> addToMapWorker = new SwingWorker<Vector<Feature>, Void>() {
 
-                        public void run() {
-                            showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
-                            showObjectsWaitDialog.setVisible(true);
-                        }
-                    });
-
-                    try {
-                        Vector tmpFeaturesInMapRemoveCollection = new Vector();
-
-                        for (DefaultMetaTreeNode node : featuresInMap.keySet()) {
-                            Feature f = featuresInMap.get(node);
-                            if (!mapC.getFeatureCollection().isHoldFeature(f)) {
-                                tmpFeaturesInMapRemoveCollection.add(node);
-                                featuresInMapReverse.remove(f);
+                        @Override
+                        protected Vector<Feature> doInBackground() throws Exception {
+                            Iterator<DefaultMetaTreeNode> mapIter = featuresInMap.keySet().iterator();
+                            while (mapIter.hasNext()) {
+                                DefaultMetaTreeNode node = mapIter.next();
+                                Feature f = featuresInMap.get(node);
+                                if (!mapC.getFeatureCollection().isHoldFeature(f)) {
+                                    mapIter.remove();
+                                    featuresInMapReverse.remove(f);
+                                }
                             }
-                        }
-                        for (Object o : tmpFeaturesInMapRemoveCollection) {
-                            featuresInMap.remove(o);
-                        }
+                            Vector<Feature> v = new Vector<Feature>();
+                            for (DefaultMetaTreeNode node : nodes) {
+                                MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
+                                MetaObject mo = mon.getObject();
+                                if (mo == null) {
+                                    mo = ((ObjectTreeNode) node).getMetaObject();
+                                }
+                                final CidsFeature cidsFeature = new CidsFeature(mo);
+                                cidsFeature.setEditable(editable);
+                                List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expandAll(cidsFeature));
+                                //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
+                                //log.fatal("feturesInMap:"+featuresInMap);
 
-                        Iterator<DefaultMetaTreeNode> it = nodes.iterator();
-                        Vector<Feature> v = new Vector<Feature>();
-                        while (it.hasNext()) {
-                            DefaultMetaTreeNode node = it.next();
-                            MetaObject loader = ((ObjectTreeNode) node).getMetaObject();
-                            MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode();
-                            CidsFeature cidsFeature = new CidsFeature(mon);
-                            cidsFeature.setEditable(editable);
-                            //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
-                            //log.fatal("feturesInMap:"+featuresInMap);
 //                            log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
-                            if (!(featuresInMap.containsValue(cidsFeature))) {
-                                v.add(cidsFeature);
-                                featuresInMap.put(node, cidsFeature);
-                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);
-                                featuresInMapReverse.put(cidsFeature, node);
+                                if (!(featuresInMap.containsValue(cidsFeature))) {
+                                    v.addAll(allFeaturesToAdd);
+                                    //node -> masterfeature
+                                    featuresInMap.put(node, cidsFeature);
+                                    for (Feature feature : allFeaturesToAdd) {
+                                        //master and all subfeatures -> node
+                                        featuresInMapReverse.put(feature, node);
+                                    }
+//                                    featuresInMap.put(node, cidsFeature);
+//                                    featuresInMapReverse.put(cidsFeature, node);
+                                    log.debug("featuresInMap.put(node,cidsFeature):" + node + "," + cidsFeature);//NOI18Ns
 //                                log.fatal("feturesInMap:"+featuresInMap);
 //                                log.fatal("featuresInMapReverse:"+featuresInMapReverse);
+                                }
+                            }
+                            return v;
+                        }
+
+//                        private Feature getFeatureParent(Feature feature) {
+//                            if (feature instanceof SubFeature) {
+//                                SubFeature current = (SubFeature) feature;
+//                                if (current.getParentFeature() != null) {
+//                                    return getFeatureParent(current.getParentFeature());
+//                                }
+//                            }
+//                            return feature;
+//                        }
+                        @Override
+                        protected void done() {
+                            try {
+                                showObjectsWaitDialog.setVisible(false);
+//                                showObjectsWaitDialog.dispose();
+                                Vector<Feature> v = get();
+
+                                mapC.getFeatureLayer().setVisible(true);
+                                mapC.getFeatureCollection().substituteFeatures(v);
+
+                                if (!mapC.isFixedMapExtent()) {
+                                    mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
+                                }
+                            } catch (InterruptedException e) {
+                                log.debug(e, e);
+                            } catch (Exception e) {
+                                log.error("Error while displaying objects:", e);//NOI18N
                             }
                         }
-                        mapC.getFeatureLayer().setVisible(true);
-                        mapC.getFeatureCollection().substituteFeatures(v);
-
-                        if (!mapC.isFixedMapExtent()) {
-                            mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
-                        }
-                    } catch (Exception e) {
-                        log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CismapPlugin.log.Fehler_beim_Anzeigen_der_Objekte"), e);
-                    } finally {
-                        EventQueue.invokeLater(new Runnable() {
-
-                            public void run() {
-                                showObjectsWaitDialog.dispose();
-                            }
-                        });
-                    }
+                    };
+                    CismetThreadPool.execute(addToMapWorker);
                 }
             };
-            t.setPriority(Thread.NORM_PRIORITY);
-            t.start();
+
+            if (EventQueue.isDispatchThread()) {
+                showWaitRunnable.run();
+            } else {
+                EventQueue.invokeLater(showWaitRunnable);
+            }
+
+
         }
 
         public String getId() {
@@ -3539,8 +4186,8 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     class MyPluginProperties implements PluginProperties {
 
         public Object getProperty(String propertyName) {
-            log.debug("GetProperty von CismapPlugin aufgerufen");
-            if (propertyName.equalsIgnoreCase("coordinate")) {
+            log.debug("GetProperty was invoked from CismapPlugin");//NOI18N
+            if (propertyName.equalsIgnoreCase("coordinate")) {//NOI18N
                 //hier erwartet der Navigator ein double[][] mit  allen Punkten
                 double[][] pointCoordinates = new double[4][2];
                 // x1 y1
@@ -3559,18 +4206,18 @@ private void mniOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 pointCoordinates[3][0] = mapC.getCurrentBoundingBox().getX1();
                 pointCoordinates[3][1] = mapC.getCurrentBoundingBox().getY2();
                 return pointCoordinates;
-            } else if (propertyName.equalsIgnoreCase("coordinateString")) {
-                return "(" +
-                        mapC.getCurrentBoundingBox().getX1() + "," +
-                        mapC.getCurrentBoundingBox().getX1() + ") (" +
-                        mapC.getCurrentBoundingBox().getX2() + "," +
-                        mapC.getCurrentBoundingBox().getX2() + ") (" +
-                        mapC.getCurrentBoundingBox().getX2() + "," +
-                        mapC.getCurrentBoundingBox().getY2() + ") (" +
-                        mapC.getCurrentBoundingBox().getX1() + "," +
-                        mapC.getCurrentBoundingBox().getY2() + ")";
+            } else if (propertyName.equalsIgnoreCase("coordinateString")) {//NOI18N
+                return "("                                          //NOI18N
+                        + mapC.getCurrentBoundingBox().getX1() + ","//NOI18N
+                        + mapC.getCurrentBoundingBox().getX1() + ") ("//NOI18N
+                        + mapC.getCurrentBoundingBox().getX2() + ","//NOI18N
+                        + mapC.getCurrentBoundingBox().getX2() + ") ("//NOI18N
+                        + mapC.getCurrentBoundingBox().getX2() + ","//NOI18N
+                        + mapC.getCurrentBoundingBox().getY2() + ") ("//NOI18N
+                        + mapC.getCurrentBoundingBox().getX1() + ","//NOI18N
+                        + mapC.getCurrentBoundingBox().getY2() + ")";//NOI18N
 //                mapC.getCurrentBoundingBox().getGeometryFromTextCompatibleString()
-            } else if (propertyName.equalsIgnoreCase("ogcFeatureString")) {
+            } else if (propertyName.equalsIgnoreCase("ogcFeatureString")) {//NOI18N
                 mapC.getCurrentBoundingBox().getGeometryFromTextCompatibleString();
             }
             return null;

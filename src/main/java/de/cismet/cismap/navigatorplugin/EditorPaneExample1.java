@@ -51,20 +51,20 @@ import javax.swing.UIManager;
 
 public class EditorPaneExample1 extends JFrame {
   public EditorPaneExample1() {
-    super("JEditorPane Example 1");
+    super(org.openide.util.NbBundle.getMessage(EditorPaneExample1.class, "EditorPaneExample1.title"));//NOI18N
 
     pane = new JEditorPane();
     pane.setEditable(false); // Read-only
-    getContentPane().add(new JScrollPane(pane), "Center");
+    getContentPane().add(new JScrollPane(pane), "Center");//NOI18N
 
     JPanel panel = new JPanel();
     panel.setLayout(new BorderLayout(4, 4));
-    final JLabel urlLabel = new JLabel("URL: ", JLabel.RIGHT);
-    panel.add(urlLabel, "West");
+    final JLabel urlLabel = new JLabel("URL: ", JLabel.RIGHT);//NOI18N
+    panel.add(urlLabel, "West");//NOI18N
     textField = new JTextField(32);
-    panel.add(textField, "Center");
+    panel.add(textField, "Center");//NOI18N
 
-    getContentPane().add(panel, "South");
+    getContentPane().add(panel, "South");//NOI18N
 
     // Change page based on text field
     textField.addActionListener(new ActionListener() {
@@ -77,7 +77,7 @@ public class EditorPaneExample1 extends JFrame {
           
         } catch (IOException e) {
           JOptionPane.showMessageDialog(pane, new String[] {
-              "Unable to open file", url }, "File Open Error",
+              "Unable to open file", url }, "File Open Error",//NOI18N
               JOptionPane.ERROR_MESSAGE);
         }
       }
@@ -86,7 +86,7 @@ public class EditorPaneExample1 extends JFrame {
 
   public static void main(String[] args) {
     try {
-        UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");//NOI18N
     } catch (Exception evt) {}
     JFrame f = new EditorPaneExample1();
 

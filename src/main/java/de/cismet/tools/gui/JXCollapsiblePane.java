@@ -147,26 +147,26 @@ public class JXCollapsiblePane extends JPanel {
      * <li><code>collapsed</code> when the animation ends and the pane is collapsed
      * </ul>
      */
-    public final static String ANIMATION_STATE_KEY = "animationState";
+    public final static String ANIMATION_STATE_KEY = "animationState";//NOI18N
     
     /**
              * JXCollapsible has a built-in toggle action which can be bound to buttons.
              * Accesses the action through
              * <code>collapsiblePane.getActionMap().get(JXCollapsiblePane.TOGGLE_ACTION)</code>.
              */
-    public final static String TOGGLE_ACTION = "toggle";
+    public final static String TOGGLE_ACTION = "toggle";//NOI18N
     
     /**
              * The icon used by the "toggle" action when the JXCollapsiblePane is
              * expanded, i.e the icon which indicates the pane can be collapsed.
              */
-    public final static String COLLAPSE_ICON = "collapseIcon";
+    public final static String COLLAPSE_ICON = "collapseIcon";//NOI18N
     
     /**
              * The icon used by the "toggle" action when the JXCollapsiblePane is
              * collapsed, i.e the icon which indicates the pane can be expanded.
              */
-    public final static String EXPAND_ICON = "expandIcon";
+    public final static String EXPAND_ICON = "expandIcon";//NOI18N
     
     /**
      * Indicates whether the component is collapsed or expanded
@@ -191,12 +191,12 @@ public class JXCollapsiblePane extends JPanel {
     /**
      * Use this constant if you like the old vertical collapsing behaviour
      */
-    public final static String VERTICAL_ORIENTATION = "VERTICAL";
+    public final static String VERTICAL_ORIENTATION = "VERTICAL";//NOI18N
     
     /**
      * Use this constant if you want to collapse the component horizontally
      */
-    public final static String HORIZONTAL_ORIENTATION = "HORIZONTAL";
+    public final static String HORIZONTAL_ORIENTATION = "HORIZONTAL";//NOI18N
     
     /**
              * Constructs a new JXCollapsiblePane with a {@link JPanel} as content pane
@@ -229,7 +229,7 @@ public class JXCollapsiblePane extends JPanel {
             super(TOGGLE_ACTION);
             // the action must track the collapsed status of the pane to update its
             // icon
-            JXCollapsiblePane.this.addPropertyChangeListener("collapsed", this);
+            JXCollapsiblePane.this.addPropertyChangeListener("collapsed", this);//NOI18N
         }
         @Override
                 public void putValue(String key, Object newValue) {
@@ -269,9 +269,9 @@ public class JXCollapsiblePane extends JPanel {
     public void setOrientation(String orientation) {
         if (!orientation.equals(JXCollapsiblePane.HORIZONTAL_ORIENTATION)&&
                 !orientation.equals(JXCollapsiblePane.VERTICAL_ORIENTATION)) {
-            throw new IllegalArgumentException("orientation must be either " +
-                    "JXCollapsiblePane.HORIZONTAL_ORIENTATION or " +
-                    "JXCollapsiblePane.VERTICAL_ORIENTATION");
+            throw new IllegalArgumentException("orientation must be either " +//NOI18N
+                    "JXCollapsiblePane.HORIZONTAL_ORIENTATION or " +//NOI18N
+                    "JXCollapsiblePane.VERTICAL_ORIENTATION");//NOI18N
         }
         this.orientation = orientation;
     }
@@ -289,7 +289,7 @@ public class JXCollapsiblePane extends JPanel {
              */
     public void setContentPane(Container contentPanel) {
         if (contentPanel == null) {
-            throw new IllegalArgumentException("Content pane can't be null");
+            throw new IllegalArgumentException("Content pane can't be null");//NOI18N
         }
         
         if (wrapper != null) {
@@ -372,7 +372,7 @@ public class JXCollapsiblePane extends JPanel {
     public void setAnimated(boolean animated) {
         if (animated != useAnimation) {
             useAnimation = animated;
-            firePropertyChange("animated", !useAnimation, useAnimation);
+            firePropertyChange("animated", !useAnimation, useAnimation);//NOI18N
         }
     }
     
@@ -451,7 +451,7 @@ public class JXCollapsiblePane extends JPanel {
             }
             repaint();
             
-            firePropertyChange("collapsed", !collapsed, collapsed);
+            firePropertyChange("collapsed", !collapsed, collapsed);//NOI18N
         }
     }
     
@@ -508,7 +508,7 @@ public class JXCollapsiblePane extends JPanel {
      */
     private void setAnimationParams(AnimationParams params) {
         if (params == null) { throw new IllegalArgumentException(
-                "params can't be null"); }
+                "params can't be null"); }//NOI18N
         if (animateTimer != null) {
             animateTimer.stop();
         }
@@ -574,7 +574,7 @@ public class JXCollapsiblePane extends JPanel {
          * Mutex used to ensure that the startHeight/finalHeight are not changed
          * during a repaint operation.
          */
-        private final Object ANIMATION_MUTEX = "Animation Synchronization Mutex";
+        private final Object ANIMATION_MUTEX = "Animation Synchronization Mutex";//NOI18N
         /**
          * This is the starting height or width  when animating. If > finalHeight, then the
          * animation is going to be to scroll up the component. If it is < then
@@ -609,11 +609,11 @@ public class JXCollapsiblePane extends JPanel {
                         wrapper.showContent();
                         validate();
                         JXCollapsiblePane.this.firePropertyChange(ANIMATION_STATE_KEY, null,
-                                "expanded");
+                                "expanded");//NOI18N
                         return;
                     } else {
                         JXCollapsiblePane.this.firePropertyChange(ANIMATION_STATE_KEY, null,
-                                "collapsed");
+                                "collapsed");//NOI18N
                     }
                 }
                 
@@ -719,7 +719,7 @@ public class JXCollapsiblePane extends JPanel {
         public void reinit(int startHeightOrWidth, int stopHeightOrWidth) {
             synchronized (ANIMATION_MUTEX) {
                 JXCollapsiblePane.this.firePropertyChange(ANIMATION_STATE_KEY, null,
-                        "reinit");
+                        "reinit");//NOI18N
                 this.startHeightOrWidth = startHeightOrWidth;
                 this.finalHeightOrWidth = stopHeightOrWidth;
                 animateAlpha = animationParams.alphaStart;

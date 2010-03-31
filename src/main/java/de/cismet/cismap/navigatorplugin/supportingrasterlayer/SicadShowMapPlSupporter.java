@@ -53,12 +53,12 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
     public SicadShowMapPlSupporter(SimpleFeatureSupporterRasterServiceUrl url) {
         super(url);
         this.url=url;
-        log.debug("New SicadShowMapPlSupporter");
+        log.debug("New SicadShowMapPlSupporter");//NOI18N
     }
     public SicadShowMapPlSupporter(SicadShowMapPlSupporter s) {
         super(s);
         url=s.url;
-        log.debug("New SicadShowMapPlSupporter (Kopierkonstruktor)");
+        log.debug("New SicadShowMapPlSupporter (copy constructor)");//NOI18N
     }
 
     public void retrieve(boolean forced) {
@@ -68,7 +68,7 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
         super.retrieve(forced);
         }
         catch (Exception e) {
-            log.error("Nix FeatureSupportingRasterService .-(",e);
+            log.error("No FeatureSupportingRasterService .-(",e);//NOI18N
         }
                 
     }
@@ -76,14 +76,14 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
     private String getFilter(){
         
         
-        String ret="";
+        String ret="";//NOI18N
         int objectCounter=0;
         int inObjectCounter=0;
         
         
         FeatureCollection fc=CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
         
-        log.debug("in getFilter(): getFeatureCollection():"+getFeatureCollection());
+        log.debug("in getFilter(): getFeatureCollection():"+getFeatureCollection());//NOI18N
         //fc=getFeatureCollection();
         for (Object f:fc.getAllFeatures() ) {
             if (f instanceof RasterLayerSupportedFeature )  {
@@ -91,7 +91,7 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
                 if (rlsf.getSupportingRasterService()!=null &&rlsf.getSupportingRasterService().equals(this)) {
                     if (inObjectCounter==0) {
                         objectCounter++;
-                        ret+="&object"+objectCounter+"=";
+                        ret+="&object"+objectCounter+"=";//NOI18N
                     }
                     ret+=rlsf.getFilterPart();
                     inObjectCounter++;
@@ -111,4 +111,6 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
     public Object clone() {
         return new SicadShowMapPlSupporter(this);
     }
+
+
 }

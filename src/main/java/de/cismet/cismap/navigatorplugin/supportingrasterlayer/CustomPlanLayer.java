@@ -24,12 +24,12 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
     public CustomPlanLayer(SimpleFeatureSupporterRasterServiceUrl url) {
         super(url);
         this.url=url;
-        log.debug("New SicadShowMapPlSupporter");
+        log.debug("New CustomPlanLayer");//NOI18N
     }
     public CustomPlanLayer(CustomPlanLayer s) {
         super(s);
         url=s.url;
-        log.debug("New SicadShowMapPlSupporter (Kopierkonstruktor)");
+        log.debug("New CustomPlanLayer (copy constructor)");//NOI18N
     }
 
     public void retrieve(boolean forced) {
@@ -39,7 +39,7 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
         super.retrieve(forced);
         }
         catch (Exception e) {
-            log.error("Nix FeatureSupportingRasterService .-(",e);
+            log.error("No FeatureSupportingRasterService .-(",e);//NOI18N
         }
 
     }
@@ -47,7 +47,7 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
     private String getLayerString(){
 
 
-        String ret="";
+        String ret="";//NOI18N
         int objectCounter=0;
         int inObjectCounter=0;
 
@@ -62,9 +62,9 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
                 RasterLayerSupportedFeature rlsf=(RasterLayerSupportedFeature)f;
                 if (rlsf.getSupportingRasterService()!=null &&rlsf.getSupportingRasterService().equals(this)) {
                     if (inObjectCounter==0) {
-                        ret+="&layers=";
+                        ret+="&layers=";//NOI18N
                     }
-                    ret+=rlsf.getSpecialLayerName()+",";
+                    ret+=rlsf.getSpecialLayerName()+",";//NOI18N
                     inObjectCounter++;
                     if (inObjectCounter==3) {
                         inObjectCounter=0;
