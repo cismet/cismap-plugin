@@ -17,7 +17,7 @@ public class TestPanel extends AbstractOptionsPanel implements OptionsPanelContr
 
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
-    private static final String OPTION_NAME = "Beispiel 1";
+    private static final String OPTION_NAME = "Beispiel 1";//NOI18N
 
     /** Creates new form DemoPanel2 */
     public TestPanel() {
@@ -81,9 +81,9 @@ public class TestPanel extends AbstractOptionsPanel implements OptionsPanelContr
             }
             count++;
             jButton2.setText(Integer.toString(count));
-            jButton2.setToolTipText("<html><img src=\"http://www.drweb.de/icons/twitter/pd_twitter_iconset/pd_twitter_iconset/PNG/256/icon_a.png\" alt=\"" + Integer.toString(count) + "\"/></html>");
+            jButton2.setToolTipText("<html><img src=\"http://www.drweb.de/icons/twitter/pd_twitter_iconset/pd_twitter_iconset/PNG/256/icon_a.png\" alt=\"" + Integer.toString(count) + "\"/></html>");//NOI18N
         } catch (Throwable t) {
-            log.debug("Throwable", t);
+            log.debug("Throwable", t);//NOI18N
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

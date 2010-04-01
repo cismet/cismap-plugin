@@ -45,22 +45,22 @@ public class MetaSearch extends javax.swing.JPanel implements Configurable {
     }
     
     public Element getConfiguration() {
-        log.debug("getConfiguration");
+        log.debug("getConfiguration");//NOI18N
         try {
-            Element ret=new Element("cismapPluginSelectedSearchClasses");
+            Element ret=new Element("cismapPluginSelectedSearchClasses");//NOI18N
             List lst=tree.getSelectedClassNodeKeys();
 
-            log.debug(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("MetaSearch.log.selektierte_Klassen")+lst);
+            log.debug("selected classes" + lst);//NOI18N
             for (Object elem : lst) {
-                log.debug(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("MetaSearch.log.Klasse")+elem);
-                Element classElement=new Element("class");
-                classElement.setAttribute("key",elem.toString());
+                log.debug("class:" + elem);//NOI18N
+                Element classElement=new Element("class");//NOI18N
+                classElement.setAttribute("key",elem.toString());//NOI18N
                 ret.addContent(classElement);
             }
             return ret;
         } catch (Throwable t) {
-            log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("MetaSearch.log.Fehler_beim_Erzeugen_der_Konfiguration_Applikationsende"),t);
-            return new Element("cismapPluginSelectedSearchClasses");
+            log.error("Error on creating configuration (application termination)",t);//NOI18N
+            return new Element("cismapPluginSelectedSearchClasses");//NOI18N
         }
     }
     
@@ -69,16 +69,16 @@ public class MetaSearch extends javax.swing.JPanel implements Configurable {
     }
     public void configure(Element e) {
         try {
-            Element conf=e.getChild("cismapPluginSelectedSearchClasses");
-            List lst=conf.getChildren("class");
+            Element conf=e.getChild("cismapPluginSelectedSearchClasses");//NOI18N
+            List lst=conf.getChildren("class");//NOI18N
             Vector v=new Vector();
             for (Object elem : lst) {
-                String key=((Element)elem).getAttribute("key").getValue();
+                String key=((Element)elem).getAttribute("key").getValue();//NOI18N
                 v.add(key);
             }
             tree.setSelectedClassNodeKeys(v);
         } catch (Throwable t) {
-            log.error(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("MetaSearch.log.Fehler_beim_Laden_der_Konfiguration_Applikationsstart"),t);
+            log.error("Error on loading configuration (application startup)",t);//NOI18N
         }
     }
     /** This method is called from within the constructor to

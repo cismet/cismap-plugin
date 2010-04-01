@@ -240,7 +240,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 //                throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
 //            }
 //        } catch (Throwable t) {
-//            throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Fehler_beim_Erstellen_eines_CidsFeatures"), t);
+//            throw new IllegalArgumentException("Error while creating a CidsFeatures", t);
 //        }
 //    }
     private void initFeatureSettings() throws Throwable {
