@@ -66,7 +66,7 @@ public class StackedBox extends JPanel implements Scrollable {
         setTitleForegroundColor(Color.BLACK);
         setTitleBackgroundColor(new Color(248, 248, 248));
         setSeparatorColor(new Color(214, 223, 247));
-        log.debug("StackedBox erzeugt");
+        log.debug("StackedBox erzeugt");//NOI18N
         
     }
     
@@ -81,7 +81,7 @@ public class StackedBox extends JPanel implements Scrollable {
                 
             }
             public void componentResized(ComponentEvent e) {
-                log.debug("REsizeEvent e="+e);
+                log.debug("REsizeEvent e="+e);//NOI18N
                 adjustFillingComponent();
             }
             public void componentShown(ComponentEvent e) {
@@ -134,12 +134,12 @@ public class StackedBox extends JPanel implements Scrollable {
             log.debug(component);
         }
         
-        collapsible.addPropertyChangeListener("animationState", new PropertyChangeListener() {
+        collapsible.addPropertyChangeListener("animationState", new PropertyChangeListener() {//NOI18N
             public void propertyChange(final PropertyChangeEvent evt) {
                 final JXCollapsiblePane src=((JXCollapsiblePane)evt.getSource());
-                log.debug("collapsed property changed");
+                log.debug("collapsed property changed");//NOI18N
                 if (isShowing()&&!blockEvents) {
-                    log.debug("collapsedListener");
+                    log.debug("collapsedListener");//NOI18N
                     
                     if (src==fillingComponent) {
                         blockEvents=true;
@@ -149,7 +149,7 @@ public class StackedBox extends JPanel implements Scrollable {
                     if (scroller!=null) {
                         java.awt.EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                log.debug("Collapsed:"+evt);
+                                log.debug("Collapsed:"+evt);//NOI18N
                                 scroller.getViewport().scrollRectToVisible(src.getBounds(null));
                             }
                         });
@@ -168,9 +168,9 @@ public class StackedBox extends JPanel implements Scrollable {
                 JXCollapsiblePane.TOGGLE_ACTION);
         // use the collapse/expand icons from the JTree UI
         toggleAction.putValue(JXCollapsiblePane.COLLAPSE_ICON, UIManager
-                .getIcon("Tree.expandedIcon"));
+                .getIcon("Tree.expandedIcon"));//NOI18N
         toggleAction.putValue(JXCollapsiblePane.EXPAND_ICON, UIManager
-                .getIcon("Tree.collapsedIcon"));
+                .getIcon("Tree.collapsedIcon"));//NOI18N
         
         JXHyperlink link = new JXHyperlink(toggleAction);
         link.setText(title);
@@ -289,8 +289,8 @@ public class StackedBox extends JPanel implements Scrollable {
     public void adjustFillingComponent() {
         if (fillingPane!=null) {
 //            log.debug("getHeightFilledByComponents():"+getHeightFilledByComponents());
-            log.debug("getPotentialNewHeightOfFillingComponent():"+getPotentialNewHeightOfFillingComponent());
-            log.debug("minHeight:"+minHeight);
+            log.debug("getPotentialNewHeightOfFillingComponent():"+getPotentialNewHeightOfFillingComponent());//NOI18N
+            log.debug("minHeight:"+minHeight);//NOI18N
             final int potentialNewHeight=getPotentialNewHeightOfFillingComponent();
             boolean mindesHoeheWirdNichtUnterschritten=potentialNewHeight>minHeight;
             if (mindesHoeheWirdNichtUnterschritten && !fillingPane.isCollapsed()) {

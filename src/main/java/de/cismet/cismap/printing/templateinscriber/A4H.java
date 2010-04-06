@@ -27,8 +27,8 @@ public class A4H extends AbstractPrintingInscriber {
      */
     public HashMap<String, String> getValues() {
         HashMap<String,String> hm=new HashMap<String,String>();
-        hm.put("Ueberschrift",txtZeile1.getText());
-        hm.put("Unterschrift",txtZeile2.getText());
+        hm.put("Ueberschrift",txtZeile1.getText());//NOI18N
+        hm.put("Unterschrift",txtZeile2.getText());//NOI18N
         return hm;
     }
     

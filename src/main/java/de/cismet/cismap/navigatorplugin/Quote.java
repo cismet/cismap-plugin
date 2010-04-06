@@ -79,7 +79,7 @@ public class Quote extends JComponent {
 			int y = (int) ((height / 2) + (height / 2 * Math.sqrt(2) / 2));
 			int sqwidth = (int) (width * Math.sqrt(2) / 2);
 			int sqheight = (y - height / 2) * 2;
-			System.out.println("x = " + x + " y = " + y);
+			System.out.println("x = " + x + " y = " + y);//NOI18N
 			Font f = g.getFont();
 			FontMetrics fm = g.getFontMetrics();
 			FontMetrics last = fm;

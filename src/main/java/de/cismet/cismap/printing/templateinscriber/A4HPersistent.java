@@ -21,15 +21,15 @@ import java.util.Properties;
  */
 public class A4HPersistent extends AbstractPrintingInscriber {
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
-    String cacheFile = "";
+    String cacheFile = "";//NOI18N
     Properties cache = new Properties();
-    public static final String FIRST_LINE = "FIRST_LINE";
-    public static final String SECOND_LINE = "SECOND_LINE";
+    public static final String FIRST_LINE = "FIRST_LINE";//NOI18N
+    public static final String SECOND_LINE = "SECOND_LINE";//NOI18N
 
     /** Creates new form A4H */
     public A4HPersistent() {
         initComponents();
-        cacheFile = CismapBroker.getInstance().getCismapFolderPath() + System.getProperty("file.separator") + "inscriberCache";
+        cacheFile = CismapBroker.getInstance().getCismapFolderPath() + System.getProperty("file.separator") + "inscriberCache";//NOI18N
         readInscriberCache();
     }
 
@@ -40,10 +40,10 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      */
     public HashMap<String, String> getValues() {
         HashMap<String, String> hm = new HashMap<String, String>();
-        hm.put("Ueberschrift", txtZeile1.getText());
-        hm.put("Unterschrift", txtZeile2.getText());
-        cache.setProperty(FIRST_LINE, txtZeile1.getText());
-        cache.setProperty(SECOND_LINE, txtZeile2.getText());
+        hm.put("Ueberschrift", txtZeile1.getText());//NOI18N
+        hm.put("Unterschrift", txtZeile2.getText());//NOI18N
+        cache.setProperty(FIRST_LINE, txtZeile1.getText());//NOI18N
+        cache.setProperty(SECOND_LINE, txtZeile2.getText());//NOI18N
         writeInscriberCache();
         return hm;
     }
@@ -81,7 +81,7 @@ public class A4HPersistent extends AbstractPrintingInscriber {
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtZeile1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                        .add(txtZeile1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -120,7 +120,7 @@ public class A4HPersistent extends AbstractPrintingInscriber {
             txtZeile1.setText(z1);
             txtZeile2.setText(z2);
         } catch (Throwable t) {
-            log.warn("Fehler beim Lesen des InscriberCaches",t);
+            log.warn("Error while reading the InscriberCache",t);//NOI18N
         }
     }
 
@@ -129,9 +129,9 @@ public class A4HPersistent extends AbstractPrintingInscriber {
             @Override
             public void run() {
                 try {
-                    cache.store(new FileOutputStream(cacheFile), "Saved: " + System.currentTimeMillis());
+                    cache.store(new FileOutputStream(cacheFile), "Saved: " + System.currentTimeMillis());//NOI18N
                 } catch (Throwable t) {
-                log.warn("Fehler beim Schreiben des InscriberCaches",t);
+                log.warn("Error while writing the InscriberCache",t);//NOI18N
                 }
             }
         };

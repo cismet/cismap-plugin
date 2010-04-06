@@ -86,7 +86,7 @@ public abstract class CustomCidsFeatureRenderer extends JPanel implements SubFea
                         Object value = StaticCidsUtilities.getValueOfAttributeByString(attributeName, metaObject);
                         f.set(this, value);
                     } catch (Exception e) {
-                        log.warn("Fehler beim Zuweisen im Renderer", e);
+                        log.warn("Fehler beim Zuweisen im Renderer", e);//NOI18N
                     }
                 }
 //            else if (f.isAnnotationPresent(CidsRendererTitle.class)){
@@ -99,7 +99,7 @@ public abstract class CustomCidsFeatureRenderer extends JPanel implements SubFea
             }
             assign();
         } catch (Throwable t) {
-            log.fatal("Fehler in refrehhValues()", t);
+            log.fatal("Error in refrehhValues()", t);//NOI18N
         }
     }
 
