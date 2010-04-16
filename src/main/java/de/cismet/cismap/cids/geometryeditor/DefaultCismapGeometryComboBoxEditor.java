@@ -134,6 +134,16 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
         return "selectedItem";//NOI18N
     }
 
+    @Override
+    public Object getNullSourceValue() {
+        return null;
+    }
+
+    @Override
+    public Object getErrorSourceValue() {
+        return null;
+    }
+
     public Converter getConverter() {
         return new Converter<CidsBean, Feature>() {
 
