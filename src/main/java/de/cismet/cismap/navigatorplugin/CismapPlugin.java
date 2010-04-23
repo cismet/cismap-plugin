@@ -1107,7 +1107,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
         layerInfo.initDividerLocation();
-        initPluginToolbarComponents();
+//        initPluginToolbarComponents();
     }
 
     private void initPluginToolbarComponents() {
@@ -4114,6 +4114,8 @@ private void mniSearchRectangle1ActionPerformed(java.awt.event.ActionEvent evt) 
                                 final CidsFeature cidsFeature = new CidsFeature(mo);
                                 cidsFeature.setEditable(editable);
                                 List<Feature> allFeaturesToAdd = TypeSafeCollections.newArrayList(FeatureGroups.expandAll(cidsFeature));
+                                log.debug("allFeaturesToAdd:"+allFeaturesToAdd);//NOI18N
+
                                 //log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
                                 //log.fatal("feturesInMap:"+featuresInMap);
 

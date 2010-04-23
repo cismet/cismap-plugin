@@ -7,7 +7,7 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
-            <exec.args>-classpath %classpath de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <exec.args>-classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
             <exec.executable>java</exec.executable>
         </properties>
     </action>
@@ -30,5 +30,18 @@
             <activatedProfile>deploy-public</activatedProfile>
         </activatedProfiles>
     </action>
+    <action>
+            <actionName>debug</actionName>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.classpathScope>runtime</exec.classpathScope>
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+                <jpda.listen>true</jpda.listen>
+                <exec.executable>java</exec.executable>
+            </properties>
+        </action>
 
 </actions>

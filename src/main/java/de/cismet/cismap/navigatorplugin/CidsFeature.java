@@ -66,6 +66,7 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -144,8 +145,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                     renderFeatureString = localRenderFeatureString;
                 }
 
-                if (renderFeatureString != null && !renderFeatureString.trim().equals("")) {//NOI18N
+                if (renderFeatureString != null && !renderFeatureString.equals("")) {//NOI18N
                     final String[] renderFeatures = renderFeatureString.split(",");//NOI18N
+                    log.debug("renderFeatures: " + Arrays.asList(renderFeatures));//NOI18N
                     if (renderFeatures.length == 1) {
                         Object tester = mo.getBean().getProperty(renderFeatureString);
                         if (tester instanceof Collection) {
@@ -155,7 +157,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                             //old default case, single atribute and geometry
                             geom = (Geometry) tester;
                         } else if (tester instanceof CidsBean) {
-                            geom = searchGeometryInMetaObject(((CidsBean)tester).getMetaObject());
+                            geom = searchGeometryInMetaObject(((CidsBean) tester).getMetaObject());
                         } else {
                             log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden");//NOI18N
                         }
@@ -170,10 +172,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             }
 
             if (geom == null) {
-                //Defaultfall: Es ist kein Geometriefeld angegeben
+                //Defaultfall: Es ist kein explizites Geometriefeld angegeben
                 geom = searchGeometryInMetaObject(mo);
             }
-
         } catch (Throwable t) {
             log.error("Error CidsFeature(MetaObjectNode mon)", t);//NOI18N
             throw new IllegalArgumentException("Error on creating a CidsFeatures", t);//NOI18N
@@ -191,13 +192,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     private void createSubFeatures(String[] renderFeatures) {
         for (String renderFeature : renderFeatures) {
+            renderFeature = renderFeature.trim();
             Object tester = mo.getBean().getProperty(renderFeature);
-            if (tester instanceof Geometry) {
-                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature);
-                cf.setParentFeature(this);
-                cf.setMyAttributeStringInParentFeature(renderFeature);
-                subFeatures.add(cf);
-            } else if (tester instanceof Collection) {
+            Feature result;
+            if (tester instanceof Collection) {
+                //expand case
                 Collection<CidsBean> cbc = (Collection<CidsBean>) tester;
                 final PureFeatureGroup fg = new PureFeatureGroup();
                 for (CidsBean cb : cbc) {
@@ -206,14 +205,27 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                     cf.setMyAttributeStringInParentFeature(renderFeature);
                     fg.addFeature(cf);
                 }
-                subFeatures.add(fg);
                 fg.setParentFeature(this);
                 fg.setMyAttributeStringInParentFeature(renderFeature);
+                result = fg;
+            } else {
+                //no expand, single feature case, CidsFeature itself will neglect unusable geometry attributes
+                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature);
+                cf.setParentFeature(this);
+                cf.setMyAttributeStringInParentFeature(renderFeature);
+                result = cf;
             }
-
+            if (result.getGeometry() != null) {
+                //ok case
+                subFeatures.add(result);
+            } else {
+                //features without geom can cause trouble in other code parts -> we do not add them.
+                log.warn("Did not add Feature " + result + " because the geometry is null");//NOI18N
+            }
         }
         geom = FeatureGroups.getEnclosingGeometry(subFeatures);
         hide(true);
+        log.debug("subFeatures: " + subFeatures);//NOI18N
     }
 
     @Deprecated
@@ -569,8 +581,8 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             return false;
         } else {
             try {
-                String thisString = mo.getID() + "@" + mo.getMetaClass().getID();//NOI18N
-                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID();//NOI18N
+                String thisString = mo.getID() + "@" + mo.getMetaClass().getID()+"("+this.renderFeatureString+")";//NOI18N
+                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID()+"("+((CidsFeature) o).renderFeatureString+")";//NOI18N
                 return thisString.equals(thatString);
             } catch (Exception e) {
                 return false;
