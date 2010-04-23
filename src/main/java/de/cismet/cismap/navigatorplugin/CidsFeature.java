@@ -145,9 +145,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                     renderFeatureString = localRenderFeatureString;
                 }
 
-                if (renderFeatureString != null && !renderFeatureString.equals("")) {
-                    final String[] renderFeatures = renderFeatureString.split(",");
-                    log.debug("renderFeatures: " + Arrays.asList(renderFeatures));
+                if (renderFeatureString != null && !renderFeatureString.equals("")) {//NOI18N
+                    final String[] renderFeatures = renderFeatureString.split(",");//NOI18N
+                    log.debug("renderFeatures: " + Arrays.asList(renderFeatures));//NOI18N
                     if (renderFeatures.length == 1) {
                         Object tester = mo.getBean().getProperty(renderFeatureString);
                         if (tester instanceof Collection) {
@@ -220,12 +220,12 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 subFeatures.add(result);
             } else {
                 //features without geom can cause trouble in other code parts -> we do not add them.
-                log.warn("Did not add Feature " + result + " because the geometry is null");
+                log.warn("Did not add Feature " + result + " because the geometry is null");//NOI18N
             }
         }
         geom = FeatureGroups.getEnclosingGeometry(subFeatures);
         hide(true);
-        log.debug("subFeatures: " + subFeatures);
+        log.debug("subFeatures: " + subFeatures);//NOI18N
     }
 
     @Deprecated

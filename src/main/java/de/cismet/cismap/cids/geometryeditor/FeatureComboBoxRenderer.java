@@ -66,7 +66,7 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
         try {
             if (value!=null) {
                 if (value instanceof CidsFeature&&((CidsFeature)value).getGeometry()!=null) {
-                    setText("currently assigned Geometrie ("+((CidsFeature)value).getGeometry().getGeometryType()+")");//NOI18N
+                    setText(org.openide.util.NbBundle.getMessage(FeatureComboBoxRenderer.class, "FeatureComboBoxRenderer.getListCellRendererComponent(JList,Object,int,booblean,boolean).text.assignedGeometry", new Object[] {((CidsFeature)value).getGeometry().getGeometryType()}));//NOI18N
                 }
                 else if (value instanceof XStyledFeature&&((XStyledFeature)value).getGeometry()!=null) {
                     setText(((XStyledFeature)value).getName());
@@ -90,12 +90,12 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
                     setIcon(null);
                 }
             } else {
-                setText("no geometry assigned");//NOI18N
+                setText(org.openide.util.NbBundle.getMessage(FeatureComboBoxRenderer.class, "FeatureComboBoxRenderer.getListCellRendererComponent(JList,Object,int,booblean,boolean).text.noAssignement"));//NOI18N
             }
         } catch (Throwable t) {
             log.error("Error in the renderer of the ComboBox",t);//NOI18N
             
-            setText("--->value:"+((Feature)value).getGeometry());//NOI18N
+            setText(org.openide.util.NbBundle.getMessage(FeatureComboBoxRenderer.class, "FeatureComboBoxRenderer.getListCellRendererComponent(JList,Object,int,booblean,boolean).text.value", new Object[] {((Feature)value).getGeometry()}));//NOI18N
         }
         return this;
         
