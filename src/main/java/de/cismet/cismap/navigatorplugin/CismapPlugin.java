@@ -1222,13 +1222,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
             if (guiCompProviders != null) {
                 for (BasicGuiComponentProvider gcp : guiCompProviders) {
-                    final View extensionView = new View(gcp.getName(), Static2DTools.borderIcon(gcp.getIcon(), 0, 3, 0, 1),
-                            gcp.getComponent());
-                    viewMap.addView(gcp.getId(), extensionView);
-                    log.fatal(gcp.getName()+ " added");
+                    if (gcp.getType() == BasicGuiComponentProvider.GuiType.GUICOMPONENT) {
+                        gcp.setLinkObject(this);
+                        log.debug(gcp.getName() + " (try to add)");
+                        Icon icon = null;
+                        try {
+                            icon = Static2DTools.borderIcon(gcp.getIcon(), 0, 3, 0, 1);
+                        } catch (Exception skip) {
+                        }
+                        final View extensionView = new View(gcp.getName(), icon,
+                                gcp.getComponent());
+                        viewMap.addView(gcp.getId(), extensionView);
+                        log.debug(gcp.getName() + " added");
+                    }
                 }
             }
-
 
 
             legendTab[0] = vLegend;
@@ -1489,6 +1497,28 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                 }
             }
         }
+        Collection<? extends BasicGuiComponentProvider> toolbarguiCompProviders = Lookup.getDefault().lookupAll(BasicGuiComponentProvider.class);
+        if (toolbarguiCompProviders != null) {
+            log.fatal(toolbarguiCompProviders);
+
+            for (BasicGuiComponentProvider gui : toolbarguiCompProviders) {
+                if (gui.getType() == BasicGuiComponentProvider.GuiType.TOOLBARCOMPONENT) {
+                    int insertionIndex = tlbMain.getComponentCount();
+//                    int position = insertionIndex;
+//                    log.fatal("tryToAdd1"+gui.getId());
+//                    try {
+//                        position = (Integer) gui.getPositionHint();
+//                    } catch (Exception skip) {
+//                    }
+//
+//                    log.fatal("tryToAdd2"+gui.getId());
+                    tlbMain.add(gui.getComponent(), insertionIndex);
+                }
+
+            }
+        }
+
+
     }
 
     /**
@@ -1513,10 +1543,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
             @Override
             public void actionPerformed(ActionEvent e) {
                 mapC.gotoBoundingBoxWithHistory(mapC.getBoundingBoxFromScale(d));
+
+
             }
         });
 
+
+
         return jmi;
+
+
     }
 
     /**
@@ -1526,6 +1562,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
      */
     public MappingComponent getMappingComponent() {
         return mapC;
+
+
     }
 
     /**
@@ -1550,6 +1588,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                         vServerInfo
                     }),
                     new TabWindow(legendTab))));
+
+
         } else {
             rootWindow.setWindow(new SplitWindow(true, 0.716448f,
                     new SplitWindow(false, 0.72572404f,
@@ -1566,10 +1606,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
                         vServerInfo
                     }),
                     new TabWindow(legendTab))));
+
+
         }
 
-        for (int i = 0; i < wfsViews.length; i++) {
+        for (int i = 0; i
+                < wfsViews.length; i++) {
             wfsViews[i].close();
+
+
         }
 
         rootWindow.getWindowBar(Direction.LEFT).setEnabled(true);
@@ -1580,19 +1625,29 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         vLayers.restoreFocus();
         vMap.restoreFocus();
 
+
+
         if (windows2skip != null) {
 
             for (String id : windows2skip) {
                 View v = viewMap.getView(id);
 
+
+
                 if (v != null) {
                     v.close();
+
+
                 }
 
                 JMenuItem menu = viewMenuMap.get(id);
 
+
+
                 if (menu != null) {
                     menu.setVisible(false);
+
+
                 }
             }
         }
@@ -1609,23 +1664,37 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
             if (appletContext == null) {
                 de.cismet.tools.BrowserLauncher.openURL(url);
+
+
             } else {
                 java.net.URL u = new java.net.URL(url);
                 appletContext.showDocument(u, "cismetBrowser"); // NOI18N
+
+
             }
         } catch (Exception e) {
             log.warn("Error while opening: " + url + ". Try again", e); // NOI18N
 
             // Nochmal zur Sicherheit mit dem BrowserLauncher probieren
+
+
             try {
                 de.cismet.tools.BrowserLauncher.openURL(url);
+
+
             } catch (Exception e2) {
                 log.warn("The second time failed, too. Error while trying to open: " + url + " last attempt", e2); // NOI18N
 
+
+
                 try {
                     de.cismet.tools.BrowserLauncher.openURL("file://" + url); // NOI18N
+
+
                 } catch (Exception e3) {
                     log.error("3rd time fail:file://" + url, e3); // NOI18N
+
+
                 }
             }
         }
@@ -1804,12 +1873,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         menBookmarks.add(mniBookmarkSidebar);
 
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                popMenSearchPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
             }
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
-                popMenSearchPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
         });
 
@@ -1960,7 +2029,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         cmdPrint.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.text")); // NOI18N
         cmdPrint.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdPrint.toolTipText")); // NOI18N
         cmdPrint.setBorderPainted(false);
-        cmdPrint.setName("print"); // NOI18N
+        cmdPrint.setName("cmdPrint"); // NOI18N
         cmdPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdPrintActionPerformed(evt);
@@ -2005,8 +2074,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
         cmdMeasurement.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.cmdMeasurement.toolTipText")); // NOI18N
         cmdMeasurement.setBorderPainted(false);
         cmdMeasurement.setFocusable(false);
-        cmdMeasurement.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        cmdMeasurement.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cmdMeasurement.setHorizontalTextPosition(0);
+        cmdMeasurement.setVerticalTextPosition(3);
         cmdMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdMeasurementActionPerformed(evt);
@@ -2421,12 +2490,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport, O
 
         menSearch.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menSearch.text")); // NOI18N
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
-            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                menSearchMenuSelected(evt);
             }
             public void menuDeselected(javax.swing.event.MenuEvent evt) {
             }
-            public void menuSelected(javax.swing.event.MenuEvent evt) {
-                menSearchMenuSelected(evt);
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
             }
         });
 
