@@ -121,8 +121,12 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         this(mon.getObject());
     }
 
+    private CidsFeature(MetaObject mo, SubFeatureAwareFeatureRenderer rootRenderer) {
+        this(mo, null, rootRenderer);
+    }
+
     public CidsFeature(MetaObject mo) throws IllegalArgumentException {
-        this(mo, null);
+        this(mo, null, null);
     }
 
     /**
@@ -130,9 +134,10 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
      * @param mon
      * @throws java.lang.IllegalArgumentException
      */
-    private CidsFeature(MetaObject mo, String localRenderFeatureString) throws IllegalArgumentException {
+    private CidsFeature(MetaObject mo, String localRenderFeatureString, SubFeatureAwareFeatureRenderer rootRenderer) throws IllegalArgumentException {
 //        log.debug("New CIDSFEATURE");
 //        log.fatal(mo + " of " + mo.getMetaClass());
+        this.parentFeatureRenderer = rootRenderer;
         try {
 //            this.mon = mon;
             this.mo = mo;
@@ -159,7 +164,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                         } else if (tester instanceof CidsBean) {
                             geom = searchGeometryInMetaObject(((CidsBean) tester).getMetaObject());
                         } else {
-                            log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden");
+                            log.debug("Wert in Attribut RENDER_FEATURE = " + renderFeatureString + " hat zu keinem Geometrieobjekt gefuehrt.");
                         }
                     } else {
                         //multi renderer attribute case
@@ -167,7 +172,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                     }
                 }
             } catch (Exception e) {
-                log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrieattribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden", e);
+                log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrie unter Attribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden", e);
                 geom = null;
             }
 
@@ -191,6 +196,10 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     private void createSubFeatures(String[] renderFeatures) {
+        SubFeatureAwareFeatureRenderer rootRenderer = parentFeatureRenderer;
+        if (rootRenderer == null && featureRenderer instanceof SubFeatureAwareFeatureRenderer) {
+            rootRenderer = (SubFeatureAwareFeatureRenderer) featureRenderer;
+        }
         for (String renderFeature : renderFeatures) {
             renderFeature = renderFeature.trim();
             Object tester = mo.getBean().getProperty(renderFeature);
@@ -200,7 +209,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 Collection<CidsBean> cbc = (Collection<CidsBean>) tester;
                 final PureFeatureGroup fg = new PureFeatureGroup();
                 for (CidsBean cb : cbc) {
-                    CidsFeature cf = new CidsFeature(cb.getMetaObject());
+                    CidsFeature cf = new CidsFeature(cb.getMetaObject(), rootRenderer);
                     cf.setParentFeature(this); //first we had fg here ;-)
                     cf.setMyAttributeStringInParentFeature(renderFeature);
                     fg.addFeature(cf);
@@ -210,7 +219,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 result = fg;
             } else {
                 //no expand, single feature case, CidsFeature itself will neglect unusable geometry attributes
-                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature);
+                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature, rootRenderer);
                 cf.setParentFeature(this);
                 cf.setMyAttributeStringInParentFeature(renderFeature);
                 result = cf;
@@ -230,7 +239,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     @Deprecated
     public CidsFeature(MetaObjectNode mon, ObjectAttribute oAttr) throws IllegalArgumentException {
-        this(mon.getObject(), oAttr.getMai().getFieldName());
+        this(mon.getObject(), oAttr.getMai().getFieldName(), null);
     }
 
 //    public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException {
@@ -581,9 +590,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             return false;
         } else {
             try {
-                String thisString = mo.getID() + "@" + mo.getMetaClass().getID()+"("+this.renderFeatureString+")";//NOI18N
-                String thatString = ((CidsFeature) o).mo.getID() + "@" + ((CidsFeature) o).mo.getMetaClass().getID()+"("+((CidsFeature) o).renderFeatureString+")";//NOI18N
-                return thisString.equals(thatString);
+                String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString + ")";//NOI18N
+                CidsFeature that = (CidsFeature) o;
+                String thatString = that.mo.getID() + "@" + that.mo.getMetaClass().getID() + "(" + that.renderFeatureString + ")";//NOI18N
+                boolean parents = getParentFeature() == that.getParentFeature() ? true : getParentFeature() == null ? false : getParentFeature().equals(that.getParentFeature());
+                return thisString.equals(thatString) && parents;
             } catch (Exception e) {
                 return false;
             }
@@ -640,7 +651,12 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public int hashCode() {
         int retValue;
         if (mo != null) {
-            retValue = mo.hashCode();
+//            retValue = mo.hashCode();
+            String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString + ")";
+            retValue = thisString.hashCode();
+            if (getParentFeature() != null) {
+                retValue += parentFeature.hashCode();
+            }
         } else {
             retValue = super.hashCode();
         }
@@ -796,13 +812,19 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     @Override
     public void setParentFeature(FeatureGroup parentFeature) {
         this.parentFeature = parentFeature;
-        if (parentFeature instanceof CidsFeature) {
-            CidsFeature cidsParent = (CidsFeature) parentFeature;
-            FeatureRenderer fr = cidsParent.getFeatureRenderer();
-            if (fr instanceof SubFeatureAwareFeatureRenderer) {
-                parentFeatureRenderer = (SubFeatureAwareFeatureRenderer) fr;
-            }
-        }
+//        if (parentFeature instanceof CidsFeature) {
+//            CidsFeature cidsParent = (CidsFeature) parentFeature;
+//            if (cidsParent.getParentFeatureRenderer() != null) {
+//                //obersten parent feature renderer durchreichen
+//                parentFeatureRenderer = cidsParent.getParentFeatureRenderer();
+//            } else {
+//                //erstmals parent feature renderer gefunden
+//                FeatureRenderer fr = cidsParent.getFeatureRenderer();
+//                if (fr instanceof SubFeatureAwareFeatureRenderer) {
+//                    parentFeatureRenderer = (SubFeatureAwareFeatureRenderer) fr;
+//                }
+//            }
+//        }
     }
 
     public Collection<Feature> getSubFeatures() {
@@ -851,6 +873,10 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     public FeatureRenderer getFeatureRenderer() {
         return featureRenderer;
+    }
+
+    public SubFeatureAwareFeatureRenderer getParentFeatureRenderer() {
+        return parentFeatureRenderer;
     }
 
     @Override
