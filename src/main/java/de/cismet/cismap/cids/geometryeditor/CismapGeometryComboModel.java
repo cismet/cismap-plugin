@@ -1,58 +1,90 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cismap.cids.geometryeditor;
+
+import java.util.Vector;
+
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.event.ListDataListener;
 
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.navigatorplugin.CidsFeature;
-import de.cismet.tools.CurrentStackTrace;
-import java.util.Vector;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.event.ListDataListener;
 
-// End of variables declaration
-class CismapGeometryComboModel extends AbstractListModel implements ComboBoxModel,FeatureCollectionListener {
+import de.cismet.cismap.navigatorplugin.CidsFeature;
+
+import de.cismet.tools.CurrentStackTrace;
+/**
+ * End of variables declaration.
+ *
+ * @version  $Revision$, $Date$
+ */
+class CismapGeometryComboModel extends AbstractListModel implements ComboBoxModel, FeatureCollectionListener {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -4904140195479441282L;
+
+    //~ Instance fields --------------------------------------------------------
 
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private final DefaultCismapGeometryComboBoxEditor editor;
     private Object selectedItem = null;
     private Feature currentObjectFeature;
     private Vector<Feature> newFeaturesInMap;
-    
 
-    public CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor editor, Feature currentObjectFeature) {        
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new CismapGeometryComboModel object.
+     *
+     * @param  editor                DOCUMENT ME!
+     * @param  currentObjectFeature  DOCUMENT ME!
+     */
+    public CismapGeometryComboModel(final DefaultCismapGeometryComboBoxEditor editor,
+            final Feature currentObjectFeature) {
         this.editor = editor;
-        log.debug("xxxlaa editor (con): "+editor);//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("xxxlaa editor (con): " + editor); // NOI18N
+        }
         this.currentObjectFeature = currentObjectFeature;
         refresh();
     }
 
+    //~ Methods ----------------------------------------------------------------
+
     /**
+     * Set the selected item. The implementation of this method should notify all registered <code>
+     * ListDataListener</code>s that the contents have changed.
      *
-     * Set the selected item. The implementation of this  method should notify
-     * all registered <code>ListDataListener</code>s that the contents
-     * have changed.
-     *
-     *
-     * @param anItem the list object to select or <code>null</code>
-     *        to clear the selection
+     * @param  anItem  the list object to select or <code>null</code> to clear the selection
      */
-    public void setSelectedItem(Object anItem) {
+    @Override
+    public void setSelectedItem(final Object anItem) {
         selectedItem = anItem;
     }
 
     /**
      * Returns the value at the specified index.
      *
-     * @param index the requested index
-     * @return the value at <code>index</code>
+     * @param   index  the requested index
+     *
+     * @return  the value at <code>index</code>
      */
-    public Object getElementAt(int index) {
-        if (currentObjectFeature != null) {//&&currentObjectFeature.getGeometry()!=null) {
+    @Override
+    public Object getElementAt(final int index) {
+        if (currentObjectFeature != null) { // &&currentObjectFeature.getGeometry()!=null) {
             if (index == 0) {
                 return currentObjectFeature;
-            } else if (index == getSize() - 1) {
+            } else if (index == (getSize() - 1)) {
                 return null;
             } else {
                 return newFeaturesInMap.get(index - 1);
@@ -86,11 +118,11 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
 //        listeners.add(l);
 //    }
     /**
-     *
      * Returns the length of the list.
      *
-     * @return the length of the list
+     * @return  the length of the list
      */
+    @Override
     public int getSize() {
         if (currentObjectFeature != null) {
             return newFeaturesInMap.size() + 2;
@@ -100,78 +132,100 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     }
 
     /**
-     *
      * Returns the selected item
      *
-     * @return The selected item or <code>null</code> if there is no selection
+     * @return  The selected item or <code>null</code> if there is no selection
      */
+    @Override
     public Object getSelectedItem() {
-
         return selectedItem;
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     public void refresh() {
-        log.debug("xxxlaaa refreshing: "+editor.getCismap());//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("xxxlaaa refreshing: " + editor.getCismap()); // NOI18N
+        }
         newFeaturesInMap = getAllNewFeatures();
         try {
             this.fireContentsChanged(this, 0, getSize() - 1);
         } catch (Throwable t) {
-            log.error("Error in refresh()", t);//NOI18N
+            log.error("Error in refresh()", t);                     // NOI18N
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private Vector<Feature> getAllNewFeatures() {
-        //Vector<Feature> allFeatures = CismapBroker.getInstance().getMappingComponent().getFeatureCollection().getAllFeatures();
-        Vector<Feature> allNewFeatures = new Vector<Feature>();
+        // Vector<Feature> allFeatures =
+        // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().getAllFeatures();
+        final Vector<Feature> allNewFeatures = new Vector<Feature>();
         if (editor.getCismap() != null) {
-            Vector<Feature> allFeatures = editor.getCismap().getMappingComponent().getFeatureCollection().getAllFeatures();
+            final Vector<Feature> allFeatures = editor.getCismap()
+                        .getMappingComponent()
+                        .getFeatureCollection()
+                        .getAllFeatures();
 
-            for (Feature f : allFeatures) {
-                if (f instanceof PureNewFeature){//||f instanceof CidsFeature) {
+            for (final Feature f : allFeatures) {
+                if (f instanceof PureNewFeature) {                                     // ||f instanceof CidsFeature) {
                     allNewFeatures.add(f);
                 }
             }
-
         } else {
-            log.error("cismap not found. No content in the editor.");//NOI18N
+            log.error("cismap not found. No content in the editor.");                  // NOI18N
         }
-        log.debug("getAllNewFeatures "+allNewFeatures,new CurrentStackTrace());//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("getAllNewFeatures " + allNewFeatures, new CurrentStackTrace()); // NOI18N
+        }
         return allNewFeatures;
     }
 
-    public void setCurrentObjectFeature(Feature currentObjectFeature) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  currentObjectFeature  DOCUMENT ME!
+     */
+    public void setCurrentObjectFeature(final Feature currentObjectFeature) {
         this.currentObjectFeature = currentObjectFeature;
     }
 
-
-    public void allFeaturesRemoved(FeatureCollectionEvent fce) {
+    @Override
+    public void allFeaturesRemoved(final FeatureCollectionEvent fce) {
         refresh();
     }
 
+    @Override
     public void featureCollectionChanged() {
         refresh();
     }
 
-    public void featureReconsiderationRequested(FeatureCollectionEvent fce) {
+    @Override
+    public void featureReconsiderationRequested(final FeatureCollectionEvent fce) {
         refresh();
     }
 
-    public void featureSelectionChanged(FeatureCollectionEvent fce) {
+    @Override
+    public void featureSelectionChanged(final FeatureCollectionEvent fce) {
         refresh();
     }
 
-    public void featuresAdded(FeatureCollectionEvent fce) {
+    @Override
+    public void featuresAdded(final FeatureCollectionEvent fce) {
         refresh();
     }
 
-    public void featuresChanged(FeatureCollectionEvent fce) {
+    @Override
+    public void featuresChanged(final FeatureCollectionEvent fce) {
         refresh();
     }
 
-    public void featuresRemoved(FeatureCollectionEvent fce) {
+    @Override
+    public void featuresRemoved(final FeatureCollectionEvent fce) {
         refresh();
     }
-
-
-
 }

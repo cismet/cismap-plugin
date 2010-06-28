@@ -1,37 +1,10 @@
-/*
- * SicadShowMapPlSupporter.java
- * Copyright (C) 2005 by:
- *
- *----------------------------
- * cismet GmbH
- * Goebenstrasse 40
- * 66117 Saarbruecken
- * http://www.cismet.de
- *----------------------------
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *----------------------------
- * Author:
- * thorsten.hell@cismet.de
- *----------------------------
- *
- * Created on 18. Juli 2006, 16:59
- *
- */
-
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cismap.navigatorplugin.supportingrasterlayer;
 
 import de.cismet.cismap.commons.features.FeatureCollection;
@@ -41,62 +14,85 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupportingRasterLayer;
 
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten.hell@cismet.de
+ * @author   thorsten.hell@cismet.de
+ * @version  $Revision$, $Date$
  */
-public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
-    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer {
+
+    //~ Instance fields --------------------------------------------------------
+
     SimpleFeatureSupporterRasterServiceUrl url;
+    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    //~ Constructors -----------------------------------------------------------
+
     /**
-     * Creates a new instance of SicadShowMapPlSupporter
+     * Creates a new SicadShowMapPlSupporter object.
+     *
+     * @param  s  DOCUMENT ME!
      */
-    public SicadShowMapPlSupporter(SimpleFeatureSupporterRasterServiceUrl url) {
-        super(url);
-        this.url=url;
-        log.debug("New SicadShowMapPlSupporter");//NOI18N
-    }
-    public SicadShowMapPlSupporter(SicadShowMapPlSupporter s) {
+    public SicadShowMapPlSupporter(final SicadShowMapPlSupporter s) {
         super(s);
-        url=s.url;
-        log.debug("New SicadShowMapPlSupporter (copy constructor)");//NOI18N
+        url = s.url;
+        if (log.isDebugEnabled()) {
+            log.debug("New SicadShowMapPlSupporter (copy constructor)"); // NOI18N
+        }
+    }
+    /**
+     * Creates a new instance of SicadShowMapPlSupporter.
+     *
+     * @param  url  DOCUMENT ME!
+     */
+    public SicadShowMapPlSupporter(final SimpleFeatureSupporterRasterServiceUrl url) {
+        super(url);
+        this.url = url;
+        if (log.isDebugEnabled()) {
+            log.debug("New SicadShowMapPlSupporter"); // NOI18N
+        }
     }
 
-    public void retrieve(boolean forced) {
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void retrieve(final boolean forced) {
         try {
             url.setFilter(getFilter());
-        
-        super.retrieve(forced);
+
+            super.retrieve(forced);
+        } catch (Exception e) {
+            log.error("No FeatureSupportingRasterService .-(", e); // NOI18N
         }
-        catch (Exception e) {
-            log.error("No FeatureSupportingRasterService .-(",e);//NOI18N
-        }
-                
     }
-    
-    private String getFilter(){
-        
-        
-        String ret="";//NOI18N
-        int objectCounter=0;
-        int inObjectCounter=0;
-        
-        
-        FeatureCollection fc=CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
-        
-        log.debug("in getFilter(): getFeatureCollection():"+getFeatureCollection());//NOI18N
-        //fc=getFeatureCollection();
-        for (Object f:fc.getAllFeatures() ) {
-            if (f instanceof RasterLayerSupportedFeature )  {
-                RasterLayerSupportedFeature rlsf=(RasterLayerSupportedFeature)f;
-                if (rlsf.getSupportingRasterService()!=null &&rlsf.getSupportingRasterService().equals(this)) {
-                    if (inObjectCounter==0) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getFilter() {
+        String ret = ""; // NOI18N
+        int objectCounter = 0;
+        int inObjectCounter = 0;
+
+        final FeatureCollection fc = CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
+        if (log.isDebugEnabled()) {
+            log.debug("in getFilter(): getFeatureCollection():" + getFeatureCollection()); // NOI18N
+        }
+        // fc=getFeatureCollection();
+        for (final Object f : fc.getAllFeatures()) {
+            if (f instanceof RasterLayerSupportedFeature) {
+                final RasterLayerSupportedFeature rlsf = (RasterLayerSupportedFeature)f;
+                if ((rlsf.getSupportingRasterService() != null) && rlsf.getSupportingRasterService().equals(this)) {
+                    if (inObjectCounter == 0) {
                         objectCounter++;
-                        ret+="&object"+objectCounter+"=";//NOI18N
+                        ret += "&object" + objectCounter + "="; // NOI18N
                     }
-                    ret+=rlsf.getFilterPart();
+                    ret += rlsf.getFilterPart();
                     inObjectCounter++;
-                    if (inObjectCounter==3) {
-                        inObjectCounter=0;
+                    if (inObjectCounter == 3) {
+                        inObjectCounter = 0;
                     }
                 }
             }
@@ -104,13 +100,13 @@ public class SicadShowMapPlSupporter extends SimpleFeatureSupportingRasterLayer{
         return ret;
     }
 
+    @Override
     public String toString() {
-        return getName();//+"("+listeners.size()+")";
+        return getName(); // +"("+listeners.size()+")";
     }
-    
+
+    @Override
     public Object clone() {
         return new SicadShowMapPlSupporter(this);
     }
-
-
 }

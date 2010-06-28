@@ -1,43 +1,17 @@
-/*
- * EditorPaneExample1.java
- * Copyright (C) 2005 by:
- *
- *----------------------------
- * cismet GmbH
- * Goebenstrasse 40
- * 66117 Saarbruecken
- * http://www.cismet.de
- *----------------------------
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *----------------------------
- * Author:
- * thorsten.hell@cismet.de
- *----------------------------
- *
- * Created on 22. Februar 2006, 15:53
- *
- */
-
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cismap.navigatorplugin;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import java.io.IOException;
 
 import javax.swing.JEditorPane;
@@ -49,57 +23,88 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
 public class EditorPaneExample1 extends JFrame {
-  public EditorPaneExample1() {
-    super(org.openide.util.NbBundle.getMessage(EditorPaneExample1.class, "EditorPaneExample1.title"));//NOI18N
 
-    pane = new JEditorPane();
-    pane.setEditable(false); // Read-only
-    getContentPane().add(new JScrollPane(pane), "Center");//NOI18N
+    //~ Static fields/initializers ---------------------------------------------
 
-    JPanel panel = new JPanel();
-    panel.setLayout(new BorderLayout(4, 4));
-    final JLabel urlLabel = new JLabel("URL: ", JLabel.RIGHT);//NOI18N
-    panel.add(urlLabel, "West");//NOI18N
-    textField = new JTextField(32);
-    panel.add(textField, "Center");//NOI18N
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -479698153634397409L;
 
-    getContentPane().add(panel, "South");//NOI18N
+    //~ Instance fields --------------------------------------------------------
 
-    // Change page based on text field
-    textField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        String url = textField.getText();
+    private JEditorPane pane;
+
+    private JTextField textField;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new EditorPaneExample1 object.
+     */
+    public EditorPaneExample1() {
+        super(org.openide.util.NbBundle.getMessage(EditorPaneExample1.class, "EditorPaneExample1.title")); // NOI18N
+
+        pane = new JEditorPane();
+        pane.setEditable(false);                               // Read-only
+        getContentPane().add(new JScrollPane(pane), "Center"); // NOI18N
+
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout(4, 4));
+        final JLabel urlLabel = new JLabel("URL: ", JLabel.RIGHT); // NOI18N
+        panel.add(urlLabel, "West");                               // NOI18N
+        textField = new JTextField(32);
+        panel.add(textField, "Center");                            // NOI18N
+
+        getContentPane().add(panel, "South"); // NOI18N
+
+        // Change page based on text field
+        textField.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(final ActionEvent evt) {
+                    final String url = textField.getText();
+                    try {
+                        // Try to display the page
+                        pane.setPage(url);
+                        urlLabel.setToolTipText(pane.getText());
+                    } catch (IOException e) {
+                        JOptionPane.showMessageDialog(
+                            pane,
+                            new String[] { "Unable to open file", url },
+                            "File Open Error", // NOI18N
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
         try {
-          // Try to display the page
-          pane.setPage(url);
-          urlLabel.setToolTipText(pane.getText());
-          
-        } catch (IOException e) {
-          JOptionPane.showMessageDialog(pane, new String[] {
-              "Unable to open file", url }, "File Open Error",//NOI18N
-              JOptionPane.ERROR_MESSAGE);
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
+        } catch (Exception evt) {
         }
-      }
-    });
-  }
+        final JFrame f = new EditorPaneExample1();
 
-  public static void main(String[] args) {
-    try {
-        UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");//NOI18N
-    } catch (Exception evt) {}
-    JFrame f = new EditorPaneExample1();
+        f.addWindowListener(new WindowAdapter() {
 
-    f.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent evt) {
-        System.exit(0);
-      }
-    });
-    f.setSize(500, 400);
-    f.setVisible(true);
-  }
-
-  private JEditorPane pane;
-
-  private JTextField textField;
+                @Override
+                public void windowClosing(final WindowEvent evt) {
+                    System.exit(0);
+                }
+            });
+        f.setSize(500, 400);
+        f.setVisible(true);
+    }
 }

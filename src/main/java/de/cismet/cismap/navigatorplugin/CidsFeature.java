@@ -1,71 +1,30 @@
-/*
- * CidsFeature.java
- * Copyright (C) 2005 by:
- *
- *----------------------------
- * cismet GmbH
- * Goebenstrasse 40
- * 66117 Saarbruecken
- * http://www.cismet.de
- *----------------------------
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *----------------------------
- * Author:
- * thorsten.hell@cismet.de
- *----------------------------
- *
- * Created on 5. Mai 2006, 12:02Ø
- *
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.connection.SessionManager;
+
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
+
 import com.vividsolutions.jts.geom.Geometry;
-import de.cismet.cids.dynamics.CidsBean;
-import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
-import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
-import de.cismet.cismap.commons.Refreshable;
-import de.cismet.cismap.commons.features.Bufferable;
-import de.cismet.cismap.commons.features.Feature;
-import de.cismet.cismap.commons.features.FeatureGroup;
-import de.cismet.cismap.commons.features.FeatureGroups;
-import de.cismet.cismap.commons.features.PureFeatureGroup;
-import de.cismet.cismap.commons.features.FeatureRenderer;
-import de.cismet.cismap.commons.features.Highlightable;
-import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
-import de.cismet.cismap.commons.features.XStyledFeature;
-import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
-import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
-import de.cismet.cismap.commons.interaction.CismapBroker;
-import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
-import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
-import de.cismet.tools.BlacklistClassloading;
-import de.cismet.tools.collections.TypeSafeCollections;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
+
 import java.lang.reflect.Constructor;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -73,11 +32,44 @@ import java.util.Iterator;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
+import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
+import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
+
+import de.cismet.cismap.commons.Refreshable;
+import de.cismet.cismap.commons.features.Bufferable;
+import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.FeatureGroups;
+import de.cismet.cismap.commons.features.FeatureRenderer;
+import de.cismet.cismap.commons.features.Highlightable;
+import de.cismet.cismap.commons.features.PureFeatureGroup;
+import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
+import de.cismet.cismap.commons.features.XStyledFeature;
+import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
+import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
+import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
+
+import de.cismet.tools.BlacklistClassloading;
+
+import de.cismet.tools.collections.TypeSafeCollections;
+
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten.hell@cismet.de
+ * @author   thorsten.hell@cismet.de
+ * @version  $Revision$, $Date$
  */
-public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, RasterLayerSupportedFeature, FeatureGroup {
+public class CidsFeature implements XStyledFeature,
+    Highlightable,
+    Bufferable,
+    RasterLayerSupportedFeature,
+    FeatureGroup {
+
+    //~ Instance fields --------------------------------------------------------
 
     private Paint featureFG = Color.black;
     private Paint featureBG = Color.gray;
@@ -96,45 +88,81 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     // private MetaObjectNode mon;
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private boolean editable = false;
-    private String namenszusatz = "";//NOI18N
+    private String namenszusatz = "";                                 // NOI18N
     private FeatureRenderer featureRenderer = null;
     private SubFeatureAwareFeatureRenderer parentFeatureRenderer = null;
     private FeatureAwareRasterService featureAwareRasterService = null;
     private String supportingRasterServiceRasterLayerName = null;
     private String supportingRasterServiceIdAttributeName = null;
-    private String supportingRasterServiceLayerStyleName = "default";//NOI18N
+    private String supportingRasterServiceLayerStyleName = "default"; // NOI18N
     private Image pointSymbol = null;
     private double pointSymbolSweetSpotX = 0d;
     private double pointSymbolSweetSpotY = 0d;
     private final Collection<Feature> subFeatures = TypeSafeCollections.newArrayList();
-    //CidsFeature is FeatureGroup + SubFeature
+    // CidsFeature is FeatureGroup + SubFeature
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
 
+    //~ Constructors -----------------------------------------------------------
+
     /**
-     * Creates a new instance of CidsFeature
-     * @param mon
-     * @throws java.lang.IllegalArgumentException
+     * Creates a new instance of CidsFeature.
+     *
+     * @param   mon  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
     @Deprecated
-    public CidsFeature(MetaObjectNode mon) throws IllegalArgumentException {
+    public CidsFeature(final MetaObjectNode mon) throws IllegalArgumentException {
         this(mon.getObject());
     }
 
-    private CidsFeature(MetaObject mo, SubFeatureAwareFeatureRenderer rootRenderer) {
-        this(mo, null, rootRenderer);
-    }
-
-    public CidsFeature(MetaObject mo) throws IllegalArgumentException {
+    /**
+     * Creates a new CidsFeature object.
+     *
+     * @param   mo  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    public CidsFeature(final MetaObject mo) throws IllegalArgumentException {
         this(mo, null, null);
     }
 
     /**
-     * Creates a new instance of CidsFeature
-     * @param mon
-     * @throws java.lang.IllegalArgumentException
+     * Creates a new CidsFeature object.
+     *
+     * @param   mon    DOCUMENT ME!
+     * @param   oAttr  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
-    private CidsFeature(MetaObject mo, String localRenderFeatureString, SubFeatureAwareFeatureRenderer rootRenderer) throws IllegalArgumentException {
+    @Deprecated
+    public CidsFeature(final MetaObjectNode mon, final ObjectAttribute oAttr) throws IllegalArgumentException {
+        this(mon.getObject(), oAttr.getMai().getFieldName(), null);
+    }
+
+    /**
+     * Creates a new CidsFeature object.
+     *
+     * @param  mo            DOCUMENT ME!
+     * @param  rootRenderer  DOCUMENT ME!
+     */
+    private CidsFeature(final MetaObject mo, final SubFeatureAwareFeatureRenderer rootRenderer) {
+        this(mo, null, rootRenderer);
+    }
+
+    /**
+     * Creates a new instance of CidsFeature.
+     *
+     * @param   mo                        DOCUMENT ME!
+     * @param   localRenderFeatureString  DOCUMENT ME!
+     * @param   rootRenderer              DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    private CidsFeature(final MetaObject mo,
+            final String localRenderFeatureString,
+            final SubFeatureAwareFeatureRenderer rootRenderer) throws IllegalArgumentException {
 //        log.debug("New CIDSFEATURE");
 //        log.fatal(mo + " of " + mo.getMetaClass());
         this.parentFeatureRenderer = rootRenderer;
@@ -143,74 +171,97 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
             this.mo = mo;
             this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
             initFeatureSettings();
-            //renderFeature auswerten
+            // renderFeature auswerten
 
             try {
                 if (localRenderFeatureString != null) {
                     renderFeatureString = localRenderFeatureString;
                 }
 
-                if (renderFeatureString != null && !renderFeatureString.equals("")) {//NOI18N
-                    final String[] renderFeatures = renderFeatureString.split(",");//NOI18N
-                    log.debug("renderFeatures: " + Arrays.asList(renderFeatures));//NOI18N
+                if ((renderFeatureString != null) && !renderFeatureString.equals("")) { // NOI18N
+                    final String[] renderFeatures = renderFeatureString.split(",");     // NOI18N
+                    if (log.isDebugEnabled()) {
+                        log.debug("renderFeatures: " + Arrays.asList(renderFeatures));  // NOI18N
+                    }
                     if (renderFeatures.length == 1) {
-                        Object tester = mo.getBean().getProperty(renderFeatureString);
+                        final Object tester = mo.getBean().getProperty(renderFeatureString);
                         if (tester instanceof Collection) {
-                            //single renderer attribute, multiple geometries case
+                            // single renderer attribute, multiple geometries case
                             createSubFeatures(renderFeatures);
                         } else if (tester instanceof Geometry) {
-                            //old default case, single atribute and geometry
-                            geom = (Geometry) tester;
+                            // old default case, single atribute and geometry
+                            geom = (Geometry)tester;
                         } else if (tester instanceof CidsBean) {
-                            geom = searchGeometryInMetaObject(((CidsBean) tester).getMetaObject());
+                            geom = searchGeometryInMetaObject(((CidsBean)tester).getMetaObject());
                         } else {
-                            log.debug("Wert in Attribut RENDER_FEATURE = " + renderFeatureString + " hat zu keinem Geometrieobjekt gefuehrt.");
+                            if (log.isDebugEnabled()) {
+                                log.debug("Wert in Attribut RENDER_FEATURE = " + renderFeatureString
+                                            + " hat zu keinem Geometrieobjekt gefuehrt.");
+                            }
                         }
                     } else {
-                        //multi renderer attribute case
+                        // multi renderer attribute case
                         createSubFeatures(renderFeatures);
                     }
                 }
             } catch (Exception e) {
-                log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrie unter Attribut mit dem Namen: " + renderFeatureString + " konnte nicht gefunden werden", e);
+                if (log.isDebugEnabled()) {
+                    log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrie unter Attribut mit dem Namen: "
+                                + renderFeatureString + " konnte nicht gefunden werden",
+                        e);
+                }
                 geom = null;
             }
 
             if (geom == null) {
-                //Defaultfall: Es ist kein explizites Geometriefeld angegeben
+                // Defaultfall: Es ist kein explizites Geometriefeld angegeben
                 geom = searchGeometryInMetaObject(mo);
             }
         } catch (Throwable t) {
-            log.error("Error CidsFeature(MetaObjectNode mon)", t);//NOI18N
-            throw new IllegalArgumentException("Error on creating a CidsFeatures", t);//NOI18N
+            log.error("Error CidsFeature(MetaObjectNode mon)", t);                     // NOI18N
+            throw new IllegalArgumentException("Error on creating a CidsFeatures", t); // NOI18N
         }
     }
 
-    private Geometry searchGeometryInMetaObject(MetaObject mo) {
-        Collection c = mo.getAttributesByType(Geometry.class, 1);
-        for (Object elem : c) {
-            ObjectAttribute oa = (ObjectAttribute) elem;
-            return (Geometry) oa.getValue();
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mo  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Geometry searchGeometryInMetaObject(final MetaObject mo) {
+        final Collection c = mo.getAttributesByType(Geometry.class, 1);
+        for (final Object elem : c) {
+            final ObjectAttribute oa = (ObjectAttribute)elem;
+            return (Geometry)oa.getValue();
         }
         return null;
     }
 
-    private void createSubFeatures(String[] renderFeatures) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  renderFeatures  DOCUMENT ME!
+     */
+    private void createSubFeatures(final String[] renderFeatures) {
         SubFeatureAwareFeatureRenderer rootRenderer = parentFeatureRenderer;
-        if (rootRenderer == null && featureRenderer instanceof SubFeatureAwareFeatureRenderer) {
-            rootRenderer = (SubFeatureAwareFeatureRenderer) featureRenderer;
+        if ((rootRenderer == null) && (featureRenderer instanceof SubFeatureAwareFeatureRenderer)) {
+            rootRenderer = (SubFeatureAwareFeatureRenderer)featureRenderer;
         }
         for (String renderFeature : renderFeatures) {
             renderFeature = renderFeature.trim();
-            Object tester = mo.getBean().getProperty(renderFeature);
+            final Object tester = mo.getBean().getProperty(renderFeature);
             Feature result;
             if (tester instanceof Collection) {
-                //expand case
-                Collection<CidsBean> cbc = (Collection<CidsBean>) tester;
+                // expand case
+                final Collection<CidsBean> cbc = (Collection<CidsBean>)tester;
                 final PureFeatureGroup fg = new PureFeatureGroup();
-                for (CidsBean cb : cbc) {
-                    CidsFeature cf = new CidsFeature(cb.getMetaObject(), rootRenderer);
-                    cf.setParentFeature(this); //first we had fg here ;-)
+                for (final CidsBean cb : cbc) {
+                    final CidsFeature cf = new CidsFeature(cb.getMetaObject(), rootRenderer);
+                    cf.setParentFeature(this); // first we had fg here ;-)
                     cf.setMyAttributeStringInParentFeature(renderFeature);
                     fg.addFeature(cf);
                 }
@@ -218,220 +269,273 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
                 fg.setMyAttributeStringInParentFeature(renderFeature);
                 result = fg;
             } else {
-                //no expand, single feature case, CidsFeature itself will neglect unusable geometry attributes
-                CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature, rootRenderer);
+                // no expand, single feature case, CidsFeature itself will neglect unusable geometry attributes
+                final CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature, rootRenderer);
                 cf.setParentFeature(this);
                 cf.setMyAttributeStringInParentFeature(renderFeature);
                 result = cf;
             }
             if (result.getGeometry() != null) {
-                //ok case
+                // ok case
                 subFeatures.add(result);
             } else {
-                //features without geom can cause trouble in other code parts -> we do not add them.
-                log.warn("Did not add Feature " + result + " because the geometry is null");//NOI18N
+                // features without geom can cause trouble in other code parts -> we do not add them.
+                log.warn("Did not add Feature " + result + " because the geometry is null"); // NOI18N
             }
         }
         geom = FeatureGroups.getEnclosingGeometry(subFeatures);
         hide(true);
-        log.debug("subFeatures: " + subFeatures);//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("subFeatures: " + subFeatures);                                        // NOI18N
+        }
     }
-
-    @Deprecated
-    public CidsFeature(MetaObjectNode mon, ObjectAttribute oAttr) throws IllegalArgumentException {
-        this(mon.getObject(), oAttr.getMai().getFieldName(), null);
-    }
-
-//    public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException {
-//        log.debug("New CIDSFEATURE");
-//        try {
-////            this.mon = mon;
-//            this.mo = mo;
-//            this.mc = mo.getMetaClass();
-//            initFeatureSettings();
-//
-//            //TODO noch irgendwie sinnvoll den namenszusatz f\u00FCllen
-//            Object test = mo.getBean().getProperty(property);
-//            if (test instanceof Geometry) {
-//                geom = (Geometry) test;
-//                if (geom == null) {
-//                    throw new IllegalArgumentException("Geometry==null");
-//                }
-//            } else {
-//                throw new IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
-//            }
-//        } catch (Throwable t) {
-//            throw new IllegalArgumentException("Error while creating a CidsFeatures", t);
-//        }
-//    }
+    /**
+     * public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException { log.debug("New
+     * CIDSFEATURE"); try { // this.mon = mon; this.mo = mo; this.mc = mo.getMetaClass(); initFeatureSettings(); //TODO
+     * noch irgendwie sinnvoll den namenszusatz f\u00FCllen Object test = mo.getBean().getProperty(property); if (test
+     * instanceof Geometry) { geom = (Geometry) test; if (geom == null) { throw new
+     * IllegalArgumentException("Geometry==null"); } } else { throw new
+     * IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
+     * } } catch (Throwable t) { throw new IllegalArgumentException("Error while creating a CidsFeatures", t); } }.
+     *
+     * @throws  Throwable  DOCUMENT ME!
+     */
     private void initFeatureSettings() throws Throwable {
         if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
-            if (((ActiveLayerModel) CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs().equalsIgnoreCase("epsg:4326")) {//NOI18N
+            if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs()
+                        .equalsIgnoreCase("epsg:4326")) {                                                         // NOI18N
                 featureBorder = 0.001f;
             }
         }
         try {
-            renderFeatureString = getAttribValue("RENDER_FEATURE", mo, mc).toString();//NOI18N
-            log.debug("RENDER_FEATURE=" + renderFeatureString);//NOI18N
+            renderFeatureString = getAttribValue("RENDER_FEATURE", mo, mc).toString();                            // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("RENDER_FEATURE=" + renderFeatureString);                                               // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("RENDER_FEATURE corrupt or missing", t);//NOI18N
+            log.info("RENDER_FEATURE corrupt or missing", t);                                                     // NOI18N
         }
         try {
-            renderMultipleFeatures = getAttribValue("RENDER_MULTIPLE_FEATURES", mo, mc).toString();//NOI18N
-            log.debug("RENDER_MULTIPLE_FEATURES=" + renderMultipleFeatures);//NOI18N
+            renderMultipleFeatures = getAttribValue("RENDER_MULTIPLE_FEATURES", mo, mc).toString();               // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("RENDER_MULTIPLE_FEATURES=" + renderMultipleFeatures);                                  // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("RENDER_MULTIPLE_FEATURES corrupt or missing", t);//NOI18N
+            log.info("RENDER_MULTIPLE_FEATURES corrupt or missing", t);                                           // NOI18N
         }
         try {
-            renderAllFeatures = new Integer(getAttribValue("RENDER_ALL_FEATURES", mo, mc).toString()).intValue();//NOI18N
-            log.debug("renderAllFeatures=" + renderAllFeatures);//NOI18N
+            renderAllFeatures = new Integer(getAttribValue("RENDER_ALL_FEATURES", mo, mc).toString()).intValue(); // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("renderAllFeatures=" + renderAllFeatures);                                              // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("RENDER_AKK_FEATURES corrupt or missing", t);//NOI18N
+            log.info("RENDER_AKK_FEATURES corrupt or missing", t);                                                // NOI18N
         }
         try {
 //            hiding = new Boolean(getAttribValue("HIDE_FEATURE", mo, mc).toString()).booleanValue();
-            log.debug("HIDE_FEATURE=" + hiding);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("HIDE_FEATURE=" + hiding);                                                              // NOI18N
+            }
         } catch (Throwable t) {
-            log.info(("HIDE_FEATURE corrupt or missing"), t);//NOI18N
+            log.info(("HIDE_FEATURE corrupt or missing"), t);                                                     // NOI18N
         }
         try {
-            log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");//NOI18N
-            String overrideFeatureRendererClassName = System.getProperty(mo.getDomain().toLowerCase() + "." + mo.getMetaClass().getTableName().toLowerCase() + ".featurerenderer");//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");                                                  // NOI18N
+            }
+            final String overrideFeatureRendererClassName = System.getProperty(mo.getDomain().toLowerCase() + "."
+                            + mo.getMetaClass().getTableName().toLowerCase() + ".featurerenderer");               // NOI18N
 
             String featureRendererClass = overrideFeatureRendererClassName;
             if (featureRendererClass == null) {
-                String mcName = mo.getMetaClass().getTableName();
-                featureRendererClass = "de.cismet.cids.custom.featurerenderer." + mo.getDomain().toLowerCase() + "." + mcName.substring(0, 1).toUpperCase() + mcName.substring(1).toLowerCase() + "FeatureRenderer";//NOI18N
+                final String mcName = mo.getMetaClass().getTableName();
+                featureRendererClass = "de.cismet.cids.custom.featurerenderer." + mo
+                            .getDomain().toLowerCase() + "." + mcName.substring(0, 1).toUpperCase()
+                            + mcName.substring(1).toLowerCase() + "FeatureRenderer";                   // NOI18N
             }
-            log.debug("FEATURE_RENDERER=" + featureRendererClass);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_RENDERER=" + featureRendererClass);                                 // NOI18N
+            }
             Class c = BlacklistClassloading.forName(featureRendererClass);
             if (c == null) {
-                c = BlacklistClassloading.forName((String) getAttribValue("FEATURE_RENDERER", mo, mc));//NOI18N
+                c = BlacklistClassloading.forName((String)getAttribValue("FEATURE_RENDERER", mo, mc)); // NOI18N
             }
-            Constructor constructor = c.getConstructor();
-            featureRenderer = (FeatureRenderer) constructor.newInstance();
-            ((CustomCidsFeatureRenderer) featureRenderer).setMetaObject(mo);
-            //Method assignM=assigner.getMethod("assign", new Class[] {Connection.class,String[].class, UniversalContainer.class});
-            log.debug("HAT GEKLAPPT:" + featureRendererClass);//NOI18N
+            final Constructor constructor = c.getConstructor();
+            featureRenderer = (FeatureRenderer)constructor.newInstance();
+            ((CustomCidsFeatureRenderer)featureRenderer).setMetaObject(mo);
+            if (log.isDebugEnabled()) {
+                // Method assignM=assigner.getMethod("assign", new Class[] {Connection.class,String[].class,
+                // UniversalContainer.class});
+                log.debug("HAT GEKLAPPT:" + featureRendererClass);                                         // NOI18N
+            }
         } catch (Throwable t) {
-            log.warn(("FEATURE_RENDERER corrupt or missing"), t);//NOI18N
+            log.warn(("FEATURE_RENDERER corrupt or missing"), t);                                          // NOI18N
         }
         try {
-            float featureTranslucencyValue = new Float(getAttribValue("FEATURE_TRANSLUCENCY", mo, mc).toString()).floatValue();//NOI18N
-            log.debug("FEATURE_TRANSLUCENCY=" + featureTranslucencyValue);//NOI18N
+            final float featureTranslucencyValue = new Float(getAttribValue("FEATURE_TRANSLUCENCY", mo, mc).toString())
+                        .floatValue();                                                                     // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_TRANSLUCENCY=" + featureTranslucencyValue);                             // NOI18N
+            }
             featureTranslucency = featureTranslucencyValue;
         } catch (Throwable t) {
-            log.info("FEATURE_TRANSLUCENCY corrupt or missing", t);//NOI18N
+            log.info("FEATURE_TRANSLUCENCY corrupt or missing", t);                                        // NOI18N
         }
         try {
-            setFeatureBorder(new Float(getAttribValue("FEATURE_BORDER", mo, mc).toString()).floatValue());//NOI18N
-            log.debug("featureBorder=" + featureBorder);//NOI18N
+            setFeatureBorder(new Float(getAttribValue("FEATURE_BORDER", mo, mc).toString()).floatValue()); // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("featureBorder=" + featureBorder);                                               // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_BORDER corrupt or missing", t);//NOI18N
+            log.info("FEATURE_BORDER corrupt or missing", t);                                              // NOI18N
             try {
-                setFeatureBorder(new Float(getAttribValue("UMGEBUNG", mo, mc).toString()).floatValue());//NOI18N
-                log.debug("featureBorder=" + featureBorder);//NOI18N
+                setFeatureBorder(new Float(getAttribValue("UMGEBUNG", mo, mc).toString()).floatValue());   // NOI18N
+                if (log.isDebugEnabled()) {
+                    log.debug("featureBorder=" + featureBorder);                                           // NOI18N
+                }
             } catch (Throwable tt) {
-                log.info("UMGEBUNG corrupt or missing", tt);//NOI18N
+                log.info("UMGEBUNG corrupt or missing", tt);                                               // NOI18N
             }
         }
         try {
-            String fg = getAttribValue("FEATURE_FG", mo, mc).toString();//NOI18N
-            String[] t = fg.split(",");//NOI18N
-            int r = new Integer(t[0]).intValue();
-            int g = new Integer(t[1]).intValue();
-            int b = new Integer(t[2]).intValue();
+            final String fg = getAttribValue("FEATURE_FG", mo, mc).toString();                             // NOI18N
+            final String[] t = fg.split(",");                                                              // NOI18N
+            final int r = new Integer(t[0]).intValue();
+            final int g = new Integer(t[1]).intValue();
+            final int b = new Integer(t[2]).intValue();
             featureFG = new Color(r, g, b);
-            log.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_FG corrupt or missing", t);//NOI18N
+            log.info("FEATURE_FG corrupt or missing", t);                                                  // NOI18N
         }
         try {
-            String s = getAttribValue("FEATURE_BG", mo, mc).toString();//NOI18N
-            String[] t = s.split(",");//NOI18N
-            int r = new Integer(t[0]).intValue();
-            int g = new Integer(t[1]).intValue();
-            int b = new Integer(t[2]).intValue();
+            final String s = getAttribValue("FEATURE_BG", mo, mc).toString();                              // NOI18N
+            final String[] t = s.split(",");                                                               // NOI18N
+            final int r = new Integer(t[0]).intValue();
+            final int g = new Integer(t[1]).intValue();
+            final int b = new Integer(t[2]).intValue();
             featureBG = new Color(r, g, b);
-            log.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_BG corrupt or missing", t);//NOI18N
+            log.info("FEATURE_BG corrupt or missing", t);                                                  // NOI18N
         }
         try {
-            String s = getAttribValue("FEATURE_HIGH_FG", mo, mc).toString();//NOI18N
-            String[] t = s.split(",");//NOI18N
-            int r = new Integer(t[0]).intValue();
-            int g = new Integer(t[1]).intValue();
-            int b = new Integer(t[2]).intValue();
-            log.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");//NOI18N
+            final String s = getAttribValue("FEATURE_HIGH_FG", mo, mc).toString();                         // NOI18N
+            final String[] t = s.split(",");                                                               // NOI18N
+            final int r = new Integer(t[0]).intValue();
+            final int g = new Integer(t[1]).intValue();
+            final int b = new Integer(t[2]).intValue();
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+            }
 //            featureHighFG = new Color(r, g, b);
         } catch (Throwable t) {
-            log.info("FEATURE_HIGH_FG corrupt or missing", t);//NOI18N
+            log.info("FEATURE_HIGH_FG corrupt or missing", t);                                             // NOI18N
         }
         try {
-            String s = getAttribValue("FEATURE_HIGH_BG", mo, mc).toString();//NOI18N
-            String[] t = s.split(",");//NOI18N
-            int r = new Integer(t[0]).intValue();
-            int g = new Integer(t[1]).intValue();
-            int b = new Integer(t[2]).intValue();
+            final String s = getAttribValue("FEATURE_HIGH_BG", mo, mc).toString();                         // NOI18N
+            final String[] t = s.split(",");                                                               // NOI18N
+            final int r = new Integer(t[0]).intValue();
+            final int g = new Integer(t[1]).intValue();
+            final int b = new Integer(t[2]).intValue();
 //            featureHighFG = new Color(r, g, b);
-            log.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_HIGH_BG corrupt or missing", t);//NOI18N
+            log.info("FEATURE_HIGH_BG corrupt or missing", t);                                             // NOI18N
         }
         try {
-            String path = getAttribValue("FEATURE_POINT_SYMBOL", mo, mc).toString();//NOI18N
+            final String path = getAttribValue("FEATURE_POINT_SYMBOL", mo, mc).toString();                 // NOI18N
             pointSymbol = new javax.swing.ImageIcon(getClass().getResource(path)).getImage();
-            log.debug("FEATURE_POINT_SYMBOL=" + path);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_POINT_SYMBOL=" + path);                                                 // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL Error", t);//NOI18N
+            log.info("FEATURE_POINT_SYMBOL Error", t);                                                     // NOI18N
         }
         try {
-            String x = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_X", mo, mc).toString();//NOI18N
+            final String x = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_X", mo, mc).toString();        // NOI18N
             pointSymbolSweetSpotX = new Double(x).doubleValue();
-            log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);                                        // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);//NOI18N
+            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);                                         // NOI18N
         }
         try {
-            String y = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_Y", mo, mc).toString();//NOI18N
+            final String y = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_Y", mo, mc).toString();        // NOI18N
             pointSymbolSweetSpotY = new Double(y).doubleValue();
-            log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);                                        // NOI18N
+            }
         } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);//NOI18N
+            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);                                         // NOI18N
         }
         try {
-            String supportingRasterService = String.valueOf(getAttribValue("FEATURESUPPORTINGRASTERSERVICE_TYPE", mo, mc));//NOI18N
-            String supportingRasterServiceUrl = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL", mo, mc);//NOI18N
+            final String supportingRasterService = String.valueOf(getAttribValue(
+                        "FEATURESUPPORTINGRASTERSERVICE_TYPE",
+                        mo,
+                        mc));                                                                              // NOI18N
+            final String supportingRasterServiceUrl = (String)getAttribValue(
+                    "FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL",
+                    mo,
+                    mc);                                                                                   // NOI18N
 
-            supportingRasterServiceRasterLayerName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER", mo, mc);//NOI18N
-            supportingRasterServiceIdAttributeName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE", mo, mc);//NOI18N
-            String serviceName = (String) getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc);//NOI18N
-            log.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);//NOI18N
-            Class c = BlacklistClassloading.forName(supportingRasterService);
+            supportingRasterServiceRasterLayerName = (String)getAttribValue(
+                    "FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER",
+                    mo,
+                    mc);                                                                                       // NOI18N
+            supportingRasterServiceIdAttributeName = (String)getAttribValue(
+                    "FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE",
+                    mo,
+                    mc);                                                                                       // NOI18N
+            final String serviceName = (String)getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc);  // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);                   // NOI18N
+            }
+            final Class c = BlacklistClassloading.forName(supportingRasterService);
             if (supportingRasterServiceUrl != null) {
-                SimpleFeatureSupporterRasterServiceUrl url = new SimpleFeatureSupporterRasterServiceUrl(supportingRasterServiceUrl);
-                Constructor constructor = c.getConstructor(SimpleFeatureSupporterRasterServiceUrl.class);
-                this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance(url);
+                final SimpleFeatureSupporterRasterServiceUrl url = new SimpleFeatureSupporterRasterServiceUrl(
+                        supportingRasterServiceUrl);
+                final Constructor constructor = c.getConstructor(SimpleFeatureSupporterRasterServiceUrl.class);
+                this.featureAwareRasterService = (FeatureAwareRasterService)constructor.newInstance(url);
             } else {
-                Constructor constructor = c.getConstructor();
-                this.featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance();
+                final Constructor constructor = c.getConstructor();
+                this.featureAwareRasterService = (FeatureAwareRasterService)constructor.newInstance();
             }
             featureAwareRasterService.setName(serviceName);
         } catch (Throwable t) {
-            log.debug("Error while creating the FeaureSupportingRasterService, or it does not exist.", t);//NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug("Error while creating the FeaureSupportingRasterService, or it does not exist.", t); // NOI18N
+            }
         }
     }
 
-    private Object getAttribValue(String name, MetaObject mo, MetaClass mc) {
-        Collection coa = mo.getAttributeByName(name, 1);
-        Collection cca = mc.getAttributeByName(name);
-        log.debug("mc.getAttributeByName(" + name + ")=" + cca);//NOI18N
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   name  DOCUMENT ME!
+     * @param   mo    DOCUMENT ME!
+     * @param   mc    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Object getAttribValue(final String name, final MetaObject mo, final MetaClass mc) {
+        final Collection coa = mo.getAttributeByName(name, 1);
+        final Collection cca = mc.getAttributeByName(name);
+        if (log.isDebugEnabled()) {
+            log.debug("mc.getAttributeByName(" + name + ")=" + cca); // NOI18N
+        }
         if (coa.size() == 1) {
-            ObjectAttribute oa = (ObjectAttribute) (coa.toArray()[0]);
+            final ObjectAttribute oa = (ObjectAttribute)(coa.toArray()[0]);
             return oa.getValue();
         } else if (cca.size() > 0) {
-            ClassAttribute ca = (ClassAttribute) (cca.toArray()[0]);
+            final ClassAttribute ca = (ClassAttribute)(cca.toArray()[0]);
             return ca.getValue();
         } else {
             return null;
@@ -439,7 +543,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setGeometry(Geometry geom) {
+    public void setGeometry(final Geometry geom) {
         this.geom = geom;
     }
 
@@ -451,7 +555,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         } else if (featureRenderer != null) {
             transparency = featureRenderer.getTransparency();
         }
-        return transparency > 0 ? transparency : featureTranslucency;
+        return (transparency > 0) ? transparency : featureTranslucency;
     }
 
     @Override
@@ -471,7 +575,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         if (subFeatures.size() == 0) {
             if (parentFeatureRenderer != null) {
                 return parentFeatureRenderer.getLinePaint(this);
-            } else if (featureRenderer != null && featureRenderer.getLinePaint() != null) {
+            } else if ((featureRenderer != null) && (featureRenderer.getLinePaint() != null)) {
                 return featureRenderer.getLinePaint();
             } else {
                 return featureFG;
@@ -491,7 +595,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         if (subFeatures.size() == 0) {
             if (parentFeatureRenderer != null) {
                 return parentFeatureRenderer.getFillingStyle(this);
-            } else if (featureRenderer != null && featureRenderer.getFillingStyle() != null) {
+            } else if ((featureRenderer != null) && (featureRenderer.getFillingStyle() != null)) {
                 return featureRenderer.getFillingStyle();
             } else {
                 return featureBG;
@@ -507,11 +611,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setCanBeSelected(boolean canBeSelected) {
+    public void setCanBeSelected(final boolean canBeSelected) {
     }
 
     @Override
-    public void setHighlighting(boolean highlighting) {
+    public void setHighlighting(final boolean highlighting) {
     }
 
     @Override
@@ -521,22 +625,27 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     @Override
     public String getName() {
-        log.debug("getName() von " + mo);//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("getName() von " + mo);                 // NOI18N
+        }
         try {
-            if (featureRenderer instanceof CustomCidsFeatureRenderer && ((CustomCidsFeatureRenderer) featureRenderer).getAlternativeName() != null) {
-                return ((CustomCidsFeatureRenderer) featureRenderer).getAlternativeName();
+            if ((featureRenderer instanceof CustomCidsFeatureRenderer)
+                        && (((CustomCidsFeatureRenderer)featureRenderer).getAlternativeName() != null)) {
+                return ((CustomCidsFeatureRenderer)featureRenderer).getAlternativeName();
             } else {
                 return mo.toString() + namenszusatz;
             }
         } catch (Throwable t) {
-            log.info("Error while identifying the name.", t);//NOI18N
+            log.info("Error while identifying the name.", t); // NOI18N
             return null;
         }
     }
 
     @Override
-    public JComponent getInfoComponent(Refreshable refresh) {
-        log.debug("getInfoComponent");//NOI18N
+    public JComponent getInfoComponent(final Refreshable refresh) {
+        if (log.isDebugEnabled()) {
+            log.debug("getInfoComponent"); // NOI18N
+        }
         if (parentFeatureRenderer != null) {
             return parentFeatureRenderer.getInfoComponent(refresh, this);
         } else if (featureRenderer != null) {
@@ -552,20 +661,27 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         try {
             ii = new ImageIcon(mc.getObjectIconData());
         } catch (Throwable t) {
-            log.info("Error on reading icon data. Trying to load class icon.", t);//NOI18N
+            log.info("Error on reading icon data. Trying to load class icon.", t); // NOI18N
             try {
                 ii = new ImageIcon(mc.getIconData());
             } catch (Throwable tt) {
-                log.info("Error on reading icon data.", tt);//NOI18N
+                log.info("Error on reading icon data.", tt);                       // NOI18N
 
                 ii = null;
             }
             ii = null;
         }
-        log.debug("getIconImage:" + ii);//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("getIconImage:" + ii); // NOI18N
+        }
         return ii;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public float getFeatureBorder() {
         return featureBorder;
     }
@@ -575,7 +691,12 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         return featureBorder;
     }
 
-    public void setFeatureBorder(float featureBorder) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  featureBorder  DOCUMENT ME!
+     */
+    public void setFeatureBorder(final float featureBorder) {
         this.featureBorder = featureBorder;
     }
 
@@ -585,15 +706,19 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof CidsFeature)) {
             return false;
         } else {
             try {
-                String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString + ")";//NOI18N
-                CidsFeature that = (CidsFeature) o;
-                String thatString = that.mo.getID() + "@" + that.mo.getMetaClass().getID() + "(" + that.renderFeatureString + ")";//NOI18N
-                boolean parents = getParentFeature() == that.getParentFeature() ? true : getParentFeature() == null ? false : getParentFeature().equals(that.getParentFeature());
+                final String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString
+                            + ")";                            // NOI18N
+                final CidsFeature that = (CidsFeature)o;
+                final String thatString = that.mo.getID() + "@" + that.mo.getMetaClass().getID() + "("
+                            + that.renderFeatureString + ")"; // NOI18N
+                final boolean parents = (getParentFeature() == that.getParentFeature())
+                    ? true
+                    : ((getParentFeature() == null) ? false : getParentFeature().equals(that.getParentFeature()));
                 return thisString.equals(thatString) && parents;
             } catch (Exception e) {
                 return false;
@@ -603,56 +728,50 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 
     @Override
     public boolean isEditable() {
-        return editable && subFeatures.size() == 0;
+        return editable && (subFeatures.size() == 0);
     }
 
     @Override
-    public void setEditable(boolean editable) {
+    public void setEditable(final boolean editable) {
         this.editable = editable;
     }
 
     /**
-     * Returns a hash code value for the object. This method is
-     * supported for the benefit of hashtables such as those provided by
-     * <code>java.util.Hashtable</code>.
-     * <p>
-     * The general contract of <code>hashCode</code> is:
+     * Returns a hash code value for the object. This method is supported for the benefit of hashtables such as those
+     * provided by <code>java.util.Hashtable</code>.
+     *
+     * <p>The general contract of <code>hashCode</code> is:</p>
+     *
      * <ul>
-     * <li>Whenever it is invoked on the same object more than once during
-     *     an execution of a Java application, the <tt>hashCode</tt> method
-     *     must consistently return the same integer, provided no information
-     *     used in <tt>equals</tt> comparisons on the object is modified.
-     *     This integer need not remain consistent from one execution of an
-     *     application to another execution of the same application.
-     * <li>If two objects are equal according to the <tt>equals(Object)</tt>
-     *     method, then calling the <code>hashCode</code> method on each of
-     *     the two objects must produce the same integer result.
-     * <li>It is <em>not</em> required that if two objects are unequal
-     *     according to the {@link java.lang.Object#equals(java.lang.Object)}
-     *     method, then calling the <tt>hashCode</tt> method on each of the
-     *     two objects must produce distinct integer results.  However, the
-     *     programmer should be aware that producing distinct integer results
-     *     for unequal objects may improve the performance of hashtables.
+     *   <li>Whenever it is invoked on the same object more than once during an execution of a Java application, the
+     *     <tt>hashCode</tt> method must consistently return the same integer, provided no information used in <tt>
+     *     equals</tt> comparisons on the object is modified. This integer need not remain consistent from one execution
+     *     of an application to another execution of the same application.</li>
+     *   <li>If two objects are equal according to the <tt>equals(Object)</tt> method, then calling the <code>
+     *     hashCode</code> method on each of the two objects must produce the same integer result.</li>
+     *   <li>It is <em>not</em> required that if two objects are unequal according to the
+     *     {@link java.lang.Object#equals(java.lang.Object)} method, then calling the <tt>hashCode</tt> method on each
+     *     of the two objects must produce distinct integer results. However, the programmer should be aware that
+     *     producing distinct integer results for unequal objects may improve the performance of hashtables.</li>
      * </ul>
-     * <p>
-     * As much as is reasonably practical, the hashCode method defined by
-     * class <tt>Object</tt> does return distinct integers for distinct
-     * objects. (This is typically implemented by converting the internal
-     * address of the object into an integer, but this implementation
-     * technique is not required by the
-     * Java<font size="-2"><sup>TM</sup></font> programming language.)
      *
+     * <p>As much as is reasonably practical, the hashCode method defined by class <tt>Object</tt> does return distinct
+     * integers for distinct objects. (This is typically implemented by converting the internal address of the object
+     * into an integer, but this implementation technique is not required by the Java<font size="-2"><sup>TM</sup></font>
+     * programming language.)</p>
      *
-     * @return a hash code value for this object.
-     * @see java.lang.Object#equals(java.lang.Object)
-     * @see java.util.Hashtable
+     * @return  a hash code value for this object.
+     *
+     * @see     java.lang.Object#equals(java.lang.Object)
+     * @see     java.util.Hashtable
      */
     @Override
     public int hashCode() {
         int retValue;
         if (mo != null) {
 //            retValue = mo.hashCode();
-            String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString + ")";
+            final String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString
+                        + ")";
             retValue = thisString.hashCode();
             if (getParentFeature() != null) {
                 retValue += parentFeature.hashCode();
@@ -664,7 +783,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void hide(boolean hiding) {
+    public void hide(final boolean hiding) {
         this.hiding = hiding;
     }
 
@@ -679,7 +798,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setSupportingRasterService(FeatureAwareRasterService featureAwareRasterService) {
+    public void setSupportingRasterService(final FeatureAwareRasterService featureAwareRasterService) {
         this.featureAwareRasterService = featureAwareRasterService;
     }
 
@@ -701,41 +820,53 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
         return featureAwareRasterService;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public MetaObject getMetaObject() {
         return mo;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public MetaClass getMetaClass() {
         return mc;
     }
 
     @Override
     public String getFilterPart() {
-        ObjectAttribute oa = (ObjectAttribute) mo.getAttributeByName(supportingRasterServiceIdAttributeName, 1).toArray()[0];
-        String id = oa.getValue().toString();
-        return supportingRasterServiceRasterLayerName + "@" + id + "@" + supportingRasterServiceLayerStyleName + ",";//NOI18N
+        final ObjectAttribute oa = (ObjectAttribute)
+            mo.getAttributeByName(supportingRasterServiceIdAttributeName, 1).toArray()[0];
+        final String id = oa.getValue().toString();
+        return supportingRasterServiceRasterLayerName + "@" + id + "@" + supportingRasterServiceLayerStyleName + ","; // NOI18N
     }
 
     @Override
     public String getSpecialLayerName() {
-        if (supportingRasterServiceRasterLayerName != null && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {//NOI18N
+        if ((supportingRasterServiceRasterLayerName != null)
+                    && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
-                String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length());//NOI18N
-                log.fatal("attrField" + attrField);//NOI18N
-                String ret = getMetaObject().getBean().getProperty(attrField).toString();
+                final String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length()); // NOI18N
+                log.fatal("attrField" + attrField);                                                                    // NOI18N
+                final String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {
-                log.error("AttrFieldProblem", e);//NOI18N
+                log.error("AttrFieldProblem", e);                                                                      // NOI18N
             }
-
         }
         return supportingRasterServiceRasterLayerName;
-
     }
 
     @Override
     public Object clone() {
-        log.debug("CLONE");//NOI18N
+        if (log.isDebugEnabled()) {
+            log.debug("CLONE"); // NOI18N
+        }
         try {
             return super.clone();
         } catch (Exception e) {
@@ -747,11 +878,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     public FeatureAnnotationSymbol getPointAnnotationSymbol() {
         if (parentFeatureRenderer != null) {
             return parentFeatureRenderer.getPointSymbol(this);
-        } else if (featureRenderer != null
-                && featureRenderer.getPointSymbol() != null) {
+        } else if ((featureRenderer != null)
+                    && (featureRenderer.getPointSymbol() != null)) {
             return featureRenderer.getPointSymbol();
         } else if (pointSymbol != null) {
-            FeatureAnnotationSymbol ret = new FeatureAnnotationSymbol(pointSymbol);
+            final FeatureAnnotationSymbol ret = new FeatureAnnotationSymbol(pointSymbol);
             ret.setSweetSpotX(pointSymbolSweetSpotX);
             ret.setSweetSpotY(pointSymbolSweetSpotY);
             return ret;
@@ -763,8 +894,9 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     @Override
     public int getLineWidth() {
         if (subFeatures.size() == 0) {
-            if (featureRenderer != null && featureRenderer.getLineStyle() != null && featureRenderer.getLineStyle() instanceof BasicStroke) {
-                return (int) ((BasicStroke) featureRenderer.getLineStyle()).getLineWidth();
+            if ((featureRenderer != null) && (featureRenderer.getLineStyle() != null)
+                        && (featureRenderer.getLineStyle() instanceof BasicStroke)) {
+                return (int)((BasicStroke)featureRenderer.getLineStyle()).getLineWidth();
             }
             return 1;
         } else {
@@ -773,19 +905,19 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setFillingPaint(Paint fillingStyle) {
+    public void setFillingPaint(final Paint fillingStyle) {
     }
 
     @Override
-    public void setLineWidth(int width) {
+    public void setLineWidth(final int width) {
     }
 
     @Override
-    public void setPointAnnotationSymbol(FeatureAnnotationSymbol featureAnnotationSymbol) {
+    public void setPointAnnotationSymbol(final FeatureAnnotationSymbol featureAnnotationSymbol) {
     }
 
     @Override
-    public void setTransparency(float transparrency) {
+    public void setTransparency(final float transparrency) {
         this.featureTranslucency = transparrency;
     }
 
@@ -795,13 +927,13 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setHighlightingEnabled(boolean enabled) {
-        throw new UnsupportedOperationException("Not supported yet.");//NOI18N
+    public void setHighlightingEnabled(final boolean enabled) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
-    public void setLinePaint(Paint linePaint) {
-        throw new UnsupportedOperationException("Not supported yet.");//NOI18N
+    public void setLinePaint(final Paint linePaint) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -810,7 +942,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setParentFeature(FeatureGroup parentFeature) {
+    public void setParentFeature(final FeatureGroup parentFeature) {
         this.parentFeature = parentFeature;
 //        if (parentFeature instanceof CidsFeature) {
 //            CidsFeature cidsParent = (CidsFeature) parentFeature;
@@ -827,6 +959,11 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
 //        }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public Collection<Feature> getSubFeatures() {
         return subFeatures;
     }
@@ -842,7 +979,7 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public void setMyAttributeStringInParentFeature(String myAttributeStringInParentFeature) {
+    public void setMyAttributeStringInParentFeature(final String myAttributeStringInParentFeature) {
         this.myAttributeStringInParentFeature = myAttributeStringInParentFeature;
     }
 
@@ -852,35 +989,45 @@ public class CidsFeature implements XStyledFeature, Highlightable, Bufferable, R
     }
 
     @Override
-    public boolean addFeature(Feature toAdd) {
+    public boolean addFeature(final Feature toAdd) {
         return subFeatures.add(toAdd);
     }
 
     @Override
-    public boolean addFeatures(Collection<? extends Feature> toAdd) {
+    public boolean addFeatures(final Collection<? extends Feature> toAdd) {
         return subFeatures.addAll(toAdd);
     }
 
     @Override
-    public boolean removeFeature(Feature toRemove) {
+    public boolean removeFeature(final Feature toRemove) {
         return subFeatures.remove(toRemove);
     }
 
     @Override
-    public boolean removeFeatures(Collection<? extends Feature> toRemove) {
+    public boolean removeFeatures(final Collection<? extends Feature> toRemove) {
         return subFeatures.removeAll(toRemove);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public FeatureRenderer getFeatureRenderer() {
         return featureRenderer;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public SubFeatureAwareFeatureRenderer getParentFeatureRenderer() {
         return parentFeatureRenderer;
     }
 
     @Override
     public String toString() {
-        return "CidsFeature<" + getMetaObject() + ">";//NOI18N
+        return "CidsFeature<" + getMetaObject() + ">"; // NOI18N
     }
 }

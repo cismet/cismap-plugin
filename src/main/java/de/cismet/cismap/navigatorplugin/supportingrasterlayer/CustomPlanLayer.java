@@ -1,8 +1,14 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.cismet.cismap.navigatorplugin.supportingrasterlayer;
 
 import de.cismet.cismap.commons.features.FeatureCollection;
@@ -12,74 +18,96 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupportingRasterLayer;
 
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
-    public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer{
-   private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
+
+    //~ Instance fields --------------------------------------------------------
+
     SimpleFeatureSupporterRasterServiceUrl url;
+    private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+
+    //~ Constructors -----------------------------------------------------------
+
     /**
-     * Creates a new instance of SicadShowMapPlSupporter
+     * Creates a new CustomPlanLayer object.
+     *
+     * @param  s  DOCUMENT ME!
      */
-    public CustomPlanLayer(SimpleFeatureSupporterRasterServiceUrl url) {
-        super(url);
-        this.url=url;
-        log.debug("New CustomPlanLayer");//NOI18N
-    }
-    public CustomPlanLayer(CustomPlanLayer s) {
+    public CustomPlanLayer(final CustomPlanLayer s) {
         super(s);
-        url=s.url;
-        log.debug("New CustomPlanLayer (copy constructor)");//NOI18N
+        url = s.url;
+        if (log.isDebugEnabled()) {
+            log.debug("New CustomPlanLayer (copy constructor)"); // NOI18N
+        }
+    }
+    /**
+     * Creates a new instance of SicadShowMapPlSupporter.
+     *
+     * @param  url  DOCUMENT ME!
+     */
+    public CustomPlanLayer(final SimpleFeatureSupporterRasterServiceUrl url) {
+        super(url);
+        this.url = url;
+        if (log.isDebugEnabled()) {
+            log.debug("New CustomPlanLayer"); // NOI18N
+        }
     }
 
-    public void retrieve(boolean forced) {
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void retrieve(final boolean forced) {
         try {
             url.setFilter(getLayerString());
             log.fatal(url);
-        super.retrieve(forced);
+            super.retrieve(forced);
+        } catch (Exception e) {
+            log.error("No FeatureSupportingRasterService .-(", e); // NOI18N
         }
-        catch (Exception e) {
-            log.error("No FeatureSupportingRasterService .-(",e);//NOI18N
-        }
-
     }
 
-    private String getLayerString(){
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getLayerString() {
+        String ret = ""; // NOI18N
+        final int objectCounter = 0;
+        int inObjectCounter = 0;
 
+        final FeatureCollection fc = CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
 
-        String ret="";//NOI18N
-        int objectCounter=0;
-        int inObjectCounter=0;
-
-
-        FeatureCollection fc=CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
-
-
-        
-        //fc=getFeatureCollection();
-        for (Object f:fc.getAllFeatures() ) {
-            if (f instanceof RasterLayerSupportedFeature )  {
-                RasterLayerSupportedFeature rlsf=(RasterLayerSupportedFeature)f;
-                if (rlsf.getSupportingRasterService()!=null &&rlsf.getSupportingRasterService().equals(this)) {
-                    if (inObjectCounter==0) {
-                        ret+="&layers=";//NOI18N
+        // fc=getFeatureCollection();
+        for (final Object f : fc.getAllFeatures()) {
+            if (f instanceof RasterLayerSupportedFeature) {
+                final RasterLayerSupportedFeature rlsf = (RasterLayerSupportedFeature)f;
+                if ((rlsf.getSupportingRasterService() != null) && rlsf.getSupportingRasterService().equals(this)) {
+                    if (inObjectCounter == 0) {
+                        ret += "&layers=";                   // NOI18N
                     }
-                    ret+=rlsf.getSpecialLayerName()+",";//NOI18N
+                    ret += rlsf.getSpecialLayerName() + ","; // NOI18N
                     inObjectCounter++;
-                    if (inObjectCounter==3) {
-                        inObjectCounter=0;
+                    if (inObjectCounter == 3) {
+                        inObjectCounter = 0;
                     }
                 }
             }
         }
-        ret=ret.substring(0,ret.length()-1);
+        ret = ret.substring(0, ret.length() - 1);
         return ret;
     }
 
+    @Override
     public String toString() {
-        return getName();//+"("+listeners.size()+")";
+        return getName(); // +"("+listeners.size()+")";
     }
 
+    @Override
     public Object clone() {
         return new CustomPlanLayer(this);
     }

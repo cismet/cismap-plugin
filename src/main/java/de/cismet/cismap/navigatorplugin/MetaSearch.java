@@ -1,94 +1,149 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * MetaSearch.java
  *
  * Created on 1. M\u00E4rz 2006, 10:39
  */
-
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.types.iterator.TreeNodeIterator;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.ui.tree.SearchSelectionTree;
-import de.cismet.tools.configuration.Configurable;
-import de.cismet.tools.gui.StaticSwingTools;
+
+import org.jdom.Element;
+
 import java.awt.Cursor;
+
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.jdom.Element;
+
+import de.cismet.tools.configuration.Configurable;
+
+import de.cismet.tools.gui.StaticSwingTools;
 
 /**
+ * DOCUMENT ME!
  *
- * @author  thorsten.hell@cismet.de
+ * @author   thorsten.hell@cismet.de
+ * @version  $Revision$, $Date$
  */
 public class MetaSearch extends javax.swing.JPanel implements Configurable {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Use serialVersionUID for interoperability. */
+    private static final long serialVersionUID = -2494397602102341323L;
+
+    //~ Instance fields --------------------------------------------------------
+
+    SearchSelectionTree tree = null;
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
-    SearchSelectionTree tree=null;
-    /** Creates new form MetaSearch */
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel lblAll;
+    private javax.swing.JLabel lblInverse;
+    private javax.swing.JLabel lblNone;
+    private javax.swing.JScrollPane scpTree;
+    // End of variables declaration//GEN-END:variables
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates new form MetaSearch.
+     */
     public MetaSearch() {
         initComponents();
         lblAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblNone.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblInverse.setCursor(new Cursor(Cursor.HAND_CURSOR));
         StaticSwingTools.setNiftyScrollBars(scpTree);
-        
     }
-    public void setSearchTree(SearchSelectionTree tree) {
-        this.tree=tree;
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  tree  DOCUMENT ME!
+     */
+    public void setSearchTree(final SearchSelectionTree tree) {
+        this.tree = tree;
         scpTree.setViewportView(tree);
-        
     }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public SearchSelectionTree getSearchTree() {
         return tree;
     }
-    
-    public Element getConfiguration() {
-        log.debug("getConfiguration");//NOI18N
-        try {
-            Element ret=new Element("cismapPluginSelectedSearchClasses");//NOI18N
-            List lst=tree.getSelectedClassNodeKeys();
 
-            log.debug("selected classes" + lst);//NOI18N
-            for (Object elem : lst) {
-                log.debug("class:" + elem);//NOI18N
-                Element classElement=new Element("class");//NOI18N
-                classElement.setAttribute("key",elem.toString());//NOI18N
+    @Override
+    public Element getConfiguration() {
+        if (log.isDebugEnabled()) {
+            log.debug("getConfiguration");                                             // NOI18N
+        }
+        try {
+            final Element ret = new Element("cismapPluginSelectedSearchClasses");      // NOI18N
+            final List lst = tree.getSelectedClassNodeKeys();
+            if (log.isDebugEnabled()) {
+                log.debug("selected classes" + lst);                                   // NOI18N
+            }
+            for (final Object elem : lst) {
+                if (log.isDebugEnabled()) {
+                    log.debug("class:" + elem);                                        // NOI18N
+                }
+                final Element classElement = new Element("class");                     // NOI18N
+                classElement.setAttribute("key", elem.toString());                     // NOI18N
                 ret.addContent(classElement);
             }
             return ret;
         } catch (Throwable t) {
-            log.error("Error on creating configuration (application termination)",t);//NOI18N
-            return new Element("cismapPluginSelectedSearchClasses");//NOI18N
+            log.error("Error on creating configuration (application termination)", t); // NOI18N
+            return new Element("cismapPluginSelectedSearchClasses");                   // NOI18N
         }
     }
-    
-    public void masterConfigure(Element e) {
-        //Alle Infos lokal
+
+    @Override
+    public void masterConfigure(final Element e) {
+        // Alle Infos lokal
     }
-    public void configure(Element e) {
+    @Override
+    public void configure(final Element e) {
         try {
-            Element conf=e.getChild("cismapPluginSelectedSearchClasses");//NOI18N
-            List lst=conf.getChildren("class");//NOI18N
-            Vector v=new Vector();
-            for (Object elem : lst) {
-                String key=((Element)elem).getAttribute("key").getValue();//NOI18N
+            final Element conf = e.getChild("cismapPluginSelectedSearchClasses");  // NOI18N
+            final List lst = conf.getChildren("class");                            // NOI18N
+            final Vector v = new Vector();
+            for (final Object elem : lst) {
+                final String key = ((Element)elem).getAttribute("key").getValue(); // NOI18N
                 v.add(key);
             }
             tree.setSelectedClassNodeKeys(v);
         } catch (Throwable t) {
-            log.error("Error on loading configuration (application startup)",t);//NOI18N
+            log.error("Error on loading configuration (application startup)", t);  // NOI18N
         }
     }
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
+     * content of this method is always regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
         scpTree = new javax.swing.JScrollPane();
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
@@ -109,13 +164,16 @@ public class MetaSearch extends javax.swing.JPanel implements Configurable {
         lblAll.setForeground(javax.swing.UIManager.getDefaults().getColor("CheckBoxMenuItem.selectionBackground"));
         lblAll.setText(org.openide.util.NbBundle.getMessage(MetaSearch.class, "MetaSearch.lblAll.text")); // NOI18N
         lblAll.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lblAllMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                lblAllMouseEntered(evt);
-            }
-        });
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    lblAllMouseClicked(evt);
+                }
+                @Override
+                public void mouseEntered(final java.awt.event.MouseEvent evt) {
+                    lblAllMouseEntered(evt);
+                }
+            });
         jToolBar1.add(lblAll);
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(MetaSearch.class, "MetaSearch.jLabel3.text")); // NOI18N
@@ -124,13 +182,16 @@ public class MetaSearch extends javax.swing.JPanel implements Configurable {
         lblNone.setForeground(javax.swing.UIManager.getDefaults().getColor("CheckBoxMenuItem.selectionBackground"));
         lblNone.setText(org.openide.util.NbBundle.getMessage(MetaSearch.class, "MetaSearch.lblNone.text")); // NOI18N
         lblNone.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lblNoneMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                linkHandler(evt);
-            }
-        });
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    lblNoneMouseClicked(evt);
+                }
+                @Override
+                public void mouseEntered(final java.awt.event.MouseEvent evt) {
+                    linkHandler(evt);
+                }
+            });
         jToolBar1.add(lblNone);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(MetaSearch.class, "MetaSearch.jLabel2.text")); // NOI18N
@@ -139,69 +200,78 @@ public class MetaSearch extends javax.swing.JPanel implements Configurable {
         lblInverse.setForeground(javax.swing.UIManager.getDefaults().getColor("CheckBoxMenuItem.selectionBackground"));
         lblInverse.setText(org.openide.util.NbBundle.getMessage(MetaSearch.class, "MetaSearch.lblInverse.text")); // NOI18N
         lblInverse.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lblInverseMouseClicked(evt);
-            }
-        });
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    lblInverseMouseClicked(evt);
+                }
+            });
         jToolBar1.add(lblInverse);
 
         add(jToolBar1, java.awt.BorderLayout.NORTH);
-    }// </editor-fold>//GEN-END:initComponents
-    
-    private void linkHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkHandler
-        
-    }//GEN-LAST:event_linkHandler
-    
-    private void lblAllMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAllMouseEntered
-        
-    }//GEN-LAST:event_lblAllMouseEntered
-    
-    private void lblInverseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblInverseMouseClicked
-        if (evt.getButton()==evt.BUTTON1) {
-            Enumeration enu = ((DefaultMutableTreeNode)tree.getModel().getRoot()).breadthFirstEnumeration();
-            TreeNodeIterator iterator = new TreeNodeIterator(enu);
-            
-            while(iterator.hasNext()) {
-                DefaultMetaTreeNode tn=iterator.next();
+    } // </editor-fold>//GEN-END:initComponents
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void linkHandler(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_linkHandler
+    }                                                               //GEN-LAST:event_linkHandler
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void lblAllMouseEntered(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_lblAllMouseEntered
+    }                                                                      //GEN-LAST:event_lblAllMouseEntered
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void lblInverseMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_lblInverseMouseClicked
+        if (evt.getButton() == evt.BUTTON1) {
+            final Enumeration enu = ((DefaultMutableTreeNode)tree.getModel().getRoot()).breadthFirstEnumeration();
+            final TreeNodeIterator iterator = new TreeNodeIterator(enu);
+
+            while (iterator.hasNext()) {
+                final DefaultMetaTreeNode tn = iterator.next();
                 tn.setSelected(!tn.isSelected());
             }
         }
         this.revalidate();
         this.repaint();
-        
-    }//GEN-LAST:event_lblInverseMouseClicked
-    
-    private void lblNoneMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblNoneMouseClicked
-        if (evt.getButton()==evt.BUTTON1) {
+    } //GEN-LAST:event_lblInverseMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void lblNoneMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_lblNoneMouseClicked
+        if (evt.getButton() == evt.BUTTON1) {
             tree.deselectAllNodes();
         }
-        
-    }//GEN-LAST:event_lblNoneMouseClicked
-    
-    private void lblAllMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAllMouseClicked
-        if (evt.getButton()==evt.BUTTON1) {
-            Enumeration enu = ((DefaultMutableTreeNode)tree.getModel().getRoot()).breadthFirstEnumeration();
-            TreeNodeIterator iterator = new TreeNodeIterator(enu);
-            
-            while(iterator.hasNext()) {
+    }                                                                       //GEN-LAST:event_lblNoneMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void lblAllMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_lblAllMouseClicked
+        if (evt.getButton() == evt.BUTTON1) {
+            final Enumeration enu = ((DefaultMutableTreeNode)tree.getModel().getRoot()).breadthFirstEnumeration();
+            final TreeNodeIterator iterator = new TreeNodeIterator(enu);
+
+            while (iterator.hasNext()) {
                 iterator.next().setSelected(true);
             }
         }
         this.revalidate();
         this.repaint();
-        
-    }//GEN-LAST:event_lblAllMouseClicked
-    
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JLabel lblAll;
-    private javax.swing.JLabel lblInverse;
-    private javax.swing.JLabel lblNone;
-    private javax.swing.JScrollPane scpTree;
-    // End of variables declaration//GEN-END:variables
-    
+    } //GEN-LAST:event_lblAllMouseClicked
 }

@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -7,43 +14,57 @@ package de.cismet.cismap.navigatorplugin;
 import Sirius.navigator.plugin.PluginRegistry;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
+
 import Sirius.server.middleware.types.MetaObjectNode;
-import de.cismet.cids.utils.interfaces.DefaultMetaTreeNodeVisualizationService;
+
 import java.util.Collection;
 import java.util.Vector;
 
+import de.cismet.cids.utils.interfaces.DefaultMetaTreeNodeVisualizationService;
+
 /**
+ * DOCUMENT ME!
  *
- * @author thorsten
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = DefaultMetaTreeNodeVisualizationService.class)
 public class DefaultMetaTreeNodeVisualizationServiceForNavigator implements DefaultMetaTreeNodeVisualizationService {
 
+    //~ Methods ----------------------------------------------------------------
 
-    public void addVisualization(DefaultMetaTreeNode dmtn) throws Exception {
-        Vector<DefaultMetaTreeNode> v = new Vector<DefaultMetaTreeNode>();
+    @Override
+    public void addVisualization(final DefaultMetaTreeNode dmtn) throws Exception {
+        final Vector<DefaultMetaTreeNode> v = new Vector<DefaultMetaTreeNode>();
         v.add(dmtn);
         addVisualization(v);
     }
 
-    public void addVisualization(Collection<DefaultMetaTreeNode> c) throws Exception {
+    @Override
+    public void addVisualization(final Collection<DefaultMetaTreeNode> c) throws Exception {
         getPlugin().showInMap(c, false);
     }
 
-    public void removeVisualization(DefaultMetaTreeNode dmtn) throws Exception {
-        CidsFeature cf = new CidsFeature((MetaObjectNode) dmtn.getNode());
+    @Override
+    public void removeVisualization(final DefaultMetaTreeNode dmtn) throws Exception {
+        final CidsFeature cf = new CidsFeature((MetaObjectNode)dmtn.getNode());
         getPlugin().getMappingComponent().getFeatureCollection().removeFeature(cf);
     }
 
-    public void removeVisualization(Collection<DefaultMetaTreeNode> c) throws Exception {
-        for (DefaultMetaTreeNode dmtn : c) {
+    @Override
+    public void removeVisualization(final Collection<DefaultMetaTreeNode> c) throws Exception {
+        for (final DefaultMetaTreeNode dmtn : c) {
             removeVisualization(dmtn);
         }
     }
 
-
-    private CismapPlugin getPlugin(){
-        Object o=PluginRegistry.getRegistry().getPlugin("cismap");//NOI18N
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CismapPlugin getPlugin() {
+        final Object o = PluginRegistry.getRegistry().getPlugin("cismap"); // NOI18N
         return (CismapPlugin)o;
     }
 }
