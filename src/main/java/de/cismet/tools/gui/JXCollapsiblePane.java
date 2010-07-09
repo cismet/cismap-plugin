@@ -171,19 +171,19 @@ public class JXCollapsiblePane extends JPanel {
      * The icon used by the "toggle" action when the JXCollapsiblePane is expanded, i.e the icon which indicates the
      * pane can be collapsed.
      */
-    public static final String COLLAPSE_ICON = "collapseIcon";            // NOI18N
+    public static final String COLLAPSE_ICON = "collapseIcon"; // NOI18N
 
     /**
      * The icon used by the "toggle" action when the JXCollapsiblePane is collapsed, i.e the icon which indicates the
      * pane can be expanded.
      */
-    public static final String EXPAND_ICON = "expandIcon";                // NOI18N
+    public static final String EXPAND_ICON = "expandIcon"; // NOI18N
 
     /** Use this constant if you like the old vertical collapsing behaviour. */
     public static final String VERTICAL_ORIENTATION = "VERTICAL";           // NOI18N
 
     /** Use this constant if you want to collapse the component horizontally. */
-    public static final String HORIZONTAL_ORIENTATION = "HORIZONTAL";           // NOI18N
+    public static final String HORIZONTAL_ORIENTATION = "HORIZONTAL";        // NOI18N
 
     //~ Instance fields --------------------------------------------------------
 

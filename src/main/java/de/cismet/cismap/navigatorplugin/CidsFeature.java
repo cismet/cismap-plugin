@@ -54,8 +54,12 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.tools.BlacklistClassloading;
+import de.cismet.tools.ClassloadingByConventionHelper;
 
 import de.cismet.tools.collections.TypeSafeCollections;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DOCUMENT ME!
@@ -345,18 +349,18 @@ public class CidsFeature implements XStyledFeature,
             }
             final String overrideFeatureRendererClassName = System.getProperty(mo.getDomain().toLowerCase() + "."
                             + mo.getMetaClass().getTableName().toLowerCase() + ".featurerenderer");               // NOI18N
+            List<String> candidateFeatureRendererClassNames = new ArrayList<String>();
+            candidateFeatureRendererClassNames.add(overrideFeatureRendererClassName);
 
-            String featureRendererClass = overrideFeatureRendererClassName;
-            if (featureRendererClass == null) {
+
                 final String mcName = mo.getMetaClass().getTableName();
-                featureRendererClass = "de.cismet.cids.custom.featurerenderer." + mo
+                candidateFeatureRendererClassNames.add("de.cismet.cids.custom.featurerenderer." + mo
                             .getDomain().toLowerCase() + "." + mcName.substring(0, 1).toUpperCase()
-                            + mcName.substring(1).toLowerCase() + "FeatureRenderer";                   // NOI18N
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_RENDERER=" + featureRendererClass);                                 // NOI18N
-            }
-            Class c = BlacklistClassloading.forName(featureRendererClass);
+                            + mcName.substring(1).toLowerCase() + "FeatureRenderer");                   // NOI18N
+                candidateFeatureRendererClassNames.add("de.cismet.cids.custom.featurerenderer." + mo
+                            .getDomain().toLowerCase() + "." + ClassloadingByConventionHelper.camelizeTableName(mcName)+ "FeatureRenderer");                   // NOI18N
+           
+            Class c = ClassloadingByConventionHelper.loadClassFromCandidates(candidateFeatureRendererClassNames);
             if (c == null) {
                 c = BlacklistClassloading.forName((String)getAttribValue("FEATURE_RENDERER", mo, mc)); // NOI18N
             }
@@ -366,7 +370,7 @@ public class CidsFeature implements XStyledFeature,
             if (log.isDebugEnabled()) {
                 // Method assignM=assigner.getMethod("assign", new Class[] {Connection.class,String[].class,
                 // UniversalContainer.class});
-                log.debug("HAT GEKLAPPT:" + featureRendererClass);                                         // NOI18N
+                log.debug("HAT GEKLAPPT:" + c);                                         // NOI18N
             }
         } catch (Throwable t) {
             log.warn(("FEATURE_RENDERER corrupt or missing"), t);                                          // NOI18N

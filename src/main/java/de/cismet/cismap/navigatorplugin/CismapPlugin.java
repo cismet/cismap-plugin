@@ -3212,7 +3212,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRedoPerformed
+    private void mniRedoPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniRedoPerformed
         log.info("REDO");                                                 // NOI18N
 
         final CustomAction a = mapC.getMemRedo().getLastAction();
@@ -3232,14 +3232,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.debug("... new action on UNDO stack: " + inverse); // NOI18N
             log.debug("... completed");                            // NOI18N
         }
-    }//GEN-LAST:event_mniRedoPerformed
+    }                                                              //GEN-LAST:event_mniRedoPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniUndoPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniUndoPerformed
+    private void mniUndoPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniUndoPerformed
         log.info("UNDO");                                                 // NOI18N
 
         final CustomAction a = mapC.getMemUndo().getLastAction();
@@ -3259,14 +3259,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.debug("... new action on REDO stack: " + inverse); // NOI18N
             log.debug("... completed");                            // NOI18N
         }
-    }//GEN-LAST:event_mniUndoPerformed
+    }                                                              //GEN-LAST:event_mniUndoPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniGeoLinkClipboardActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniGeoLinkClipboardActionPerformed
+    private void mniGeoLinkClipboardActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniGeoLinkClipboardActionPerformed
 
         final Thread t = new Thread(new Runnable() {
 
@@ -3293,22 +3293,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     }
                 });
         t.start();
-    }//GEN-LAST:event_mniGeoLinkClipboardActionPerformed
+    } //GEN-LAST:event_mniGeoLinkClipboardActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void menHelpActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menHelpActionPerformed
-    }//GEN-LAST:event_menHelpActionPerformed
+    private void menHelpActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_menHelpActionPerformed
+    }                                                                           //GEN-LAST:event_menHelpActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAboutActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAboutActionPerformed
+    private void mniAboutActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAboutActionPerformed
 
         if (about == null) {
             about = new AboutDialog(this, true);
@@ -3316,32 +3316,32 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         about.setLocationRelativeTo(this);
         about.setVisible(true);
-    }//GEN-LAST:event_mniAboutActionPerformed
+    } //GEN-LAST:event_mniAboutActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniNewsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniNewsActionPerformed
+    private void mniNewsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniNewsActionPerformed
         openUrlInExternalBrowser(newsUrl);
-    }//GEN-LAST:event_mniNewsActionPerformed
+    }                                                                           //GEN-LAST:event_mniNewsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniOnlineHelpActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniOnlineHelpActionPerformed
+    private void mniOnlineHelpActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniOnlineHelpActionPerformed
         openUrlInExternalBrowser(helpUrl);
-    }//GEN-LAST:event_mniOnlineHelpActionPerformed
+    }                                                                                 //GEN-LAST:event_mniOnlineHelpActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniGotoPointActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniGotoPointActionPerformed
+    private void mniGotoPointActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniGotoPointActionPerformed
         if (log.isDebugEnabled()) {
             log.debug("mniGotoPointActionPerformed");                                // NOI18N
         }
@@ -3367,14 +3367,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         } catch (Exception skip) {
             log.error("Error in mniGotoPointActionPerformed", skip); // NOI18N
         }
-    }//GEN-LAST:event_mniGotoPointActionPerformed
+    }                                                                //GEN-LAST:event_mniGotoPointActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniScaleActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniScaleActionPerformed
+    private void mniScaleActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniScaleActionPerformed
 
         try {
             final String s = JOptionPane.showInputDialog(
@@ -3387,115 +3387,115 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         } catch (Exception skip) {
             log.error("Error in mniScaleActionPerformed", skip); // NOI18N
         }
-    }//GEN-LAST:event_mniScaleActionPerformed
+    }                                                            //GEN-LAST:event_mniScaleActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniMapActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniMapActionPerformed
+    private void mniMapActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniMapActionPerformed
         showOrHideView(vMap);
-    }//GEN-LAST:event_mniMapActionPerformed
+    }                                                                          //GEN-LAST:event_mniMapActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniRemoveAllObjectsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRemoveAllObjectsActionPerformed
+    private void mniRemoveAllObjectsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniRemoveAllObjectsActionPerformed
 
         if (mapC != null) {
             final Vector v = new Vector(mapC.getFeatureCollection().getAllFeatures());
             mapC.getFeatureCollection().removeFeatures(v);
         }
-    }//GEN-LAST:event_mniRemoveAllObjectsActionPerformed
+    } //GEN-LAST:event_mniRemoveAllObjectsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniZoomToSelectedObjectsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniZoomToSelectedObjectsActionPerformed
+    private void mniZoomToSelectedObjectsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniZoomToSelectedObjectsActionPerformed
 
         if (mapC != null) {
             mapC.zoomToSelection();
         }
-    }//GEN-LAST:event_mniZoomToSelectedObjectsActionPerformed
+    } //GEN-LAST:event_mniZoomToSelectedObjectsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniZoomToAllObjectsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniZoomToAllObjectsActionPerformed
+    private void mniZoomToAllObjectsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniZoomToAllObjectsActionPerformed
 
         if (mapC != null) {
             mapC.zoomToFeatureCollection();
         }
-    }//GEN-LAST:event_mniZoomToAllObjectsActionPerformed
+    } //GEN-LAST:event_mniZoomToAllObjectsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniForwardActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniForwardActionPerformed
+    private void mniForwardActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniForwardActionPerformed
 
         if ((mapC != null) && mapC.isForwardPossible()) {
             mapC.forward(true);
         }
-    }//GEN-LAST:event_mniForwardActionPerformed
+    } //GEN-LAST:event_mniForwardActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBackActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBackActionPerformed
+    private void mniBackActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBackActionPerformed
 
         if ((mapC != null) && mapC.isBackPossible()) {
             mapC.back(true);
         }
-    }//GEN-LAST:event_mniBackActionPerformed
+    } //GEN-LAST:event_mniBackActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniHomeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniHomeActionPerformed
+    private void mniHomeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniHomeActionPerformed
         cmdHomeActionPerformed(null);
-    }//GEN-LAST:event_mniHomeActionPerformed
+    }                                                                           //GEN-LAST:event_mniHomeActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniRefreshActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRefreshActionPerformed
+    private void mniRefreshActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniRefreshActionPerformed
         cmdRefreshActionPerformed(null);
-    }//GEN-LAST:event_mniRefreshActionPerformed
+    }                                                                              //GEN-LAST:event_mniRefreshActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniRemoveSelectedObjectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRemoveSelectedObjectActionPerformed
+    private void mniRemoveSelectedObjectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniRemoveSelectedObjectActionPerformed
 
         if (mapC != null) {
             final Vector v = new Vector(mapC.getFeatureCollection().getSelectedFeatures());
             mapC.getFeatureCollection().removeFeatures(v);
         }
-    }//GEN-LAST:event_mniRemoveSelectedObjectActionPerformed
+    } //GEN-LAST:event_mniRemoveSelectedObjectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadConfigActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadConfigActionPerformed
+    private void mniLoadConfigActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadConfigActionPerformed
 
         JFileChooser fc;
 
@@ -3538,14 +3538,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 configurationManager.configure(name + ".xml"); // NOI18N
             }
         }
-    }//GEN-LAST:event_mniLoadConfigActionPerformed
+    }                                                          //GEN-LAST:event_mniLoadConfigActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSaveConfigActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSaveConfigActionPerformed
+    private void mniSaveConfigActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSaveConfigActionPerformed
 
         JFileChooser fc;
 
@@ -3587,34 +3587,34 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 configurationManager.writeConfiguration(name + ".xml"); // NOI18N
             }
         }
-    }//GEN-LAST:event_mniSaveConfigActionPerformed
+    }                                                                   //GEN-LAST:event_mniSaveConfigActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadConfigFromServerActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadConfigFromServerActionPerformed
+    private void mniLoadConfigFromServerActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadConfigFromServerActionPerformed
         activeLayers.removeAllLayers();
         mapC.getMapServiceLayer().removeAllChildren();
         configureApp(true);
-    }//GEN-LAST:event_mniLoadConfigFromServerActionPerformed
+    }                                                                                           //GEN-LAST:event_mniLoadConfigFromServerActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniPrintActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniPrintActionPerformed
+    private void mniPrintActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniPrintActionPerformed
         cmdPrintActionPerformed(null);
-    }//GEN-LAST:event_mniPrintActionPerformed
+    }                                                                            //GEN-LAST:event_mniPrintActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSaveLayoutActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSaveLayoutActionPerformed
+    private void mniSaveLayoutActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSaveLayoutActionPerformed
 
         JFileChooser fc;
 
@@ -3659,14 +3659,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 saveLayout(name + ".layout"); // NOI18N
             }
         }
-    }//GEN-LAST:event_mniSaveLayoutActionPerformed
+    }                                         //GEN-LAST:event_mniSaveLayoutActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadLayoutActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadLayoutActionPerformed
+    private void mniLoadLayoutActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadLayoutActionPerformed
 
         JFileChooser fc;
 
@@ -3712,62 +3712,62 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     JOptionPane.INFORMATION_MESSAGE);
             }
         }
-    }//GEN-LAST:event_mniLoadLayoutActionPerformed
+    }                                                                                                //GEN-LAST:event_mniLoadLayoutActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniClipboardActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniClipboardActionPerformed
+    private void mniClipboardActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniClipboardActionPerformed
         cmdClipboardActionPerformed(null);
-    }//GEN-LAST:event_mniClipboardActionPerformed
+    }                                                                                //GEN-LAST:event_mniClipboardActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniCloseActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCloseActionPerformed
+    private void mniCloseActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniCloseActionPerformed
         this.dispose();
         System.exit(0);
-    }//GEN-LAST:event_mniCloseActionPerformed
+    }                                                                            //GEN-LAST:event_mniCloseActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void menEditActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menEditActionPerformed
-    }//GEN-LAST:event_menEditActionPerformed
+    private void menEditActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_menEditActionPerformed
+    }                                                                           //GEN-LAST:event_menEditActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void menWindowsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menWindowsActionPerformed
-    }//GEN-LAST:event_menWindowsActionPerformed
+    private void menWindowsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_menWindowsActionPerformed
+    }                                                                              //GEN-LAST:event_menWindowsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void tlbMainMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tlbMainMouseClicked
+    private void tlbMainMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_tlbMainMouseClicked
 
         if (evt.getClickCount() == 3) {
             // DockingManager.dock((Dockable)vDebug,(Dockable)vMap, DockingConstants.SOUTH_REGION, .25f);
             // DockingManager.dock((Dockable)vGroovy,(Dockable)vMap);
         }
-    }//GEN-LAST:event_tlbMainMouseClicked
+    } //GEN-LAST:event_tlbMainMouseClicked
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdPrintActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPrintActionPerformed
+    private void cmdPrintActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdPrintActionPerformed
 
         final String oldMode = mapC.getInteractionMode();
         if (log.isDebugEnabled()) {
@@ -3775,14 +3775,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
         togInvisible.setSelected(true);
         mapC.showPrintingSettingsDialog(oldMode);
-    }//GEN-LAST:event_cmdPrintActionPerformed
+    }                                                   //GEN-LAST:event_cmdPrintActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdClipboardActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdClipboardActionPerformed
+    private void cmdClipboardActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdClipboardActionPerformed
 
         final Thread t = new Thread(new Runnable() {
 
@@ -3809,14 +3809,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     }
                 });
         t.start();
-    }//GEN-LAST:event_cmdClipboardActionPerformed
+    } //GEN-LAST:event_cmdClipboardActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdSnapActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSnapActionPerformed
+    private void cmdSnapActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdSnapActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3824,14 +3824,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setSnappingEnabled(cmdSnap.isSelected());
                 }
             });
-    }//GEN-LAST:event_cmdSnapActionPerformed
+    } //GEN-LAST:event_cmdSnapActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdRemoveGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRemoveGeometryActionPerformed
+    private void cmdRemoveGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdRemoveGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3839,14 +3839,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.REMOVE_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdRemoveGeometryActionPerformed
+    } //GEN-LAST:event_cmdRemoveGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdMoveGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdMoveGeometryActionPerformed
+    private void cmdMoveGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdMoveGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3854,14 +3854,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.MOVE_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdMoveGeometryActionPerformed
+    } //GEN-LAST:event_cmdMoveGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewPointActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewPointActionPerformed
+    private void cmdNewPointActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewPointActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3871,14 +3871,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdNewPointActionPerformed
+    } //GEN-LAST:event_cmdNewPointActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewPolygonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewPolygonActionPerformed
+    private void cmdNewPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewPolygonActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3888,14 +3888,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdNewPolygonActionPerformed
+    } //GEN-LAST:event_cmdNewPolygonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void createGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createGeometryAction
+    private void createGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_createGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3905,14 +3905,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
-    }//GEN-LAST:event_createGeometryAction
+    } //GEN-LAST:event_createGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeRemoveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeRemoveActionPerformed
+    private void cmdNodeRemoveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeRemoveActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3921,14 +3921,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    }//GEN-LAST:event_cmdNodeRemoveActionPerformed
+    } //GEN-LAST:event_cmdNodeRemoveActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeAddActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeAddActionPerformed
+    private void cmdNodeAddActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeAddActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3937,14 +3937,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    }//GEN-LAST:event_cmdNodeAddActionPerformed
+    } //GEN-LAST:event_cmdNodeAddActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeMoveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeMoveActionPerformed
+    private void cmdNodeMoveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeMoveActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3953,14 +3953,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    }//GEN-LAST:event_cmdNodeMoveActionPerformed
+    } //GEN-LAST:event_cmdNodeMoveActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdSelectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSelectActionPerformed
+    private void cmdSelectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdSelectActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3968,127 +3968,127 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    }//GEN-LAST:event_cmdSelectActionPerformed
+    } //GEN-LAST:event_cmdSelectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniResetWindowLayoutActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniResetWindowLayoutActionPerformed
+    private void mniResetWindowLayoutActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniResetWindowLayoutActionPerformed
         setupDefaultLayout();
-    }//GEN-LAST:event_mniResetWindowLayoutActionPerformed
+    }                                                                                        //GEN-LAST:event_mniResetWindowLayoutActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniFeatureControlActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniFeatureControlActionPerformed
+    private void mniFeatureControlActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniFeatureControlActionPerformed
         showOrHideView(vFeatureControl);
-    }//GEN-LAST:event_mniFeatureControlActionPerformed
+    }                                                                                     //GEN-LAST:event_mniFeatureControlActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdReconfigActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconfigActionPerformed
+    private void cmdReconfigActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdReconfigActionPerformed
         activeLayers.removeAllLayers();
         mapC.getRasterServiceLayer().removeAllChildren();
 
         // mapC.resetWtst();
         configureApp(false);
-    }//GEN-LAST:event_cmdReconfigActionPerformed
+    } //GEN-LAST:event_cmdReconfigActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniFeatureInfoActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniFeatureInfoActionPerformed
+    private void mniFeatureInfoActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniFeatureInfoActionPerformed
         showOrHideView(vFeatureInfo);
-    }//GEN-LAST:event_mniFeatureInfoActionPerformed
+    }                                                                                  //GEN-LAST:event_mniFeatureInfoActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniServerInfoActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniServerInfoActionPerformed
+    private void mniServerInfoActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniServerInfoActionPerformed
         showOrHideView(vServerInfo);
-    }//GEN-LAST:event_mniServerInfoActionPerformed
+    }                                                                                 //GEN-LAST:event_mniServerInfoActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLayerInfoActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLayerInfoActionPerformed
+    private void mniLayerInfoActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLayerInfoActionPerformed
         showOrHideView(vLayerInfo);
-    }//GEN-LAST:event_mniLayerInfoActionPerformed
+    }                                                                                //GEN-LAST:event_mniLayerInfoActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLegendActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLegendActionPerformed
+    private void mniLegendActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLegendActionPerformed
         showOrHideView(vLegend);
-    }//GEN-LAST:event_mniLegendActionPerformed
+    }                                                                             //GEN-LAST:event_mniLegendActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniCapabilitiesActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCapabilitiesActionPerformed
+    private void mniCapabilitiesActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniCapabilitiesActionPerformed
         showOrHideView(vCaps);
-    }//GEN-LAST:event_mniCapabilitiesActionPerformed
+    }                                                                                   //GEN-LAST:event_mniCapabilitiesActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniClassTreeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniClassTreeActionPerformed
+    private void mniClassTreeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniClassTreeActionPerformed
         showOrHideView(vMetaSearch);
-    }//GEN-LAST:event_mniClassTreeActionPerformed
+    }                                                                                //GEN-LAST:event_mniClassTreeActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLayerActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLayerActionPerformed
+    private void mniLayerActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLayerActionPerformed
         showOrHideView(vLayers);
-    }//GEN-LAST:event_mniLayerActionPerformed
+    }                                                                            //GEN-LAST:event_mniLayerActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdFeatureInfoActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdFeatureInfoActionPerformed
+    private void cmdFeatureInfoActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdFeatureInfoActionPerformed
         mapC.setInteractionMode(MappingComponent.FEATURE_INFO);
-    }//GEN-LAST:event_cmdFeatureInfoActionPerformed
+    }                                                                                  //GEN-LAST:event_cmdFeatureInfoActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void formComponentShown(final java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-    }//GEN-LAST:event_formComponentShown
+    private void formComponentShown(final java.awt.event.ComponentEvent evt) { //GEN-FIRST:event_formComponentShown
+    }                                                                          //GEN-LAST:event_formComponentShown
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void formWindowClosed(final java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    private void formWindowClosed(final java.awt.event.WindowEvent evt) { //GEN-FIRST:event_formWindowClosed
         log.info("CLOSE");                                                // NOI18N
-    }//GEN-LAST:event_formWindowClosed
+    }                                                                     //GEN-LAST:event_formWindowClosed
 
     /**
      * DOCUMENT ME!
@@ -4110,80 +4110,80 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdPanActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPanActionPerformed
+    private void cmdPanActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdPanActionPerformed
 
         if (mapC != null) {
             mapC.setInteractionMode(MappingComponent.PAN);
         }
-    }//GEN-LAST:event_cmdPanActionPerformed
+    } //GEN-LAST:event_cmdPanActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdZoomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdZoomActionPerformed
+    private void cmdZoomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdZoomActionPerformed
 
         if (mapC != null) {
             mapC.setInteractionMode(MappingComponent.ZOOM);
         }
-    }//GEN-LAST:event_cmdZoomActionPerformed
+    } //GEN-LAST:event_cmdZoomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdRefreshActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRefreshActionPerformed
+    private void cmdRefreshActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdRefreshActionPerformed
 
         if (mapC != null) {
             mapC.refresh();
         }
-    }//GEN-LAST:event_cmdRefreshActionPerformed
+    } //GEN-LAST:event_cmdRefreshActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdHomeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdHomeActionPerformed
+    private void cmdHomeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdHomeActionPerformed
 
         if (mapC != null) {
             mapC.gotoInitialBoundingBox();
         }
-    }//GEN-LAST:event_cmdHomeActionPerformed
+    } //GEN-LAST:event_cmdHomeActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdBackActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdBackActionPerformed
+    private void cmdBackActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdBackActionPerformed
 // mapC.back(true);
-    }//GEN-LAST:event_cmdBackActionPerformed
+    } //GEN-LAST:event_cmdBackActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panMainMouseEntered(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panMainMouseEntered
-    }//GEN-LAST:event_panMainMouseEntered
+    private void panMainMouseEntered(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panMainMouseEntered
+    }                                                                       //GEN-LAST:event_panMainMouseEntered
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panMainMouseExited(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panMainMouseExited
-    }//GEN-LAST:event_panMainMouseExited
+    private void panMainMouseExited(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panMainMouseExited
+    }                                                                      //GEN-LAST:event_panMainMouseExited
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeRotateGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeRotateGeometryActionPerformed
+    private void cmdNodeRotateGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeRotateGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -4192,80 +4192,80 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setHandleInteractionMode(MappingComponent.ROTATE_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdNodeRotateGeometryActionPerformed
+    } //GEN-LAST:event_cmdNodeRotateGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniOverviewActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniOverviewActionPerformed
+    private void mniOverviewActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniOverviewActionPerformed
         showOrHideView(vOverview);
-    }//GEN-LAST:event_mniOverviewActionPerformed
+    }                                                                               //GEN-LAST:event_mniOverviewActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void formComponentResized(final java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
+    private void formComponentResized(final java.awt.event.ComponentEvent evt) { //GEN-FIRST:event_formComponentResized
 
         if (this.getExtendedState() != MAXIMIZED_BOTH) {
             oldWindowDimension.setSize(getWidth(), getHeight());
             oldWindowPositionX = (int)this.getLocation().getX();
             oldWindowPositionY = (int)this.getLocation().getY();
         }
-    }//GEN-LAST:event_formComponentResized
+    } //GEN-LAST:event_formComponentResized
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniOptionsActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniOptionsActionPerformed
+    private void mniOptionsActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniOptionsActionPerformed
 
         final OptionsDialog od = new OptionsDialog(this, true);
         od.setLocationRelativeTo(this);
         od.setVisible(true);
-    }//GEN-LAST:event_mniOptionsActionPerformed
+    } //GEN-LAST:event_mniOptionsActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
         searchMenuSelectedAction.actionPerformed(new ActionEvent(popMenSearch, ActionEvent.ACTION_PERFORMED, null));
-    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void menSearchMenuSelected(final javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_menSearchMenuSelected
+    private void menSearchMenuSelected(final javax.swing.event.MenuEvent evt) { //GEN-FIRST:event_menSearchMenuSelected
         searchMenuSelectedAction.actionPerformed(new ActionEvent(menSearch, ActionEvent.ACTION_PERFORMED, null));
-    }//GEN-LAST:event_menSearchMenuSelected
+    }                                                                           //GEN-LAST:event_menSearchMenuSelected
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mnuConfigServerActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuConfigServerActionPerformed
+    private void mnuConfigServerActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mnuConfigServerActionPerformed
         activeLayers.removeAllLayers();
         mapC.getRasterServiceLayer().removeAllChildren();
 
         // mapC.resetWtst();
         configureApp(true);
-    }//GEN-LAST:event_mnuConfigServerActionPerformed
+    } //GEN-LAST:event_mnuConfigServerActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdMeasurementActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdMeasurementActionPerformed
+    private void cmdMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdMeasurementActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -4273,7 +4273,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEMEASUREMENT);
                 }
             });
-    }//GEN-LAST:event_cmdMeasurementActionPerformed
+    } //GEN-LAST:event_cmdMeasurementActionPerformed
 
 // private void addShutdownHook() {
 // ShutdownHook shutdownHook = new ShutdownHook();

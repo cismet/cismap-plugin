@@ -82,7 +82,7 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
                         clonePf.removeAllChildren();
                     }
 
-                    setToolTipText("@@@@" + getText());                 // NOI18N
+                    setToolTipText("@@@@" + getText()); // NOI18N
                     // i=clonePf.toImage(100,55,null);
                 } else {
                     setText(value.getClass() + ":" + value.toString()); // NOI18N

@@ -132,7 +132,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     }
 
     /**
-     * Returns the selected item
+     * Returns the selected item.
      *
      * @return  The selected item or <code>null</code> if there is no selection
      */
