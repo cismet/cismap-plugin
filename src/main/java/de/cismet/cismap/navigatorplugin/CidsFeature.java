@@ -25,11 +25,9 @@ import java.awt.Stroke;
 
 import java.lang.reflect.Constructor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -38,6 +36,8 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
+
+import de.cismet.cids.utils.ClassloadingHelper;
 
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
@@ -56,7 +56,6 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.tools.BlacklistClassloading;
-import de.cismet.tools.ClassloadingByConventionHelper;
 
 import de.cismet.tools.collections.TypeSafeCollections;
 
@@ -292,6 +291,7 @@ public class CidsFeature implements XStyledFeature,
             log.debug("subFeatures: " + subFeatures);                                        // NOI18N
         }
     }
+
     /**
      * public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException { log.debug("New
      * CIDSFEATURE"); try { // this.mon = mon; this.mo = mo; this.mc = mo.getMetaClass(); initFeatureSettings(); //TODO
@@ -345,31 +345,18 @@ public class CidsFeature implements XStyledFeature,
         try {
             if (log.isDebugEnabled()) {
                 log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");                                                  // NOI18N
-            }
-            final String overrideFeatureRendererClassName = System.getProperty(mo.getDomain().toLowerCase() + "."
-                            + mo.getMetaClass().getTableName().toLowerCase() + ".featurerenderer");               // NOI18N
-            final List<String> candidateFeatureRendererClassNames = new ArrayList<String>();
-            candidateFeatureRendererClassNames.add(overrideFeatureRendererClassName);
+            }                                                                                                     // NOI18N
 
-            final String mcName = mo.getMetaClass().getTableName();
-            candidateFeatureRendererClassNames.add("de.cismet.cids.custom.featurerenderer."
-                        + mo.getDomain().toLowerCase() + "." + mcName.substring(0, 1).toUpperCase()
-                        + mcName.substring(1).toLowerCase() + "FeatureRenderer"); // NOI18N
-            candidateFeatureRendererClassNames.add("de.cismet.cids.custom.featurerenderer."
-                        + mo.getDomain().toLowerCase() + "." + ClassloadingByConventionHelper.camelizeTableName(mcName)
-                        + "FeatureRenderer");                                     // NOI18N
-
-            Class c = ClassloadingByConventionHelper.loadClassFromCandidates(candidateFeatureRendererClassNames);
-            if (c == null) {
-                c = BlacklistClassloading.forName((String)getAttribValue("FEATURE_RENDERER", mo, mc)); // NOI18N
-            }
-            final Constructor constructor = c.getConstructor();
+            final Class<?> clazz = ClassloadingHelper.getDynamicClass(
+                    mc,
+                    ClassloadingHelper.CLASS_TYPE.FEATURE_RENDERER);
+            final Constructor<?> constructor = clazz.getConstructor();
             featureRenderer = (FeatureRenderer)constructor.newInstance();
             ((CustomCidsFeatureRenderer)featureRenderer).setMetaObject(mo);
             if (log.isDebugEnabled()) {
                 // Method assignM=assigner.getMethod("assign", new Class[] {Connection.class,String[].class,
                 // UniversalContainer.class});
-                log.debug("HAT GEKLAPPT:" + c);                                                            // NOI18N
+                log.debug("HAT GEKLAPPT:" + clazz);                                                        // NOI18N
             }
         } catch (Throwable t) {
             log.warn(("FEATURE_RENDERER corrupt or missing"), t);                                          // NOI18N
