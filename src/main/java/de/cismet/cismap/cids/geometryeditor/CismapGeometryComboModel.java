@@ -11,16 +11,16 @@ import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.event.ListDataListener;
 
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
 
-import de.cismet.cismap.navigatorplugin.CidsFeature;
 
 import de.cismet.tools.CurrentStackTrace;
+import java.util.ArrayList;
+import java.util.List;
 /**
  * End of variables declaration.
  *
@@ -39,7 +39,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     private final DefaultCismapGeometryComboBoxEditor editor;
     private Object selectedItem = null;
     private Feature currentObjectFeature;
-    private Vector<Feature> newFeaturesInMap;
+    private List<Feature> newFeaturesInMap;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -53,7 +53,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
             final Feature currentObjectFeature) {
         this.editor = editor;
         if (log.isDebugEnabled()) {
-            log.debug("xxxlaa editor (con): " + editor); // NOI18N
+            log.debug("editor (con): " + editor); // NOI18N
         }
         this.currentObjectFeature = currentObjectFeature;
         refresh();
@@ -146,7 +146,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
      */
     public void refresh() {
         if (log.isDebugEnabled()) {
-            log.debug("xxxlaaa refreshing: " + editor.getCismap()); // NOI18N
+            log.debug("refreshing: " + editor.getCismap()); // NOI18N
         }
         newFeaturesInMap = getAllNewFeatures();
         try {
@@ -161,10 +161,10 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
      *
      * @return  DOCUMENT ME!
      */
-    private Vector<Feature> getAllNewFeatures() {
+    private List<Feature> getAllNewFeatures() {
         // Vector<Feature> allFeatures =
         // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().getAllFeatures();
-        final Vector<Feature> allNewFeatures = new Vector<Feature>();
+        final List<Feature> allNewFeatures = new ArrayList<Feature>();
         if (editor.getCismap() != null) {
             final Vector<Feature> allFeatures = editor.getCismap()
                         .getMappingComponent()
