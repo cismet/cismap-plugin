@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cismap.cids.geometryeditor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -17,10 +19,7 @@ import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
 
-
 import de.cismet.tools.CurrentStackTrace;
-import java.util.ArrayList;
-import java.util.List;
 /**
  * End of variables declaration.
  *
@@ -152,7 +151,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
         try {
             this.fireContentsChanged(this, 0, getSize() - 1);
         } catch (Throwable t) {
-            log.error("Error in refresh()", t);                     // NOI18N
+            log.error("Error in refresh()", t);             // NOI18N
         }
     }
 
