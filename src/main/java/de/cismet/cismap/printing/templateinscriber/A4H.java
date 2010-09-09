@@ -24,11 +24,6 @@ import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
  */
 public class A4H extends AbstractPrintingInscriber {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 1759681419118007905L;
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

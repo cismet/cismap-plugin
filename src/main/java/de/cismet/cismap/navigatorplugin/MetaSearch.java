@@ -39,11 +39,6 @@ import de.cismet.tools.gui.StaticSwingTools;
  */
 public class MetaSearch extends javax.swing.JPanel implements Configurable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2494397602102341323L;
-
     //~ Instance fields --------------------------------------------------------
 
     SearchSelectionTree tree = null;

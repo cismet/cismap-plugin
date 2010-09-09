@@ -146,9 +146,6 @@ public class JXCollapsiblePane extends JPanel {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -745515378817550094L;
-
     /**
      * Used when generating PropertyChangeEvents for the "animationState" property. The PropertyChangeEvent will takes
      * the following different values for {@link PropertyChangeEvent#getNewValue()}:
@@ -547,11 +544,6 @@ public class JXCollapsiblePane extends JPanel {
      */
     private class ToggleAction extends AbstractAction implements PropertyChangeListener {
 
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Use serialVersionUID for interoperability. */
-        private static final long serialVersionUID = 2304854314164808786L;
-
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -798,11 +790,6 @@ public class JXCollapsiblePane extends JPanel {
      * @version  $Revision$, $Date$
      */
     private final class WrapperContainer extends JPanel {
-
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Use serialVersionUID for interoperability. */
-        private static final long serialVersionUID = 3770815644862696234L;
 
         //~ Instance fields ----------------------------------------------------
 

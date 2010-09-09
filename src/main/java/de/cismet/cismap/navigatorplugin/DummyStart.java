@@ -20,11 +20,6 @@ package de.cismet.cismap.navigatorplugin;
  */
 public class DummyStart extends javax.swing.JFrame {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 7535446366179478045L;
-
     //~ Constructors -----------------------------------------------------------
 
     /**

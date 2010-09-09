@@ -53,11 +53,6 @@ import javax.swing.border.CompoundBorder;
  */
 public class StackedBox extends JPanel implements Scrollable {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -4201145972336077827L;
-
     //~ Instance fields --------------------------------------------------------
 
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());

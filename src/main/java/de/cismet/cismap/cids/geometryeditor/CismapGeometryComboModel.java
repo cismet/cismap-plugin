@@ -29,8 +29,6 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -4904140195479441282L;
 
     //~ Instance fields --------------------------------------------------------
 

@@ -28,11 +28,6 @@ import javax.swing.ImageIcon;
  */
 public class HTMLTest extends javax.swing.JFrame {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -9024594576983701911L;
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

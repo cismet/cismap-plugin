@@ -22,11 +22,6 @@ import javax.swing.JPanel;
  */
 public class Quote extends JComponent {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -2999545802715546566L;
-
     //~ Instance fields --------------------------------------------------------
 
     String mTxt;

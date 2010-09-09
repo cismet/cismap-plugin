@@ -20,11 +20,6 @@ package de.cismet.tools.gui.xpanel;
  */
 public class XPanel extends javax.swing.JPanel {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -8001951921666045135L;
-
     //~ Constructors -----------------------------------------------------------
 
     /**

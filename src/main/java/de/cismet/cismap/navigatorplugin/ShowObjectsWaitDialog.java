@@ -20,11 +20,6 @@ package de.cismet.cismap.navigatorplugin;
  */
 public class ShowObjectsWaitDialog extends javax.swing.JDialog {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 8301421571992862092L;
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

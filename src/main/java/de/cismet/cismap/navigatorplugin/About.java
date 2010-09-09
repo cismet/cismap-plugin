@@ -24,8 +24,6 @@ public class About extends javax.swing.JDialog {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -4211971131642368476L;
 
     //~ Instance fields --------------------------------------------------------
 

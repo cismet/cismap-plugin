@@ -52,8 +52,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1362088106263721904L;
     private static final String GEOM_FIELD = "geo_field";    // NOI18N
     private static final String CISMAP_PLUGIN_ID = "cismap"; // NOI18N
 

@@ -30,11 +30,6 @@ import javax.swing.UIManager;
  */
 public class EditorPaneExample1 extends JFrame {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -479698153634397409L;
-
     //~ Instance fields --------------------------------------------------------
 
     private JEditorPane pane;

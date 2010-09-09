@@ -34,8 +34,6 @@ public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements 
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 3176628546340426393L;
 
     //~ Instance fields --------------------------------------------------------
 

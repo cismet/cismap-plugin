@@ -27,9 +27,6 @@ public class TestPanel extends AbstractOptionsPanel implements OptionsPanelContr
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -6809355623503098744L;
-
     private static final String OPTION_NAME = "Beispiel 1"; // NOI18N
 
     //~ Instance fields --------------------------------------------------------

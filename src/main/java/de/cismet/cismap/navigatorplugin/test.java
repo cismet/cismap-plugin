@@ -27,11 +27,6 @@ import de.cismet.tools.gui.JXCollapsiblePane;
  */
 public class test extends javax.swing.JFrame {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = -1792019460340199917L;
-
     //~ Instance fields --------------------------------------------------------
 
     JXCollapsiblePane jXCollapsiblePane1 = new JXCollapsiblePane();

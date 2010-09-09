@@ -36,8 +36,6 @@ public class A4HPersistent extends AbstractPrintingInscriber {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Use serialVersionUID for interoperability. */
-    private static final long serialVersionUID = 7449841098431767718L;
     public static final String FIRST_LINE = "FIRST_LINE";   // NOI18N
     public static final String SECOND_LINE = "SECOND_LINE"; // NOI18N
 
