@@ -22,9 +22,6 @@ import java.awt.Image;
  */
 public class About extends javax.swing.JDialog {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private Image back = new javax.swing.ImageIcon(getClass().getResource("/images/world.png")).getImage();

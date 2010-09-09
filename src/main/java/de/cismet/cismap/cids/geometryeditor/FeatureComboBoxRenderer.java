@@ -32,9 +32,6 @@ import de.cismet.cismap.navigatorplugin.CidsFeature;
  */
 public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements ListCellRenderer {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     Color background = UIManager.getDefaults().getColor("ComboBox.background");                  // NOI18N

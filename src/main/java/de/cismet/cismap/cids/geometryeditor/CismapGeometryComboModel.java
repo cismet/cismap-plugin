@@ -27,9 +27,6 @@ import de.cismet.tools.CurrentStackTrace;
  */
 class CismapGeometryComboModel extends AbstractListModel implements ComboBoxModel, FeatureCollectionListener {
 
-    //~ Static fields/initializers ---------------------------------------------
-
-
     //~ Instance fields --------------------------------------------------------
 
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
