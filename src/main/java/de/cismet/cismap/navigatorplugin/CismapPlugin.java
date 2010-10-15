@@ -20,7 +20,9 @@ import Sirius.navigator.plugin.interfaces.PluginProperties;
 import Sirius.navigator.plugin.interfaces.PluginSupport;
 import Sirius.navigator.plugin.interfaces.PluginUI;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
+import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.search.dynamic.FormDataBean;
+import Sirius.navigator.search.dynamic.SearchProgressDialog;
 import Sirius.navigator.types.iterator.AttributeRestriction;
 import Sirius.navigator.types.iterator.ComplexAttributeRestriction;
 import Sirius.navigator.types.iterator.SingleAttributeIterator;
@@ -33,6 +35,7 @@ import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.middleware.types.Node;
+import Sirius.server.search.builtin.GeoSearch;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -98,7 +101,6 @@ import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -309,6 +311,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private String dirExtension = "";                                                                                   // NOI18N
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
+    private SearchProgressDialog searchProgressDialog;
+    private boolean cidsPureServerSearchEnabled = false;
     private Action searchMenuSelectedAction = new AbstractAction() {
 
             @Override
@@ -837,16 +841,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     public CismapPlugin(final PluginContext context) {
         try {
-            final String l = System.getProperty("user.language");           // NOI18N
-            final String c = System.getProperty("user.country");            // NOI18N
-            System.out.println("Locale=" + l + "_" + c);                    // NOI18N
+            final String l = System.getProperty("user.language");                  // NOI18N
+            final String c = System.getProperty("user.country");                   // NOI18N
+            System.out.println("Locale=" + l + "_" + c);                           // NOI18N
             Locale.setDefault(new Locale(l, c));
         } catch (Exception e) {
-            log.warn("Error while changing the user language and country"); // NOI18N
+            log.warn("Error while changing the user language and country");        // NOI18N
         }
-
+        if (StaticDebuggingTools.checkHomeForFile("cidsNewServerSearchEnabled")) { // NOI18N
+            cidsPureServerSearchEnabled = true;
+        }
         try {
-            final String ext = System.getProperty("directory.extension"); // NOI18N
+            final String ext = System.getProperty("directory.extension");          // NOI18N
 
             System.out.println("SystemdirExtension=:" + ext); // NOI18N
 
@@ -4830,29 +4836,29 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  geom  DOCUMENT ME!
      */
     private void initMetaSearch(final Geometry geom) {
-        String geosuche = ""; // NOI18N
+        String geosuche = "";                                                               // NOI18N
+        if (!cidsPureServerSearchEnabled) {
+            try {
+                geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
+            } catch (Exception e) {
+                log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e); // NOI18N
+            }
 
-        try {
-            geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
-        } catch (Exception e) {
-            log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e); // NOI18N
+            final Object object = context.getSearch().getDataBeans().get(geosuche);
+            final FormDataBean coordinatesDataBean = (FormDataBean)object;
+
+            coordinatesDataBean.setBeanParameter("featureString", geom.toText()); // NOI18N
+            context.getSearch()
+                    .performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(),
+                        coordinatesDataBean,
+                        context.getUserInterface().getFrameFor((PluginUI)this),
+                        false);
+        } else {
+            log.fatal(metaSearch.getSearchTree().getSelectedClassNodeKeys());
+            final GeoSearch gs = new GeoSearch(geom);
+            gs.setValidClassesFromStrings(metaSearch.getSearchTree().getSelectedClassNodeKeys());
+            CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
         }
-
-        final Object object = context.getSearch().getDataBeans().get(geosuche);
-        final FormDataBean coordinatesDataBean = (FormDataBean)object;
-
-// double[] boundingBox = new double[4]; boundingBox[0] = mapC.getWtst().getWorldX(bounds.getX()); boundingBox[1] =
-// mapC.getWtst().getWorldY(bounds.getY() + bounds.getHeight()); boundingBox[2] = mapC.getWtst().getWorldX(bounds.getX()
-// + bounds.getWidth()); boundingBox[3] = mapC.getWtst().getWorldY(bounds.getY()); double[][] pointCoordinates =
-// context.getToolkit().getPointCoordinates(boundingBox); String ogcPolygon =
-// Sirius.navigator.tools.NavigatorToolkit.getToolkit().pointCoordinatesToOGCPolygon(pointCoordinates, true);
-// log.error("ogcPolygon:"+ogcPolygon); log.fatal("newStuff:"+ geom.toText());
-        coordinatesDataBean.setBeanParameter("featureString", geom.toText()); // NOI18N
-        context.getSearch()
-                .performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(),
-                    coordinatesDataBean,
-                    context.getUserInterface().getFrameFor((PluginUI)this),
-                    false);
     }
 
     @Override
