@@ -1539,6 +1539,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
 
         statusBar.addScalePopups();
+        statusBar.addCrsPopups();
         cmdReconfig.setVisible(false);
         jSeparator1.setVisible(false);
         mapC.getFeatureCollection().addFeatureCollectionListener(this);

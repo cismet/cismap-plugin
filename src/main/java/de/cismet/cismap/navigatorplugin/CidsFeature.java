@@ -306,7 +306,7 @@ public class CidsFeature implements XStyledFeature,
     private void initFeatureSettings() throws Throwable {
         if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
             if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs()
-                        .equalsIgnoreCase("epsg:4326")) {                                                         // NOI18N
+                        .getCode().equalsIgnoreCase("epsg:4326")) {                                               // NOI18N
                 featureBorder = 0.001f;
             }
         }
