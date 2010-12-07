@@ -1568,7 +1568,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
         layerInfo.initDividerLocation();
-// initPluginToolbarComponents();
+        initPluginToolbarComponents();
     }
 
     //~ Methods ----------------------------------------------------------------
