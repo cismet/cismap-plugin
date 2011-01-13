@@ -104,17 +104,15 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             .getAttributeEditor()
                             .getTreeNode();
 
-//        try {
-//            metaObjectNode = (MetaObjectNode) ComponentRegistry.getRegistry().getActiveCatalogue().getSelectedNode().getNode();
-//            log.fatal("A:" + metaObjectNode.getObject().getDebugString());
-//        } catch (Exception runtimeException) {
-//        }
+                // try { metaObjectNode = (MetaObjectNode)
+                // ComponentRegistry.getRegistry().getActiveCatalogue().getSelectedNode().getNode(); log.fatal("A:" +
+                // metaObjectNode.getObject().getDebugString()); } catch (Exception runtimeException) { }
                 if (dmtn != null) {
                     metaObjectNode = (MetaObjectNode)dmtn.getNode();
                 }
-//            log.fatal("B:" + metaObjectNode.getObject().getDebugString());
+                // log.fatal("B:" + metaObjectNode.getObject().getDebugString());
 
-//                refreshModel();
+                // refreshModel();
                 CismapBroker.getInstance()
                         .getMappingComponent()
                         .getFeatureCollection()
@@ -370,13 +368,28 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      */
     public void setCidsMetaObject(final MetaObject cidsMetaObject) {
         this.cidsMetaObject = cidsMetaObject;
+    }
 
+    /**
+     * If you want to use this combo box for different cids beans, then you should invoke this method before you bind a
+     * new cids bean and after an invocation of the dispose()-method and the unbind-method of the corresponding
+     * BindingGroup object.
+     */
+    public void initForNewBinding() {
         // normally, the dispose()-method was invoked before the CidsMetaObject changes
         // and in this case, the feature collection listener must be registered.
         CismapBroker.getInstance()
                 .getMappingComponent()
                 .getFeatureCollection()
                 .removeFeatureCollectionListener(comboModel);
+
+        geometryBean = null;
+        selectedFeature = null;
+        cidsFeature = null;
+
+        comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
+        setModel(comboModel);
+
         CismapBroker.getInstance()
                 .getMappingComponent()
                 .getFeatureCollection()
