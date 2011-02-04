@@ -22,9 +22,11 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
 
 import java.lang.reflect.Constructor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,6 +40,9 @@ import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 
 import de.cismet.cids.utils.ClassloadingHelper;
+import de.cismet.cids.utils.abstracts.AbstractCidsBeanAction;
+import de.cismet.cids.utils.interfaces.CidsBeanAction;
+import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
 
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
@@ -69,7 +74,8 @@ public class CidsFeature implements XStyledFeature,
     Highlightable,
     Bufferable,
     RasterLayerSupportedFeature,
-    FeatureGroup {
+    FeatureGroup,
+    CidsBeanActionsProvider {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -104,6 +110,8 @@ public class CidsFeature implements XStyledFeature,
     // CidsFeature is FeatureGroup + SubFeature
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
+
+    private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -503,6 +511,27 @@ public class CidsFeature implements XStyledFeature,
             if (log.isDebugEnabled()) {
                 log.debug("Error while creating the FeaureSupportingRasterService, or it does not exist.", t); // NOI18N
             }
+        }
+
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("VERSUCHE OBJECTACTIONSPROVIDER ZU SETZEN"); // NOI18N
+            }                                                          // NOI18N
+
+            final Class<?> clazz = ClassloadingHelper.getDynamicClass(
+                    mc,
+                    ClassloadingHelper.CLASS_TYPE.ACTION_PROVIDER);
+            final Constructor<?> constructor = clazz.getConstructor();
+            final CidsBeanActionsProvider provider = (CidsBeanActionsProvider)constructor.newInstance();
+            cidsBeanActions = provider.getActions();
+            for (final CidsBeanAction cba : cidsBeanActions) {
+                cba.setCidsBean(getMetaObject().getBean());
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("HAT GEKLAPPT:" + clazz);              // NOI18N
+            }
+        } catch (Throwable t) {
+            log.warn(("ACTION_PROVIDER corrupt or missing"), t); // NOI18N
         }
     }
 
@@ -1019,5 +1048,10 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public String toString() {
         return "CidsFeature<" + getMetaObject() + ">"; // NOI18N
+    }
+
+    @Override
+    public Collection<CidsBeanAction> getActions() {
+        return cidsBeanActions;
     }
 }
