@@ -1322,6 +1322,9 @@
                       <ComponentRef name="cmdGroupPrimaryInteractionMode"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdPluginSearchActionPerformed"/>
+                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JPopupMenuButton()"/>
                   </AuxValues>
