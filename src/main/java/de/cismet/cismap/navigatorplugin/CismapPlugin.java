@@ -4717,6 +4717,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 rootWindow.read(in);
                 in.close();
                 rootWindow.getWindowBar(Direction.LEFT).setEnabled(true);
+                rootWindow.getWindowBar(Direction.DOWN).setEnabled(true);
                 rootWindow.getWindowBar(Direction.RIGHT).setEnabled(true);
                 if (log.isDebugEnabled()) {
                     /*if (isInit) {
