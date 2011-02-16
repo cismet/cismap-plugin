@@ -110,7 +110,6 @@ public class CidsFeature implements XStyledFeature,
     // CidsFeature is FeatureGroup + SubFeature
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
-
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
 
     //~ Constructors -----------------------------------------------------------
@@ -521,17 +520,25 @@ public class CidsFeature implements XStyledFeature,
             final Class<?> clazz = ClassloadingHelper.getDynamicClass(
                     mc,
                     ClassloadingHelper.CLASS_TYPE.ACTION_PROVIDER);
-            final Constructor<?> constructor = clazz.getConstructor();
-            final CidsBeanActionsProvider provider = (CidsBeanActionsProvider)constructor.newInstance();
-            cidsBeanActions = provider.getActions();
-            for (final CidsBeanAction cba : cidsBeanActions) {
-                cba.setCidsBean(getMetaObject().getBean());
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("HAT GEKLAPPT:" + clazz);              // NOI18N
+            if (clazz != null) {
+                final Constructor<?> constructor = clazz.getConstructor();
+                final CidsBeanActionsProvider provider = (CidsBeanActionsProvider)constructor.newInstance();
+                cidsBeanActions = provider.getActions();
+                for (final CidsBeanAction cba : cidsBeanActions) {
+                    cba.setCidsBean(getMetaObject().getBean());
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("HAT GEKLAPPT:" + clazz);              // NOI18N
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("ACTION_PROVIDER corrupt or missing"); // NOI18N
+                }
             }
         } catch (Throwable t) {
-            log.warn(("ACTION_PROVIDER corrupt or missing"), t); // NOI18N
+            if (log.isDebugEnabled()) {
+                log.debug(("ACTION_PROVIDER corrupt or missing"), t); // NOI18N
+            }
         }
     }
 
