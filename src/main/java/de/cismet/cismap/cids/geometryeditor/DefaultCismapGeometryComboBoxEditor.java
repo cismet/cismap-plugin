@@ -32,6 +32,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.editors.Bindable;
 
 import de.cismet.cismap.commons.BoundingBox;
+import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollection;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -269,7 +270,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             if (selectedFeature.getGeometry() != null) {
                                 CismapBroker.getInstance()
                                         .getMappingComponent()
-                                        .gotoBoundingBox(new BoundingBox(selectedFeature.getGeometry()),
+                                        .gotoBoundingBox(new XBoundingBox(selectedFeature.getGeometry()),
                                             false,
                                             true,
                                             0);

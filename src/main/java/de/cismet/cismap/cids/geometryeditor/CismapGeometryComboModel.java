@@ -7,17 +7,22 @@
 ****************************************************/
 package de.cismet.cismap.cids.geometryeditor;
 
+import org.openide.util.NbBundle;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.JOptionPane;
 
+import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.tools.CurrentStackTrace;
 /**
@@ -63,7 +68,38 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
      */
     @Override
     public void setSelectedItem(final Object anItem) {
-        selectedItem = anItem;
+        if (anItem instanceof Feature) {
+            int srid = ((Feature)anItem).getGeometry().getSRID();
+            final int defaultSrid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getDefaultCrs());
+
+            if (srid == CismapBroker.getInstance().getDefaultCrsAlias()) {
+                srid = defaultSrid;
+            }
+
+            if (srid != defaultSrid) {
+                final int ans = JOptionPane.showConfirmDialog(editor.getParent(),
+                        NbBundle.getMessage(
+                            CismapGeometryComboModel.class,
+                            "CismapGeometryComboModel.setSelectedItem.JOptionPane.message",
+                            new Object[] { "" + srid, "" + defaultSrid }),
+                        NbBundle.getMessage(
+                            CismapGeometryComboModel.class,
+                            "CismapGeometryComboModel.setSelectedItem.JOptionPane.title"),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+
+                if (ans == JOptionPane.YES_OPTION) {
+                    final Feature anFeature = (Feature)anItem;
+                    anFeature.setGeometry(CrsTransformer.transformToDefaultCrs(anFeature.getGeometry()));
+                    anFeature.getGeometry().setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+                    selectedItem = anItem;
+                }
+            } else {
+                selectedItem = anItem;
+            }
+        } else {
+            selectedItem = anItem;
+        }
     }
 
     /**
