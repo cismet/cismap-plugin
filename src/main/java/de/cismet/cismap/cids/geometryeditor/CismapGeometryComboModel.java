@@ -69,6 +69,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     @Override
     public void setSelectedItem(final Object anItem) {
         if (anItem instanceof Feature) {
+            final Feature anFeature = (Feature)anItem;
             int srid = ((Feature)anItem).getGeometry().getSRID();
             final int defaultSrid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getDefaultCrs());
 
@@ -89,15 +90,16 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
                         JOptionPane.QUESTION_MESSAGE);
 
                 if (ans == JOptionPane.YES_OPTION) {
-                    final Feature anFeature = (Feature)anItem;
                     anFeature.setGeometry(CrsTransformer.transformToDefaultCrs(anFeature.getGeometry()));
                     anFeature.getGeometry().setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                     selectedItem = anItem;
                 }
             } else {
+                anFeature.getGeometry().setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                 selectedItem = anItem;
             }
         } else {
+            log.error("The selected item is not a feature. This should never happen."); // NOI18N
             selectedItem = anItem;
         }
     }
