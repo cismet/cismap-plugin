@@ -196,6 +196,7 @@ import de.cismet.tools.groovysupport.GroovierConsole;
 
 import de.cismet.tools.gui.BasicGuiComponentProvider;
 import de.cismet.tools.gui.CheckThreadViolationRepaintManager;
+import de.cismet.tools.gui.CustomButtonProvider;
 import de.cismet.tools.gui.EventDispatchThreadHangMonitor;
 import de.cismet.tools.gui.JPopupMenuButton;
 import de.cismet.tools.gui.StackedBox;
@@ -1342,6 +1343,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         viewMap.addView(gcp.getId(), extensionView);
                         if (log.isDebugEnabled()) {
                             log.debug(gcp.getName() + " added");
+                        }
+
+                        if (gcp instanceof CustomButtonProvider) {
+                            extensionView.getCustomTitleBarComponents()
+                                    .addAll(((CustomButtonProvider)gcp).getCustomButtons());
                         }
                     }
                 }
