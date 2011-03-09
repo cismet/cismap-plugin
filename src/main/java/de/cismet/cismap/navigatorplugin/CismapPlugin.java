@@ -171,6 +171,7 @@ import de.cismet.cismap.commons.interaction.events.MapDnDEvent;
 import de.cismet.cismap.commons.interaction.events.MapSearchEvent;
 import de.cismet.cismap.commons.interaction.events.StatusEvent;
 import de.cismet.cismap.commons.interaction.memento.MementoInterface;
+import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
 
@@ -4892,6 +4893,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 } catch (Throwable t) {
                     log.fatal("Error on drop", t); // NOI18N
                 }
+            } else if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)) {
+                activeLayers.drop((DropTargetDropEvent)mde.getDte());
             } else {
                 JOptionPane.showMessageDialog(
                     this,
