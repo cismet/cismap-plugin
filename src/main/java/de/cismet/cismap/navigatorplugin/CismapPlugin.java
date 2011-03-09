@@ -1579,7 +1579,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
         layerInfo.initDividerLocation();
-// initPluginToolbarComponents();
+        try {
+            initPluginToolbarComponents();
+        } catch (Error err) {
+            log.error("Exception while initializing Toolbar!", err);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1631,8 +1635,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         final Collection<? extends BasicGuiComponentProvider> toolbarguiCompProviders = Lookup.getDefault()
                     .lookupAll(BasicGuiComponentProvider.class);
         if (toolbarguiCompProviders != null) {
-            log.fatal(toolbarguiCompProviders);
-
             for (final BasicGuiComponentProvider gui : toolbarguiCompProviders) {
                 if (gui.getType() == BasicGuiComponentProvider.GuiType.TOOLBARCOMPONENT) {
                     final int insertionIndex = tlbMain.getComponentCount();
@@ -1997,9 +1999,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
                     popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
+
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
+
                 @Override
                 public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
@@ -2089,6 +2093,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void componentResized(final java.awt.event.ComponentEvent evt) {
                     formComponentResized(evt);
                 }
+
                 @Override
                 public void componentShown(final java.awt.event.ComponentEvent evt) {
                     formComponentShown(evt);
@@ -2108,6 +2113,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void mouseEntered(final java.awt.event.MouseEvent evt) {
                     panMainMouseEntered(evt);
                 }
+
                 @Override
                 public void mouseExited(final java.awt.event.MouseEvent evt) {
                     panMainMouseExited(evt);
@@ -2825,9 +2831,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void menuSelected(final javax.swing.event.MenuEvent evt) {
                     menSearchMenuSelected(evt);
                 }
+
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
+
                 @Override
                 public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
