@@ -937,6 +937,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             serverInfo = new ServerInfo();
             layerInfo = new LayerInfo();
             mapC = new MappingComponent();
+            CismapBroker.getInstance().addCrsChangeListener(mapC);
             mapC.addHistoryModelListener(this);
             activeLayers = new LayerWidget(mapC);
             activeLayers.setPreferredSize(new Dimension(100, 120));
