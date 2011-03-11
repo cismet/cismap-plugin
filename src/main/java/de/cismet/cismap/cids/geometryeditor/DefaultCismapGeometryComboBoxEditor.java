@@ -289,7 +289,10 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
                 @Override
                 public CidsBean convertReverse(final Feature value) {
-                    log.fatal("convertReverse: " + value); // NOI18N
+                    if (log.isDebugEnabled()) {
+                        log.debug("convertReverse: " + value); // NOI18N
+                    }
+
                     if (value == null) {
                         return null;
                     } else {
@@ -305,7 +308,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                         || ((oldValue != null) && !oldValue.equals(geom))) {
                                 geometryBean.setProperty(GEOM_FIELD, value.getGeometry());
                             }
-                        } catch (Exception ex) {
+                        } catch (final Exception ex) {
                             log.error("Error during set geo_field", ex); // NOI18N
                         }
                         return geometryBean;
