@@ -22,6 +22,8 @@ import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.log4j.Logger;
+
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.Validator;
 
@@ -31,7 +33,6 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.editors.Bindable;
 
-import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollection;
@@ -54,11 +55,11 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
     private static final String GEOM_FIELD = "geo_field";    // NOI18N
     private static final String CISMAP_PLUGIN_ID = "cismap"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(DefaultCismapGeometryComboBoxEditor.class);
 
     //~ Instance fields --------------------------------------------------------
 
     private CidsBean geometryBean;
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private MetaObjectNode metaObjectNode;
     private MetaClass metaClass;
     private CismapPlugin cismap;
@@ -82,19 +83,23 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      * @param  editable  DOCUMENT ME!
      */
     public DefaultCismapGeometryComboBoxEditor(final boolean editable) {
-        if (log.isDebugEnabled()) {
-            log.debug("cismap: " + PluginRegistry.getRegistry().getPlugin(CISMAP_PLUGIN_ID)); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("cismap: " + PluginRegistry.getRegistry().getPlugin(CISMAP_PLUGIN_ID)); // NOI18N
         }
+
         if (editable) {
             try {
-                if (log.isDebugEnabled()) {
-                    log.debug("getting & setting plugin");                                    // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("getting & setting plugin"); // NOI18N
                 }
+
                 cismap = (CismapPlugin)PluginRegistry.getRegistry().getPlugin(CISMAP_PLUGIN_ID);
-            } catch (Exception e) {
-                log.error("Error during init of " + this.getClass(), e);                      // NOI18N
+            } catch (final Exception e) {
+                LOG.error("Error during init of " + this.getClass(), e); // NOI18N
+                // TODO: isn't that a reason to cancel init?
             }
         }
+
         comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
         setModel(comboModel);
         setRenderer(new FeatureComboBoxRenderer());
@@ -105,21 +110,16 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             .getAttributeEditor()
                             .getTreeNode();
 
-                // try { metaObjectNode = (MetaObjectNode)
-                // ComponentRegistry.getRegistry().getActiveCatalogue().getSelectedNode().getNode(); log.fatal("A:" +
-                // metaObjectNode.getObject().getDebugString()); } catch (Exception runtimeException) { }
                 if (dmtn != null) {
                     metaObjectNode = (MetaObjectNode)dmtn.getNode();
                 }
-                // log.fatal("B:" + metaObjectNode.getObject().getDebugString());
 
-                // refreshModel();
                 CismapBroker.getInstance()
                         .getMappingComponent()
                         .getFeatureCollection()
                         .addFeatureCollectionListener(comboModel);
-            } catch (Exception e) {
-                log.error("Error during init of " + this.getClass(), e); // NOI18N
+            } catch (final Exception e) {
+                LOG.error("Error during init of " + this.getClass(), e); // NOI18N
             }
         }
     }
@@ -128,14 +128,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
     /**
      * DOCUMENT ME!
-     *
-     * @Override  public void removeNotify() { try {
-     *            CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeatureCollectionListener(comboModel);
-     *            if (selectedFeature != null) {
-     *            CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(selectedFeature);
-     *            // ???? // selectedCidsFeature.setEditable(false); //
-     *            CismapBroker.getInstance().getMappingComponent().showHandles(false); //Entferne dei HAndles } } catch
-     *            (Exception e) { log.error("Error during removeNotify of " + this.getClass(), e); // NOI18N } }
      */
     public void dispose() {
         try {
@@ -145,40 +137,15 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                     .removeFeatureCollectionListener(comboModel);
 
             if (selectedFeature != null) {
-                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(selectedFeature); // ????
-                // selectedCidsFeature.setEditable(false);
-                // CismapBroker.getInstance().getMappingComponent().showHandles(false); //Entferne dei HAndles
+                // ????
+                // TODO: ???? isn't a very helpful comment, so what is wrong here
+                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(selectedFeature);
             }
-        } catch (Exception e) {
-            log.error("Error during removeNotify of " + this.getClass(), e); // NOI18N
+        } catch (final Exception e) {
+            LOG.error("Error during removeNotify of " + this.getClass(), e); // NOI18N
         }
     }
 
-//    private void refreshModel() {
-//        Object sel = getSelectedItem();
-//        comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
-//        setModel(comboModel);
-//        setSelectedItem(sel);
-//    }
-//    @Override
-//    public void setSelectedItem(Object item) {
-//
-//        de.cismet.cismap.commons.features.FeatureCollection features = CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
-//        features.removeFeatureCollectionListener(featureCollectionListener);
-//        if (selectedFeature != item) {
-//            if (selectedFeature instanceof CidsFeature) {
-//                features.removeFeature(selectedFeature);
-//            }
-//
-//            super.setSelectedItem(item);
-//
-//            selectedFeature = (Feature) item;
-//            if (!features.getAllFeatures().contains(selectedFeature)) {
-//                features.addFeature(selectedFeature);
-//            }
-//        }
-//        features.addFeatureCollectionListener(featureCollectionListener);
-//    }
     @Override
     public String getBindingProperty() {
         return "selectedItem"; // NOI18N
@@ -201,9 +168,10 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                 @Override
                 public Feature convertForward(final CidsBean value) {
                     try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("convertForward", new CurrentStackTrace()); // NOI18N
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("convertForward", new CurrentStackTrace()); // NOI18N
                         }
+
                         geometryBean = value;
                         if (value != null) {
                             MetaObject cidsFeatureMetaObject = null;
@@ -219,7 +187,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                     @Override
                                     public void setGeometry(final Geometry geom) {
                                         if (geom == null) {
-                                            log.fatal("ATTENTION geom=null");            // NOI18N
+                                            LOG.warn("ATTENTION geom=null");             // NOI18N
                                         }
                                         final Geometry oldValue = getGeometry();
                                         super.setGeometry(geom);
@@ -228,8 +196,8 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                                         || ((oldValue != null) && !oldValue.equals(geom))) {
                                                 geometryBean.setProperty(GEOM_FIELD, geom);
                                             }
-                                        } catch (Exception e) {
-                                            log.error("Error when setting the geomtry.", e); // NOI18N
+                                        } catch (final Exception e) {
+                                            LOG.error("Error when setting the geomtry.", e); // NOI18N
                                         }
                                     }
                                 };
@@ -241,17 +209,12 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                         .getFeatureCollection();
 
                             if (cismapFeatures.getAllFeatures().contains(selectedFeature)) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("feature already exist"); // NOI18N
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("feature already exist");                                // NOI18N
                                 }
-                                //
-                                // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(selectedFeature);
-                                // PFeature pf = (PFeature)
-                                // CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(selectedFeature);
-                                // selectedFeature = pf.getFeature();
                             } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("add selectedFeature " + selectedFeature + " with geometry "
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("add selectedFeature " + selectedFeature + " with geometry " // NOI18N
                                                 + selectedFeature.getGeometry());
                                 }
                                 if (selectedFeature.getGeometry() == null) {
@@ -259,9 +222,8 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                 }
                                 cismapFeatures.addFeature(selectedFeature);
                             }
-                            // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().;
+
                             selectedFeature.setEditable(true);
-                            // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeatureCollectionListener(featureCollectionListener);
 
                             cismapFeatures.holdFeature(selectedFeature);
                             cismapFeatures.select(selectedFeature);
@@ -275,22 +237,20 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                             true,
                                             0);
                             }
-                            // setModel(new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this,
-                            // selectedFeature));
+
                             setSelectedItem(selectedFeature);
-                            // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeatureCollectionListener(featureCollectionListener);
                         }
                         return selectedFeature;
-                    } catch (Throwable t) {
-                        log.error("Error in convertForward", t); // NOI18N
+                    } catch (final Exception e) {
+                        LOG.error("Error in convertForward", e); // NOI18N
                         return null;
                     }
                 }
 
                 @Override
                 public CidsBean convertReverse(final Feature value) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("convertReverse: " + value); // NOI18N
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("convertReverse: " + value); // NOI18N
                     }
 
                     if (value == null) {
@@ -302,14 +262,13 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             }
                             final Geometry oldValue = (Geometry)geometryBean.getProperty(GEOM_FIELD);
                             final Geometry geom = value.getGeometry();
-                            // log.fatal("geometryBean.setProperty(old=" + geometryBean.getProperty(GEOM_FIELD) +
-                            // ",new=" + value.getGeometry() + ")");
+
                             if (((oldValue == null) && (geom != null))
                                         || ((oldValue != null) && !oldValue.equals(geom))) {
                                 geometryBean.setProperty(GEOM_FIELD, value.getGeometry());
                             }
                         } catch (final Exception ex) {
-                            log.error("Error during set geo_field", ex); // NOI18N
+                            LOG.error("Error during set geo_field", ex); // NOI18N
                         }
                         return geometryBean;
                     }
@@ -328,9 +287,10 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      * @return  DOCUMENT ME!
      */
     public CismapPlugin getCismap() {
-        if (log.isDebugEnabled()) {
-            log.debug("getting plugin: " + cismap); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getting plugin: " + cismap); // NOI18N
         }
+
         return cismap;
     }
 
@@ -340,9 +300,10 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      * @param  cismap  DOCUMENT ME!
      */
     public void setCismap(final CismapPlugin cismap) {
-        if (log.isDebugEnabled()) {
-            log.debug("setting plugin to: " + cismap); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("setting plugin to: " + cismap); // NOI18N
         }
+
         this.cismap = cismap;
     }
 
