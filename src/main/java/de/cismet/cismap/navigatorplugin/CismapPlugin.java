@@ -175,11 +175,6 @@ import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
 
-import de.cismet.extensions.timeasy.TimEasyDialog;
-import de.cismet.extensions.timeasy.TimEasyEvent;
-import de.cismet.extensions.timeasy.TimEasyListener;
-import de.cismet.extensions.timeasy.TimEasyPureNewFeature;
-
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
 
@@ -1517,18 +1512,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             } catch (Throwable t) {
                 context.getLogger().fatal("Error in CismapPlugin constructor", t); // NOI18N
             }
-
-            // TimEasy
-            ((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).setGeometryFeatureClass(
-                TimEasyPureNewFeature.class);
-            TimEasyDialog.addTimTimEasyListener(new TimEasyListener() {
-
-                    @Override
-                    public void timEasyObjectInserted(final TimEasyEvent tee) {
-                        mapC.getFeatureCollection().removeFeature(tee.getPureNewfeature());
-                        mapC.getFeatureCollection().addFeature(new CidsFeature(tee.getMetaObjectNode()));
-                    }
-                });
         }
 
         log.info("add InfoNode main component to the panMain Panel"); // NOI18N
