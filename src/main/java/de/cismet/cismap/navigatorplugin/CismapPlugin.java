@@ -132,6 +132,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import de.cismet.cismap.commons.BoundingBox;
+import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
 import de.cismet.cismap.commons.features.DefaultFeatureCollection;
@@ -4846,8 +4847,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             final Object object = context.getSearch().getDataBeans().get(geosuche);
             final FormDataBean coordinatesDataBean = (FormDataBean)object;
+            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
+            // Damits auch mit -1 funzt:
+            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
-            coordinatesDataBean.setBeanParameter("featureString", geom.toText()); // NOI18N
+            coordinatesDataBean.setBeanParameter(
+                "featureString",
+                "SRID="
+                        + transformed.getSRID()
+                        + ";"
+                        + transformed.toText()); // NOI18N
             context.getSearch()
                     .performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(),
                         coordinatesDataBean,
@@ -4855,7 +4864,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         false);
         } else {
             log.fatal(metaSearch.getSearchTree().getSelectedClassNodeKeys());
-            final GeoSearch gs = new GeoSearch(geom);
+            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
+            // Damits auch mit -1 funzt:
+            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+
+            final GeoSearch gs = new GeoSearch(transformed);
             gs.setValidClassesFromStrings(metaSearch.getSearchTree().getSelectedClassNodeKeys());
             CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
         }
