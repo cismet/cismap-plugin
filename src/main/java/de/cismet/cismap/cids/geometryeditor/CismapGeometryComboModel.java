@@ -11,7 +11,6 @@ import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -198,7 +197,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
         // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().getAllFeatures();
         final List<Feature> allNewFeatures = new ArrayList<Feature>();
         if (editor.getCismap() != null) {
-            final Vector<Feature> allFeatures = editor.getCismap()
+            final List<Feature> allFeatures = editor.getCismap()
                         .getMappingComponent()
                         .getFeatureCollection()
                         .getAllFeatures();
