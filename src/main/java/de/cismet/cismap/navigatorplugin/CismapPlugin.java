@@ -98,6 +98,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -131,6 +132,11 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.navigator.utils.CidsBeanDropListener;
+import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
@@ -142,6 +148,7 @@ import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
@@ -490,6 +497,76 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         };
 
+    private Action searchCidsFeatureAction = new AbstractAction() {
+
+//
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (log.isDebugEnabled()) {
+                                log.debug("searchCidsFeatureAction"); // NOI18N
+                            }
+                            cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+//                            mniSearchPolygon.setSelected(true);
+//                            cmdPluginSearch.setIcon(
+//                                new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolygon.png"))); // NOI18N
+                            EventQueue.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+                                        final CreateSearchGeometryListener searchListener =
+                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                                    MappingComponent.CREATE_SEARCH_POLYGON));
+//                                        searchListener.setMode(CreateSearchGeometryListener.POLYGON);
+
+                                        de.cismet.tools.CismetThreadPool.execute(
+                                            new javax.swing.SwingWorker<SearchFeature, Void>() {
+
+                                                @Override
+                                                protected SearchFeature doInBackground() throws Exception {
+                                                    final DefaultMetaTreeNode[] nodes = ComponentRegistry.getRegistry()
+                                                                    .getActiveCatalogue()
+                                                                    .getSelectedNodesArray();
+                                                    SearchFeature search = null;
+                                                    for (final DefaultMetaTreeNode dmtn : nodes) {
+                                                        if (dmtn instanceof ObjectTreeNode) {
+                                                            final MetaObject mo = ((ObjectTreeNode)dmtn)
+                                                                            .getMetaObject();
+                                                            final CidsFeature cf = new CidsFeature(mo);
+                                                            if (search == null) {
+                                                                search = new SearchFeature(cf.getGeometry());
+                                                            } else {
+                                                                search = new SearchFeature(
+                                                                        search.getGeometry().union(cf.getGeometry()));
+                                                            }
+                                                        }
+                                                    }
+                                                    return search;
+                                                }
+
+                                                @Override
+                                                protected void done() {
+                                                    try {
+                                                        final SearchFeature search = get();
+                                                        if (search != null) {
+                                                            searchListener.search(search);
+                                                        }
+                                                    } catch (Exception e) {
+                                                        log.error("Exception in Background Thread", e);
+                                                    }
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+            }
+        };
+
     private Action searchEllipseAction = new AbstractAction() {
 
             @Override
@@ -699,7 +776,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         };
 
-    // Variables declaration - do not modify
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cmdBack;
     private javax.swing.JButton cmdClipboard;
@@ -791,6 +868,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniScale;
     private javax.swing.JMenuItem mniSearchBuffer;
     private javax.swing.JMenuItem mniSearchBuffer1;
+    private javax.swing.JRadioButtonMenuItem mniSearchCidsFeature;
+    private javax.swing.JRadioButtonMenuItem mniSearchCidsFeature1;
     private javax.swing.JRadioButtonMenuItem mniSearchEllipse;
     private javax.swing.JRadioButtonMenuItem mniSearchEllipse1;
     private javax.swing.JRadioButtonMenuItem mniSearchPolygon;
@@ -821,7 +900,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator sepServerProfilesStart;
     private javax.swing.JToolBar tlbMain;
     private javax.swing.JToggleButton togInvisible;
-    // End of variables declaration
+    // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
 
@@ -980,6 +1059,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.fatal("Error in initComponents.", e); // NOI18N
             }
 
+            new CidsBeanDropTarget(cmdPluginSearch);
             if (!plugin) {
                 menSearch.setVisible(false);
                 cmdPluginSearch.setVisible(false);
@@ -1795,7 +1875,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
      * content of this method is always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         cmdGroupPrimaryInteractionMode = new javax.swing.ButtonGroup();
         panSearchSelection = new javax.swing.JPanel();
@@ -1811,6 +1891,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch = new javax.swing.JPopupMenu();
         mniSearchRectangle1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolygon1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchCidsFeature1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchEllipse1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolyline1 = new javax.swing.JRadioButtonMenuItem();
         jSeparator12 = new javax.swing.JSeparator();
@@ -1858,7 +1939,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdZoom = new javax.swing.JToggleButton();
         cmdPan = new javax.swing.JToggleButton();
         cmdFeatureInfo = new javax.swing.JToggleButton();
-        cmdPluginSearch = new JPopupMenuButton();
+        cmdPluginSearch = new CidsBeanDropJPopupMenuButton();
         cmdNewPolygon = new javax.swing.JToggleButton();
         cmdNewLinestring = new javax.swing.JToggleButton();
         cmdNewPoint = new javax.swing.JToggleButton();
@@ -1908,6 +1989,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch = new javax.swing.JMenu();
         mniSearchRectangle = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolygon = new javax.swing.JRadioButtonMenuItem();
+        mniSearchCidsFeature = new javax.swing.JRadioButtonMenuItem();
         mniSearchEllipse = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolyline = new javax.swing.JRadioButtonMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
@@ -1984,11 +2066,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
                     popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
-
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
-
                 @Override
                 public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
@@ -2010,6 +2090,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.mniSearchPolygon1.text"));                                                     // NOI18N
         mniSearchPolygon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
         popMenSearch.add(mniSearchPolygon1);
+
+        mniSearchCidsFeature1.setAction(searchCidsFeatureAction);
+        cmdGroupSearch.add(mniSearchCidsFeature1);
+        mniSearchCidsFeature1.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchCidsFeature.text"));                                                      // NOI18N
+        mniSearchCidsFeature1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        mniSearchCidsFeature1.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniSearchCidsFeature1ActionPerformed(evt);
+                }
+            });
+        popMenSearch.add(mniSearchCidsFeature1);
 
         mniSearchEllipse1.setAction(searchEllipseAction);
         cmdGroupSearch1.add(mniSearchEllipse1);
@@ -2078,7 +2173,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void componentResized(final java.awt.event.ComponentEvent evt) {
                     formComponentResized(evt);
                 }
-
                 @Override
                 public void componentShown(final java.awt.event.ComponentEvent evt) {
                     formComponentShown(evt);
@@ -2098,7 +2192,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void mouseEntered(final java.awt.event.MouseEvent evt) {
                     panMainMouseEntered(evt);
                 }
-
                 @Override
                 public void mouseExited(final java.awt.event.MouseEvent evt) {
                     panMainMouseExited(evt);
@@ -2816,11 +2909,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void menuSelected(final javax.swing.event.MenuEvent evt) {
                     menSearchMenuSelected(evt);
                 }
-
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
-
                 @Override
                 public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
@@ -2841,7 +2932,29 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchPolygon.text"));                                                     // NOI18N
         mniSearchPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        mniSearchPolygon.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniSearchPolygonActionPerformed(evt);
+                }
+            });
         menSearch.add(mniSearchPolygon);
+
+        mniSearchCidsFeature.setAction(searchCidsFeatureAction);
+        cmdGroupSearch.add(mniSearchCidsFeature);
+        mniSearchCidsFeature.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchCidsFeature.text"));                                                     // NOI18N
+        mniSearchCidsFeature.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        mniSearchCidsFeature.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniSearchCidsFeatureActionPerformed(evt);
+                }
+            });
+        menSearch.add(mniSearchCidsFeature);
 
         mniSearchEllipse.setAction(searchEllipseAction);
         cmdGroupSearch.add(mniSearchEllipse);
@@ -3199,7 +3312,34 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mnuBar.add(menHelp);
 
         setJMenuBar(mnuBar);
-    } // </editor-fold>
+    } // </editor-fold>//GEN-END:initComponents
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+        // TODO add your handling code here:
+    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchPolygonActionPerformed
+        // TODO add your handling code here:
+    } //GEN-LAST:event_mniSearchPolygonActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
+        // TODO add your handling code here:
+    } //GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4238,7 +4378,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void cmdPluginSearchActionPerformed(final java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        log.fatal("klick");
     }
 
     /**
@@ -5388,6 +5528,59 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements CidsBeanDropListener {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void beansDropped(final ArrayList<CidsBean> beans) {
+            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
+            final CreateSearchGeometryListener searchListener = ((CreateSearchGeometryListener)mapC.getInputListener(
+                        MappingComponent.CREATE_SEARCH_POLYGON));
+//            searchListener.setMode(CreateSearchGeometryListener.POLYGON);
+
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<SearchFeature, Void>() {
+
+                    @Override
+                    protected SearchFeature doInBackground() throws Exception {
+                        SearchFeature search = null;
+
+                        for (final CidsBean cb : beans) {
+                            final MetaObject mo = cb.getMetaObject();
+                            final CidsFeature cf = new CidsFeature(mo);
+                            if (search == null) {
+                                search = new SearchFeature(cf.getGeometry());
+                                search.setName(cb.toString());
+                                search.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+                            } else {
+                                search = new SearchFeature(
+                                        search.getGeometry().union(cf.getGeometry()));
+                                search.setName(mniSearchCidsFeature.getName());
+                            }
+                        }
+                        return search;
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            final SearchFeature search = get();
+                            if (search != null) {
+                                searchListener.search(search);
+                            }
+                        } catch (Exception e) {
+                            log.error("Exception in Background Thread", e);
+                        }
+                    }
+                });
+        }
+    }
 
     /**
      * private void configureActiveTabAfterVisibility() { Iterator<Element>
