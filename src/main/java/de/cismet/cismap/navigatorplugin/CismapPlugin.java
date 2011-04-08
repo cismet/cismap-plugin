@@ -1059,6 +1059,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.fatal("Error in initComponents.", e); // NOI18N
             }
 
+            mapC.setInteractionButtonGroup(cmdGroupPrimaryInteractionMode);
+
             new CidsBeanDropTarget(cmdPluginSearch);
             if (!plugin) {
                 menSearch.setVisible(false);
@@ -2309,6 +2311,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 CismapPlugin.class,
                 "CismapPlugin.cmdClipboard.toolTipText"));                                                // NOI18N
         cmdClipboard.setBorderPainted(false);
+        cmdClipboard.setName("cmdClipboard");                                                             // NOI18N
         cmdClipboard.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3319,27 +3322,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchPolygonActionPerformed
+    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchPolygonActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchPolygonActionPerformed
+    }//GEN-LAST:event_mniSearchPolygonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
+    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -5799,9 +5802,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         public synchronized CidsFeature invoke(final DefaultMetaTreeNode node,
                 final ObjectAttribute oAttr,
                 final boolean editable) throws Exception {
-// if (oAttr!=null&&oAttr.getValue()==null&&editable==true) {
-// return null;
-// }
             final MetaObject loader = ((ObjectTreeNode)node).getMetaObject();
             final MetaObjectNode mon = ((ObjectTreeNode)node).getMetaObjectNode();
             CidsFeature cidsFeature = invoke(loader, editable);
@@ -5818,22 +5818,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             return cidsFeature;
         }
-// public synchronized CidsFeature invoke(DefaultMetaTreeNode node, ObjectAttribute oAttr, boolean editable) throws
-// Exception { //            if (oAttr!=null&&oAttr.getValue()==null&&editable==true) { //                return null;
-// //            } Vector<Feature> v = new Vector<Feature>(); MetaObject loader = ((ObjectTreeNode)
-// node).getMetaObject(); MetaObjectNode mon = ((ObjectTreeNode) node).getMetaObjectNode(); CidsFeature cidsFeature; if
-// (oAttr != null) { cidsFeature = new CidsFeature(mon, oAttr); } else { cidsFeature = new CidsFeature(mon); }
-// cidsFeature.setEditable(editable); v.add(cidsFeature); featuresInMap.put(node, cidsFeature);
-// featuresInMapReverse.put(cidsFeature, node); log.debug("mapC.getFeatureCollection().getAllFeatures():" +
-// mapC.getFeatureCollection().getAllFeatures()); log.debug("cidsFeature:" + cidsFeature);
-// log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):" +
-// mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)); mapC.getFeatureLayer().setVisible(true); // if
-// (mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)) {
-// mapC.getFeatureCollection().removeFeature(cidsFeature); log.debug("mapC.getFeatureCollection().getAllFeatures():" +
-// mapC.getFeatureCollection().getAllFeatures()); //          } mapC.getFeatureCollection().substituteFeatures(v); if
-// (editable) { //mapC.getFeatureCollection().holdFeature(cidsFeature); mapC.getFeatureCollection().select(v); } if
-// (!mapC.isFixedMapExtent()) { mapC.zoomToFeatureCollection(mapC.isFixedMapScale()); mapC.showHandles(true); } return
-// cidsFeature; }
 
         /**
          * DOCUMENT ME!

@@ -1250,6 +1250,7 @@
                       <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.cmdClipboard.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                     <Property name="borderPainted" type="boolean" value="false"/>
+                    <Property name="name" type="java.lang.String" value="cmdClipboard" noResource="true"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdClipboardActionPerformed"/>
