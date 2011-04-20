@@ -1758,6 +1758,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     /**
      * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ConfigurationManager getConfigurationManager() {
+        return configurationManager;
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     private void setupDefaultLayout() {
         if (wfsViews.length != 0) {
@@ -3322,27 +3331,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchPolygonActionPerformed
+    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchPolygonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchPolygonActionPerformed
+    } //GEN-LAST:event_mniSearchPolygonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
+    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
 
     /**
      * DOCUMENT ME!
