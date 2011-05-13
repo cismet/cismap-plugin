@@ -4990,7 +4990,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     private void initMetaSearch(final Geometry geom) {
         String geosuche = "";                                                               // NOI18N
-        if (!cidsPureServerSearchEnabled) {
+        if (false && !cidsPureServerSearchEnabled) {
             try {
                 geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
             } catch (Exception e) {
