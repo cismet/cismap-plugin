@@ -3331,27 +3331,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchPolygonActionPerformed
+    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchPolygonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchPolygonActionPerformed
+    } //GEN-LAST:event_mniSearchPolygonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
+    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4990,31 +4990,31 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     private void initMetaSearch(final Geometry geom) {
         String geosuche = "";                                                               // NOI18N
-//        if (!cidsPureServerSearchEnabled) {
-//            try {
-//                geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
-//            } catch (Exception e) {
-//                log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e); // NOI18N
-//            }
-//
-//            final Object object = context.getSearch().getDataBeans().get(geosuche);
-//            final FormDataBean coordinatesDataBean = (FormDataBean)object;
-//            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
-//            // Damits auch mit -1 funzt:
-//            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
-//
-//            coordinatesDataBean.setBeanParameter(
-//                "featureString",
-//                "SRID="
-//                        + transformed.getSRID()
-//                        + ";"
-//                        + transformed.toText()); // NOI18N
-//            context.getSearch()
-//                    .performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(),
-//                        coordinatesDataBean,
-//                        context.getUserInterface().getFrameFor((PluginUI)this),
-//                        false);
-//        } else {
+        if (!cidsPureServerSearchEnabled) {
+            try {
+                geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
+            } catch (Exception e) {
+                log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e); // NOI18N
+            }
+
+            final Object object = context.getSearch().getDataBeans().get(geosuche);
+            final FormDataBean coordinatesDataBean = (FormDataBean)object;
+            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
+            // Damits auch mit -1 funzt:
+            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+
+            coordinatesDataBean.setBeanParameter(
+                "featureString",
+                "SRID="
+                        + transformed.getSRID()
+                        + ";"
+                        + transformed.toText()); // NOI18N
+            context.getSearch()
+                    .performSearch(metaSearch.getSearchTree().getSelectedClassNodeKeys(),
+                        coordinatesDataBean,
+                        context.getUserInterface().getFrameFor((PluginUI)this),
+                        false);
+        } else {
             log.fatal(metaSearch.getSearchTree().getSelectedClassNodeKeys());
             final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
             // Damits auch mit -1 funzt:
@@ -5023,7 +5023,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final GeoSearch gs = new GeoSearch(transformed);
             gs.setValidClassesFromStrings(metaSearch.getSearchTree().getSelectedClassNodeKeys());
             CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
-//        }
+        }
     }
 
     @Override
