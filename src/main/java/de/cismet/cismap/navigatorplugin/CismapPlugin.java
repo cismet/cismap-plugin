@@ -170,6 +170,7 @@ import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListe
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.actions.CustomAction;
 import de.cismet.cismap.commons.gui.printing.Scale;
+import de.cismet.cismap.commons.gui.shapeexport.ShapeExport;
 import de.cismet.cismap.commons.gui.statusbar.StatusBar;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.interaction.MapDnDListener;
@@ -259,6 +260,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private FeatureControl featureControl;
     private DebugPanel debugPanel;
     private GroovierConsole groovyConsole;
+    private ShapeExport shapeExport;
     private View vLayers;
     private View vCaps;
     private View vServerInfo;
@@ -1026,6 +1028,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             debugPanel.setPCanvas(mapC);
             groovyConsole = new GroovierConsole();
             groovyConsole.setVariable("map", mapC); // NOI18N
+            shapeExport = new ShapeExport();
             wfsFormFactory = WFSFormFactory.getInstance(mapC);
             overviewComponent = new OverviewComponent();
             overviewComponent.setMasterMap(mapC);
@@ -1218,6 +1221,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.addConfigurable(activeLayers);
             configurationManager.addConfigurable(featureControl);
             configurationManager.addConfigurable(overviewComponent);
+            configurationManager.addConfigurable(shapeExport);
             configurationManager.addConfigurable(OptionsClient.getInstance());
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
