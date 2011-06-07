@@ -98,7 +98,6 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
                 selectedItem = anItem;
             }
         } else {
-            log.error("The selected item is not a feature. This should never happen."); // NOI18N
             selectedItem = anItem;
         }
     }
