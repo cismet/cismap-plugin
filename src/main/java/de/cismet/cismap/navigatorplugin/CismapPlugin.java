@@ -1092,6 +1092,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 getRootPane().getActionMap().put("CONFIGLOGGING", configAction); // NOI18N
             }
 
+            if (plugin) {
+                menExtras.remove(mniOptions);
+                menExtras.remove(jSeparator16);
+            }
+
             // Menu
             menues.add(menFile);
             menues.add(menEdit);
@@ -1222,7 +1227,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.addConfigurable(featureControl);
             configurationManager.addConfigurable(overviewComponent);
             configurationManager.addConfigurable(shapeExport);
-            configurationManager.addConfigurable(OptionsClient.getInstance());
+            if (!plugin) {
+                configurationManager.addConfigurable(OptionsClient.getInstance());
+            }
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
