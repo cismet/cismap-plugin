@@ -42,7 +42,8 @@ import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import net.infonode.docking.DockingWindow;
 import net.infonode.docking.RootWindow;
@@ -536,27 +537,28 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                     final DefaultMetaTreeNode[] nodes = ComponentRegistry.getRegistry()
                                                                     .getActiveCatalogue()
                                                                     .getSelectedNodesArray();
-                                                    SearchFeature search = null;
+                                                    final Collection<Geometry> searchGeoms = new ArrayList<Geometry>();
+
                                                     for (final DefaultMetaTreeNode dmtn : nodes) {
                                                         if (dmtn instanceof ObjectTreeNode) {
                                                             final MetaObject mo = ((ObjectTreeNode)dmtn)
                                                                             .getMetaObject();
                                                             final CidsFeature cf = new CidsFeature(mo);
-                                                            if (search == null) {
-                                                                search = new SearchFeature(
-                                                                        TopologyPreservingSimplifier.simplify(
-                                                                            cf.getGeometry(),
-                                                                            0.1d));
-                                                            } else {
-                                                                search = new SearchFeature(
-                                                                        search.getGeometry().union(
-                                                                            TopologyPreservingSimplifier.simplify(
-                                                                                cf.getGeometry(),
-                                                                                0.1)));
-                                                            }
+                                                            searchGeoms.add(cf.getGeometry());
                                                         }
                                                     }
-                                                    return search;
+                                                    final Geometry[] searchGeomsArr = searchGeoms.toArray(
+                                                            new Geometry[0]);
+                                                    final GeometryCollection coll =
+                                                        new GeometryFactory().createGeometryCollection(searchGeomsArr);
+
+                                                    final Geometry newG = coll.buffer(0.1d);
+
+                                                    log.debug("SearchGeom " + newG.toText());
+
+                                                    final SearchFeature sf = new SearchFeature(newG);
+                                                    sf.setGeometryType(PureNewFeature.geomTypes.MULTIPOLYGON);
+                                                    return sf;
                                                 }
 
                                                 @Override
@@ -3351,27 +3353,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchPolygonActionPerformed
+    private void mniSearchPolygonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchPolygonActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchPolygonActionPerformed
+    }//GEN-LAST:event_mniSearchPolygonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
+    private void mniSearchCidsFeature1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeature1ActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeature1ActionPerformed
 
     /**
      * DOCUMENT ME!
