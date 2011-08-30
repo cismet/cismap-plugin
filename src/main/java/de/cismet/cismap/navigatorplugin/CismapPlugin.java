@@ -211,6 +211,7 @@ import de.cismet.tools.gui.JPopupMenuButton;
 import de.cismet.tools.gui.StackedBox;
 import de.cismet.tools.gui.Static2DTools;
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.tools.gui.downloadmanager.DownloadManagerAction;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
 import de.cismet.tools.gui.log4jquickconfig.Log4JQuickConfig;
@@ -553,8 +554,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                         new GeometryFactory().createGeometryCollection(searchGeomsArr);
 
                                                     final Geometry newG = coll.buffer(0.1d);
-
-                                                    log.debug("SearchGeom " + newG.toText());
+                                                    if (log.isDebugEnabled()) {
+                                                        log.debug("SearchGeom " + newG.toText());
+                                                    }
 
                                                     final SearchFeature sf = new SearchFeature(newG);
                                                     sf.setGeometryType(PureNewFeature.geomTypes.MULTIPOLYGON);
@@ -793,6 +795,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cmdBack;
     private javax.swing.JButton cmdClipboard;
+    private javax.swing.JButton cmdDownloads;
     private javax.swing.JToggleButton cmdFeatureInfo;
     private javax.swing.JButton cmdForward;
     private javax.swing.ButtonGroup cmdGroupNodes;
@@ -1123,6 +1126,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             tlbMain.putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
             tlbMain.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
             tlbMain.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
+
+            if (plugin) {
+                tlbMain.remove(cmdDownloads);
+            }
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -1965,6 +1972,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         jSeparator6 = new javax.swing.JSeparator();
         cmdPrint = new javax.swing.JButton();
         cmdClipboard = new javax.swing.JButton();
+        cmdDownloads = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         togInvisible = new javax.swing.JToggleButton();
         togInvisible.setVisible(false);
@@ -2096,14 +2104,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
             });
 
@@ -2351,6 +2359,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
         tlbMain.add(cmdClipboard);
+
+        cmdDownloads.setAction(new DownloadManagerAction(this));
+        cmdDownloads.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.cmdDownloads.text")); // NOI18N
+        cmdDownloads.setBorderPainted(false);
+        cmdDownloads.setName("cmdDownloads");       // NOI18N
+        tlbMain.add(cmdDownloads);
 
         jSeparator4.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator4.setMaximumSize(new java.awt.Dimension(2, 32767));
@@ -2940,14 +2956,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
             });
 
