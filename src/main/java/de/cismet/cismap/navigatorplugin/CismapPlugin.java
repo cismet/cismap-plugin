@@ -1027,7 +1027,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             // Erzeugen der Widgets
             serverInfo = new ServerInfo();
             layerInfo = new LayerInfo();
-            mapC = new MappingComponent();
+            mapC = new MappingComponent(true);
             CismapBroker.getInstance().addCrsChangeListener(mapC);
             mapC.addHistoryModelListener(this);
             activeLayers = new LayerWidget(mapC);
@@ -1154,6 +1154,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             CismapBroker.getInstance().addActiveLayerListener(layerInfo);
             CismapBroker.getInstance().addActiveLayerListener(legend);
             CismapBroker.getInstance().addActiveLayerListener(featureInfo);
+            CismapBroker.getInstance().addActiveLayerListener(statusBar);
             CismapBroker.getInstance().addStatusListener(statusBar);
             CismapBroker.getInstance().addMapClickListener(featureInfo);
             CismapBroker.getInstance().addMapSearchListener(this);
