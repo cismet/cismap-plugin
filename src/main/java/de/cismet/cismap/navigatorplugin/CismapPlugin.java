@@ -57,6 +57,7 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
+import org.jdom.DataConversionException;
 import org.jdom.Element;
 
 import org.mortbay.jetty.Connector;
@@ -68,6 +69,7 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
@@ -778,6 +780,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.ButtonGroup cmdGroupSearch1;
     private javax.swing.JButton cmdHome;
     private javax.swing.JToggleButton cmdMoveGeometry;
+    private javax.swing.JToggleButton cmdNewLinearReferencing;
     private javax.swing.JToggleButton cmdNewLinestring;
     private javax.swing.JToggleButton cmdNewPoint;
     private javax.swing.JToggleButton cmdNewPolygon;
@@ -1886,6 +1889,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdNewPolygon = new javax.swing.JToggleButton();
         cmdNewLinestring = new javax.swing.JToggleButton();
         cmdNewPoint = new javax.swing.JToggleButton();
+        cmdNewLinearReferencing = new javax.swing.JToggleButton();
         cmdMoveGeometry = new javax.swing.JToggleButton();
         cmdRemoveGeometry = new javax.swing.JToggleButton();
         jSeparator3 = new javax.swing.JSeparator();
@@ -2005,14 +2009,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
             });
 
@@ -2382,6 +2386,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
         tlbMain.add(cmdNewPoint);
+
+        cmdGroupPrimaryInteractionMode.add(cmdNewLinearReferencing);
+        cmdNewLinearReferencing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/linref.png"))); // NOI18N
+        cmdNewLinearReferencing.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.cmdNewLinearReferencing.text"));                                                    // NOI18N
+        cmdNewLinearReferencing.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.cmdNewLinearReferencing.toolTipText"));                                             // NOI18N
+        cmdNewLinearReferencing.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    cmdNewLinearReferencingcreateGeometryAction(evt);
+                }
+            });
+        tlbMain.add(cmdNewLinearReferencing);
+        cmdNewLinearReferencing.setVisible(false);
 
         cmdGroupPrimaryInteractionMode.add(cmdMoveGeometry);
         cmdMoveGeometry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/move.png"))); // NOI18N
@@ -2839,14 +2861,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
             });
 
@@ -3231,6 +3253,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
     } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+        EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
+                }
+            });
+    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
@@ -4310,6 +4347,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     /**
      * DOCUMENT ME!
+     */
+    private void activateLineRef() {
+        if (cismapPluginUIPreferences != null) {
+            try {
+                final boolean isLineRefActivated = cismapPluginUIPreferences.getChild("LinearReferencedMarks")
+                            .getAttribute("isActivated")
+                            .getBooleanValue();
+                cmdNewLinearReferencing.setVisible(isLineRefActivated);
+            } catch (Exception ex) {
+                if (log.isDebugEnabled()) {
+                    log.debug("error reading LinearReferencedMarks from cismapPluginUIPreferences", ex);
+                }
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -4486,6 +4541,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public void masterConfigure(final Element e) {
         final Element prefs = e.getChild("cismapPluginUIPreferences"); // NOI18N
         cismapPluginUIPreferences = prefs;
+        activateLineRef();
 
         try {
             final Element help_url_element = prefs.getChild("help_url");                  // NOI18N
@@ -4646,6 +4702,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public void configure(final Element e) {
         final Element prefs = e.getChild("cismapPluginUIPreferences"); // NOI18N
         cismapPluginUIPreferences = prefs;
+        activateLineRef();
 
         try {
             final Element window = prefs.getChild("window");                      // NOI18N
@@ -4956,7 +5013,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!cmdSelect.isSelected()) {
                 cmdSelect.setSelected(true);
             }
-//        } else if (mapC.getInteractionMode().equals(MappingComponent.LINEMEASUREMENT)) {
+//        } else if (mapC.getInteractionMode().equals(MappingComponent.LINEAR_REFERENCING)) {
 //            if (!cmdMeasurement.isSelected()) {
 //                cmdMeasurement.setSelected(true);
 //            }
@@ -4985,6 +5042,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!cmdRemoveGeometry.isSelected()) {
                 cmdRemoveGeometry.setSelected(true);
             }
+        } else if (mapC.getInteractionMode().equals(MappingComponent.LINEAR_REFERENCING)) {
+            cmdNewLinearReferencing.setSelected(true);
         }
 
         if (mapC.getHandleInteractionMode().equals(MappingComponent.MOVE_HANDLE)) {
