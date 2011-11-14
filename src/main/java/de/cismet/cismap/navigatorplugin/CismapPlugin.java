@@ -323,7 +323,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
     private SearchProgressDialog searchProgressDialog;
-    private boolean cidsPureServerSearchEnabled = false;
 
     private Action searchMenuSelectedAction = new AbstractAction() {
 
@@ -914,18 +913,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
 
         try {
-            final String l = System.getProperty("user.language");                  // NOI18N
-            final String c = System.getProperty("user.country");                   // NOI18N
-            System.out.println("Locale=" + l + "_" + c);                           // NOI18N
+            final String l = System.getProperty("user.language");           // NOI18N
+            final String c = System.getProperty("user.country");            // NOI18N
+            System.out.println("Locale=" + l + "_" + c);                    // NOI18N
             Locale.setDefault(new Locale(l, c));
         } catch (Exception e) {
-            log.warn("Error while changing the user language and country");        // NOI18N
+            log.warn("Error while changing the user language and country"); // NOI18N
         }
-        if (StaticDebuggingTools.checkHomeForFile("cidsNewServerSearchEnabled")) { // NOI18N
-            cidsPureServerSearchEnabled = true;
-        }
+
         try {
-            final String ext = System.getProperty("directory.extension");          // NOI18N
+            final String ext = System.getProperty("directory.extension"); // NOI18N
 
             System.out.println("SystemdirExtension=:" + ext); // NOI18N
 
@@ -3250,16 +3247,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3267,7 +3264,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
@@ -4875,46 +4872,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  geom  DOCUMENT ME!
      */
     private void initMetaSearch(final Geometry geom) {
-        String geosuche = "";                                                               // NOI18N
-        if (!cidsPureServerSearchEnabled) {
-            try {
-                geosuche = context.getEnvironment().getParameter("geosuche");               // NOI18N
-            } catch (Exception e) {
-                log.warn("Parameter geosuche not found in plugin.xml, use " + geosuche, e); // NOI18N
-            }
-
-            final Object object = context.getSearch().getDataBeans().get(geosuche);
-            final FormDataBean coordinatesDataBean = (FormDataBean)object;
-            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
-            // Damits auch mit -1 funzt:
-            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
-
-            coordinatesDataBean.setBeanParameter(
-                "featureString",
-                "SRID="
-                        + transformed.getSRID()
-                        + ";"
-                        + transformed.toText()); // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("selected Search Classes " + metaSearch.getSelectedSearchClassesForQuery());
-            }
-            context.getSearch()
-                    .performSearch(metaSearch.getSelectedSearchClassesForQuery(),
-                        coordinatesDataBean,
-                        context.getUserInterface().getFrameFor((PluginUI)this),
-                        false);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("selected Search Classes " + metaSearch.getSelectedSearchClassesForQuery());
-            }
-            final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
-            // Damits auch mit -1 funzt:
-            transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
-
-            final GeoSearch gs = new GeoSearch(transformed);
-            gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
-            CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
+        if (log.isDebugEnabled()) {
+            log.debug("selected Search Classes " + metaSearch.getSelectedSearchClassesForQuery());
         }
+        final Geometry transformed = CrsTransformer.transformToDefaultCrs(geom);
+        // Damits auch mit -1 funzt:
+        transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+
+        final GeoSearch gs = new GeoSearch(transformed);
+        gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
+        CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
+//        }
     }
 
     @Override
