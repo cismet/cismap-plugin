@@ -311,11 +311,14 @@ public class CidsFeature implements XStyledFeature,
      * @throws  Throwable  DOCUMENT ME!
      */
     private void initFeatureSettings() throws Throwable {
-        if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
-            if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs()
-                        .getCode().equalsIgnoreCase("epsg:4326")) {                                               // NOI18N
-                featureBorder = 0.001f;
+        try {
+            if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
+                if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs()
+                            .getCode().equalsIgnoreCase("epsg:4326")) {                                           // NOI18N
+                    featureBorder = 0.001f;
+                }
             }
+        } catch (Exception e) {
         }
         try {
             renderFeatureString = getAttribValue("RENDER_FEATURE", mo, mc).toString();                            // NOI18N

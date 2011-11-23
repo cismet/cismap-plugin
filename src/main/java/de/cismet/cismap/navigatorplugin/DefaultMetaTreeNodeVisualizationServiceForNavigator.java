@@ -13,7 +13,6 @@ package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.plugin.PluginRegistry;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
-import Sirius.navigator.ui.ComponentRegistry;
 
 import Sirius.server.middleware.types.MetaObjectNode;
 
