@@ -4973,6 +4973,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 // interaction mode. This is necessary, since cmdPluginSearch is not the same implementation as the
                 // other buttons. At least I think that's the reason :)
                 cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
+                
+                CreateSearchGeometryListener listener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                
+                if (listener.isInMode(CreateNewGeometryListener.POLYGON)) {
+                    mniSearchPolygon.setSelected(true);
+                    mniSearchPolygon1.setSelected(true);
+                } else if (listener.isInMode(CreateNewGeometryListener.LINESTRING)) {
+                    mniSearchPolyline.setSelected(true);
+                    mniSearchPolyline1.setSelected(true);
+                } else if (listener.isInMode(CreateNewGeometryListener.ELLIPSE)) {
+                    mniSearchEllipse.setSelected(true);
+                    mniSearchEllipse1.setSelected(true);
+                } else if (listener.isInMode(CreateNewGeometryListener.RECTANGLE)) {
+                    mniSearchRectangle.setSelected(true);
+                    mniSearchRectangle1.setSelected(true);
+                }
             }
         } else if (mapC.getInteractionMode().equals(MappingComponent.SELECT)) {
             if (!cmdSelect.isSelected()) {
