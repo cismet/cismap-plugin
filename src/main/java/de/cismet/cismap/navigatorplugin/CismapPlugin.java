@@ -20,6 +20,7 @@ import Sirius.navigator.plugin.interfaces.PluginSupport;
 import Sirius.navigator.plugin.interfaces.PluginUI;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
 import Sirius.navigator.search.CidsSearchExecutor;
+import Sirius.navigator.search.dynamic.FormDataBean;
 import Sirius.navigator.search.dynamic.SearchProgressDialog;
 import Sirius.navigator.types.iterator.AttributeRestriction;
 import Sirius.navigator.types.iterator.ComplexAttributeRestriction;
@@ -56,6 +57,7 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
+import org.jdom.DataConversionException;
 import org.jdom.Element;
 
 import org.mortbay.jetty.Connector;
@@ -67,6 +69,7 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
@@ -320,7 +323,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private Element cismapPluginUIPreferences;
     private Vector<String> windows2skip;
     private SearchProgressDialog searchProgressDialog;
-
     private Action searchMenuSelectedAction = new AbstractAction() {
 
             @Override
@@ -804,6 +806,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator jSeparator14;
     private javax.swing.JSeparator jSeparator15;
     private javax.swing.JSeparator jSeparator16;
+    private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -825,6 +828,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniBack;
     private javax.swing.JMenuItem mniBookmarkManager;
     private javax.swing.JMenuItem mniBookmarkSidebar;
+    private javax.swing.JMenuItem mniBufferSelectedGeom;
     private javax.swing.JMenuItem mniCapabilities;
     private javax.swing.JMenuItem mniClipboard;
     private javax.swing.JMenuItem mniClose;
@@ -1940,6 +1944,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menExtras = new javax.swing.JMenu();
         mniOptions = new javax.swing.JMenuItem();
         jSeparator16 = new javax.swing.JSeparator();
+        mniBufferSelectedGeom = new javax.swing.JMenuItem();
+        jSeparator17 = new javax.swing.JPopupMenu.Separator();
         mniGotoPoint = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JSeparator();
         mniScale = new javax.swing.JMenuItem();
@@ -2969,6 +2975,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menExtras.add(mniOptions);
         menExtras.add(jSeparator16);
 
+        mniBufferSelectedGeom.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_B,
+                java.awt.event.InputEvent.CTRL_MASK));
+        mniBufferSelectedGeom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/buffer.png"))); // NOI18N
+        mniBufferSelectedGeom.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniBufferSelectedGeom.text"));                                                    // NOI18N
+        mniBufferSelectedGeom.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniBufferSelectedGeomActionPerformed(evt);
+                }
+            });
+        menExtras.add(mniBufferSelectedGeom);
+        menExtras.add(jSeparator17);
+
         mniGotoPoint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_G,
                 java.awt.event.InputEvent.CTRL_MASK));
@@ -3244,16 +3267,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3261,7 +3284,67 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+        final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
+        if ((c != null) && (c.size() > 0)) {
+            final String s = (String)JOptionPane.showInputDialog(
+                    null,
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.mniBufferSelectedGeom.Dialog.text"),                    // NOI18N
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.mniBufferSelectedGeom.Dialog.title"),
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "");
+
+            for (final Object o : c) {
+                if (o instanceof Feature) {
+                    final Geometry newG = ((Feature)o).getGeometry().buffer(Double.parseDouble(s));
+                    if (o instanceof PureNewFeature) {
+                        ((Feature)o).setGeometry(newG);
+                        ((PureNewFeature)o).setGeometryType(PureNewFeature.geomTypes.POLYGON);
+                        final PFeature sel = (PFeature)mapC.getPFeatureHM().get(o);
+
+                        // Koordinaten der Puffer-Geometrie als Feature-Koordinaten
+                        // setzen
+                        sel.setCoordArr(newG.getCoordinates());
+
+                        // refresh
+                        sel.syncGeometry();
+
+                        final Vector v = new Vector();
+                        v.add(sel.getFeature());
+                        ((DefaultFeatureCollection)mapC.getFeatureCollection()).fireFeaturesChanged(v);
+                    } else {
+                        final PureNewFeature pnf = new PureNewFeature(newG);
+                        pnf.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+                        ((DefaultFeatureCollection)mapC.getFeatureCollection()).addFeature(pnf);
+                        ((DefaultFeatureCollection)mapC.getFeatureCollection()).holdFeature(pnf);
+                    }
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(
+                null,
+                org.openide.util.NbBundle.getMessage(
+                    CismapPlugin.class,
+                    "CismapPlugin.mniBufferSelectedGeom.Dialog.noneselected"), // NOI18N
+                org.openide.util.NbBundle.getMessage(
+                    CismapPlugin.class,
+                    "CismapPlugin.mniBufferSelectedGeom.Dialog.title"),
+                JOptionPane.WARNING_MESSAGE);
+        }
+    }             //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4973,9 +5056,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 // interaction mode. This is necessary, since cmdPluginSearch is not the same implementation as the
                 // other buttons. At least I think that's the reason :)
                 cmdGroupPrimaryInteractionMode.setSelected(cmdPluginSearch.getModel(), true);
-                
-                CreateSearchGeometryListener listener = (CreateSearchGeometryListener) mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
-                
+
+                final CreateSearchGeometryListener listener = (CreateSearchGeometryListener)mapC.getInputListener(
+                        MappingComponent.CREATE_SEARCH_POLYGON);
+
                 if (listener.isInMode(CreateNewGeometryListener.POLYGON)) {
                     mniSearchPolygon.setSelected(true);
                     mniSearchPolygon1.setSelected(true);
