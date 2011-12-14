@@ -4961,8 +4961,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         final GeoSearch gs = new GeoSearch(transformed);
         gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
-        CidsSearchExecutor.executeCidsSearchAndDisplayResults(gs);
-//        }
+        CidsSearchExecutor.searchAndDisplayResultsWithDialog(gs);
     }
 
     @Override
