@@ -20,7 +20,6 @@ import Sirius.navigator.plugin.interfaces.PluginSupport;
 import Sirius.navigator.plugin.interfaces.PluginUI;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
 import Sirius.navigator.search.CidsSearchExecutor;
-import Sirius.navigator.search.dynamic.FormDataBean;
 import Sirius.navigator.search.dynamic.SearchProgressDialog;
 import Sirius.navigator.types.iterator.AttributeRestriction;
 import Sirius.navigator.types.iterator.ComplexAttributeRestriction;
@@ -57,7 +56,6 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
-import org.jdom.DataConversionException;
 import org.jdom.Element;
 
 import org.mortbay.jetty.Connector;
@@ -69,12 +67,12 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -1559,8 +1557,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             popMenSearch.add(new JSeparator());
             menSearch.add(new JSeparator());
             for (final SearchTopic searchTopic : metaSearch.getSearchTopics()) {
-                popMenSearch.add(new StayOpenCheckBoxMenuItem((Action)searchTopic));
-                menSearch.add(new StayOpenCheckBoxMenuItem((Action)searchTopic));
+                popMenSearch.add(new StayOpenCheckBoxMenuItem(
+                        (Action)searchTopic,
+                        javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"),
+                        Color.WHITE));
+                menSearch.add(new StayOpenCheckBoxMenuItem(
+                        (Action)searchTopic,
+                        javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"),
+                        Color.WHITE));
+
                 searchTopic.addPropertyChangeListener((PropertyChangeListener)mapC.getInputListener(
                         MappingComponent.CREATE_SEARCH_POLYGON));
             }
