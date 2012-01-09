@@ -161,14 +161,13 @@ import de.cismet.cismap.commons.gui.infowidgets.Legend;
 import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
-import de.cismet.cismap.commons.gui.metasearch.MetaSearch;
-import de.cismet.cismap.commons.gui.metasearch.SearchTopic;
 
 // import de.cismet.cismap.commons.gui.overviewwidget.OverviewWidget;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchFacade;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.actions.CustomAction;
 import de.cismet.cismap.commons.gui.printing.Scale;
 import de.cismet.cismap.commons.gui.shapeexport.ShapeExport;
@@ -184,6 +183,9 @@ import de.cismet.cismap.commons.interaction.memento.MementoInterface;
 import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
+
+import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
+import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
@@ -1030,10 +1032,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
 
             if (plugin) {
-                final CreateSearchGeometryListener listener = new CreateSearchGeometryListener(mapC);
+                final CreateSearchGeometryListener listener = new CreateSearchGeometryListener(mapC, metaSearch);
                 mapC.addInputListener(MappingComponent.CREATE_SEARCH_POLYGON, listener);
                 mapC.addPropertyChangeListener(listener);
             }
+            CismapBroker.getInstance().setMetaSearch(metaSearch);
 
             try {
                 initComponents();
