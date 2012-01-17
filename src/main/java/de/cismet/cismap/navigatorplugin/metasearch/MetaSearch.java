@@ -7,7 +7,10 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin.metasearch;
 
+import Sirius.navigator.connection.SessionManager;
+
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.UserGroup;
 
 import edu.umd.cs.piccolo.PNode;
 
@@ -21,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.Action;
 import javax.swing.JDialog;
 
 import de.cismet.cids.utils.MetaClassCacheService;
@@ -240,6 +242,19 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
     @Override
     public void masterConfigure(final Element parent) {
+        if (metaClassCacheService == null) {
+            LOG.warn(
+                "There is no MetaClassCacheService available. It's not possible to check if the current user is allowed to search for the specified classes.");
+        }
+
+        final UserGroup currentUserGroup;
+        if (SessionManager.isInitialized() && SessionManager.isConnected()) {
+            currentUserGroup = SessionManager.getSession().getUser().getUserGroup();
+        } else {
+            LOG.warn("Could not determine current user. All search classes will be added to search.");
+            currentUserGroup = null;
+        }
+
         if (parent == null) {
             LOG.warn("The meta search isn't configured.");
             return;
@@ -299,14 +314,26 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
                 }
 
                 final SearchClass searchClass = new SearchClass(domain, table);
-                searchTopic.insert(searchClass);
+
+                if ((metaClassCacheService != null) && (currentUserGroup != null)) {
+                    final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
+                            searchClass.getCidsClass());
+                    
+                    if ((metaClass != null) && (metaClass.getPermissions() != null)
+                                && metaClass.getPermissions().hasReadPermission(currentUserGroup)) {
+                        searchTopic.insert(searchClass);
+                    } else {
+                        LOG.error("Could not determine if user group '" + currentUserGroup
+                                    + "' has read permission on '" + searchClass + "'.");
+                    }
+                }
             }
 
-            if (!searchTopics.contains(searchTopic)) {
+            if (!searchTopics.contains(searchTopic) && !searchTopic.getSearchClasses().isEmpty()) {
                 searchTopics.add(searchTopic);
             } else {
                 LOG.warn("Search topic '" + searchTopic.getName()
-                            + "' already exists. The search topic won't be added twice.");
+                            + "' already exists or the user isn't allowed to read its classes. The search topic won't be added.");
             }
         }
     }
