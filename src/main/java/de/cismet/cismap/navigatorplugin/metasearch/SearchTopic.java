@@ -32,7 +32,6 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
 
     private static final Logger LOG = Logger.getLogger(SearchTopic.class);
 
-    private static final String PATH_TO_ICONS = "/de/cismet/cismap/commons/gui/metasearch/";
     public static final String SELECTED = "selected";
 
     //~ Instance fields --------------------------------------------------------
@@ -72,16 +71,19 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
         URL urlToIcon = getClass().getResource(this.iconName);
 
         if (urlToIcon == null) {
-            urlToIcon = getClass().getResource(PATH_TO_ICONS + this.iconName);
+            LOG.warn("The given icon '" + this.iconName + "' can not be loaded.");
+            urlToIcon = getClass().getResource("/de/cismet/cismap/navigatorplugin/metasearch/search.png");
         }
 
         if (urlToIcon != null) {
             this.icon = new ImageIcon(urlToIcon);
-            putValue(SMALL_ICON, this.icon);
         } else {
+            LOG.error("Neither given icon '" + this.iconName
+                        + "' nor '/de/cismet/cismap/navigatorplugin/metasearch/search.png' exist. There will be problems with the search.");
             this.icon = new ImageIcon();
         }
 
+        putValue(SMALL_ICON, this.icon);
         putValue(SHORT_DESCRIPTION, this.description);
         putValue(ACTION_COMMAND_KEY, this.key);
         putValue(NAME, this.name);
