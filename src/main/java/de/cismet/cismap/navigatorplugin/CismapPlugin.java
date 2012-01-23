@@ -1842,10 +1842,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch = new javax.swing.JPopupMenu();
         mniSearchRectangle1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolygon1 = new javax.swing.JRadioButtonMenuItem();
-        mniSearchCidsFeature1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchEllipse1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolyline1 = new javax.swing.JRadioButtonMenuItem();
         jSeparator12 = new javax.swing.JSeparator();
+        mniSearchCidsFeature1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchShowLastFeature1 = new javax.swing.JMenuItem();
         mniSearchRedo1 = new javax.swing.JMenuItem();
         mniSearchBuffer1 = new javax.swing.JMenuItem();
@@ -1942,10 +1942,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch = new javax.swing.JMenu();
         mniSearchRectangle = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolygon = new javax.swing.JRadioButtonMenuItem();
-        mniSearchCidsFeature = new javax.swing.JRadioButtonMenuItem();
         mniSearchEllipse = new javax.swing.JRadioButtonMenuItem();
         mniSearchPolyline = new javax.swing.JRadioButtonMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
+        mniSearchCidsFeature = new javax.swing.JRadioButtonMenuItem();
         mniSearchShowLastFeature = new javax.swing.JMenuItem();
         mniSearchRedo = new javax.swing.JMenuItem();
         mniSearchBuffer = new javax.swing.JMenuItem();
@@ -2045,14 +2045,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolygon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
         popMenSearch.add(mniSearchPolygon1);
 
-        mniSearchCidsFeature1.setAction(searchCidsFeatureAction);
-        cmdGroupSearch.add(mniSearchCidsFeature1);
-        mniSearchCidsFeature1.setText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.mniSearchCidsFeature.text"));                                                      // NOI18N
-        mniSearchCidsFeature1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
-        popMenSearch.add(mniSearchCidsFeature1);
-
         mniSearchEllipse1.setAction(searchEllipseAction);
         cmdGroupSearch1.add(mniSearchEllipse1);
         mniSearchEllipse1.setText(org.openide.util.NbBundle.getMessage(
@@ -2069,6 +2061,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolyline1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
         popMenSearch.add(mniSearchPolyline1);
         popMenSearch.add(jSeparator12);
+
+        mniSearchCidsFeature1.setAction(searchCidsFeatureAction);
+        cmdGroupSearch.add(mniSearchCidsFeature1);
+        mniSearchCidsFeature1.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchCidsFeature.text"));                                                      // NOI18N
+        mniSearchCidsFeature1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        popMenSearch.add(mniSearchCidsFeature1);
 
         mniSearchShowLastFeature1.setAction(searchShowLastFeatureAction);
         mniSearchShowLastFeature1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
@@ -2897,21 +2897,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
         menSearch.add(mniSearchPolygon);
 
-        mniSearchCidsFeature.setAction(searchCidsFeatureAction);
-        cmdGroupSearch.add(mniSearchCidsFeature);
-        mniSearchCidsFeature.setText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.mniSearchCidsFeature.text"));                                                     // NOI18N
-        mniSearchCidsFeature.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
-        mniSearchCidsFeature.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniSearchCidsFeatureActionPerformed(evt);
-                }
-            });
-        menSearch.add(mniSearchCidsFeature);
-
         mniSearchEllipse.setAction(searchEllipseAction);
         cmdGroupSearch.add(mniSearchEllipse);
         mniSearchEllipse.setText(org.openide.util.NbBundle.getMessage(
@@ -2928,6 +2913,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolyline.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
         menSearch.add(mniSearchPolyline);
         menSearch.add(jSeparator8);
+
+        mniSearchCidsFeature.setAction(searchCidsFeatureAction);
+        cmdGroupSearch.add(mniSearchCidsFeature);
+        mniSearchCidsFeature.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchCidsFeature.text"));                                                     // NOI18N
+        mniSearchCidsFeature.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
+        mniSearchCidsFeature.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniSearchCidsFeatureActionPerformed(evt);
+                }
+            });
+        menSearch.add(mniSearchCidsFeature);
 
         mniSearchShowLastFeature.setAction(searchShowLastFeatureAction);
         mniSearchShowLastFeature.setAccelerator(javax.swing.KeyStroke.getKeyStroke(

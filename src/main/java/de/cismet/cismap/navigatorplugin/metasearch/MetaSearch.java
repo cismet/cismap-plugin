@@ -318,7 +318,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
                 if ((metaClassCacheService != null) && (currentUserGroup != null)) {
                     final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
                             searchClass.getCidsClass());
-                    
+
                     if ((metaClass != null) && (metaClass.getPermissions() != null)
                                 && metaClass.getPermissions().hasReadPermission(currentUserGroup)) {
                         searchTopic.insert(searchClass);
