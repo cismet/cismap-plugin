@@ -89,8 +89,6 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
         int maxRowWidth = 0;
         int rowHeight = 0;
 
-        final Insets insetsIcon = new Insets(0, 5, 0, 2);
-        final Insets insetsCheckbox = new Insets(0, 2, 0, 5);
         final SearchTopic[] searchTopicsArray = searchTopics.toArray(new SearchTopic[0]);
         for (int i = 0; i < searchTopicsArray.length; i++) {
             final SearchTopic searchTopic = searchTopicsArray[i];
@@ -145,6 +143,8 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
                     }
                 });
 
+            final Insets insetsIcon = new Insets(0, 7, 0, 2);
+            final Insets insetsCheckbox = new Insets(0, 2, 0, 7);
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.anchor = GridBagConstraints.LINE_START;
             constraints.gridx = 0;
