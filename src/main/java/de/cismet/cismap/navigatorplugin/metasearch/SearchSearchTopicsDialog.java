@@ -378,11 +378,11 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     @Override
-    public void searchDone(final Node[] result) {
+    public void searchDone(final int results) {
         searchRunning = false;
         switchControls();
 
-        if (result.length > 0) {
+        if (results > 0) {
             setVisible(false);
         }
     }
