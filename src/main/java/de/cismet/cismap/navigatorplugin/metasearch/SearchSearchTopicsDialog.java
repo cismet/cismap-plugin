@@ -16,7 +16,6 @@ import Sirius.navigator.search.dynamic.SearchControlListener;
 import Sirius.navigator.search.dynamic.SearchControlPanel;
 import Sirius.navigator.ui.ComponentRegistry;
 
-import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 import Sirius.server.search.builtin.FullTextSearch;
 
@@ -388,14 +387,14 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     @Override
-    public void searchCancelled() {
+    public void searchCanceled() {
         searchRunning = false;
         switchControls();
     }
 
     @Override
-    public boolean displaysEmptyResultMessage() {
-        return true;
+    public boolean suppressEmptyResultMessage() {
+        return false;
     }
 
     //~ Inner Classes ----------------------------------------------------------
