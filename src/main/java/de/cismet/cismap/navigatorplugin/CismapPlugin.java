@@ -641,6 +641,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)
                                 mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
                             searchListener.redoLastSearch();
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
                         }
                     });
             }
@@ -661,6 +662,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)
                                 mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
                             searchListener.showLastFeature();
+                            mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
                         }
                     });
             }
@@ -742,6 +744,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                 }
 
                                                 searchListener.search(lastFeature);
+                                                mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
                                             }
                                         } catch (NumberFormatException ex) {
                                             JOptionPane.showMessageDialog(
