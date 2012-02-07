@@ -68,7 +68,10 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
 
         searchClasses = new LinkedHashSet<SearchClass>();
 
-        URL urlToIcon = getClass().getResource(this.iconName);
+        URL urlToIcon = null;
+        if (this.iconName != null) {
+            urlToIcon = getClass().getResource(this.iconName);
+        }
 
         if (urlToIcon == null) {
             LOG.warn("The given icon '" + this.iconName + "' can not be loaded.");
