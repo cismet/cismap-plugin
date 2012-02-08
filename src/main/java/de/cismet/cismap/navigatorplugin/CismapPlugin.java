@@ -132,6 +132,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
@@ -1043,6 +1045,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             } catch (Exception e) {
                 log.fatal("Error in initComponents.", e); // NOI18N
             }
+
+            new CidsBeanDropTarget(cmdPluginSearch);
 
             mapC.setInteractionButtonGroup(cmdGroupPrimaryInteractionMode);
 
