@@ -11,8 +11,14 @@ import Sirius.server.middleware.types.MetaObject;
 
 import org.apache.log4j.Logger;
 
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+
 import java.util.ArrayList;
 
+import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -33,7 +39,7 @@ import de.cismet.tools.gui.JPopupMenuButton;
  *
  * @version  $Revision$, $Date$
  */
-public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements CidsBeanDropListener {
+public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements CidsBeanDropListener, DropTargetListener {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -45,6 +51,8 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
     private String interactionMode;
     private MappingComponent mappingComponent;
     private String searchName;
+    private Icon defaultIcon = null;
+    private Icon targetIcon = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,5 +121,53 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
                     }
                 }
             });
+        super.setIcon(defaultIcon);
+    }
+
+    @Override
+    public void setIcon(final Icon defaultIcon) {
+        super.setIcon(defaultIcon);
+        this.defaultIcon = defaultIcon;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  targetIcon  DOCUMENT ME!
+     */
+    public void setTargetIcon(final Icon targetIcon) {
+        this.targetIcon = targetIcon;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Icon getTargetIcon() {
+        return targetIcon;
+    }
+
+    @Override
+    public void dragEnter(final DropTargetDragEvent dtde) {
+        super.setIcon(targetIcon);
+    }
+
+    @Override
+    public void dragExit(final DropTargetEvent dte) {
+        super.setIcon(defaultIcon);
+    }
+
+    @Override
+    public void dragOver(final DropTargetDragEvent dtde) {
+        super.setIcon(targetIcon);
+    }
+
+    @Override
+    public void drop(final DropTargetDropEvent dtde) {
+    }
+
+    @Override
+    public void dropActionChanged(final DropTargetDragEvent dtde) {
     }
 }

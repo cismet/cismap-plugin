@@ -12,6 +12,7 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -1042,6 +1043,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             try {
                 initComponents();
+                ((CidsBeanDropJPopupMenuButton)cmdPluginSearch).setTargetIcon(new javax.swing.ImageIcon(
+                        getClass().getResource("/images/pluginSearchTarget.png")));
             } catch (Exception e) {
                 log.fatal("Error in initComponents.", e); // NOI18N
             }
