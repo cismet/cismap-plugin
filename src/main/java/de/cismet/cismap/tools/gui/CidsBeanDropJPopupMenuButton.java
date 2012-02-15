@@ -9,6 +9,10 @@ package de.cismet.cismap.tools.gui;
 
 import Sirius.server.middleware.types.MetaObject;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
 import org.apache.log4j.Logger;
 
 import java.awt.dnd.DropTargetDragEvent;
@@ -17,6 +21,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
@@ -92,20 +97,19 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
                 @Override
                 protected SearchFeature doInBackground() throws Exception {
                     SearchFeature search = null;
-
+                    final Collection<Geometry> searchGeoms = new ArrayList<Geometry>();
                     for (final CidsBean cb : beans) {
                         final MetaObject mo = cb.getMetaObject();
                         final CidsFeature cf = new CidsFeature(mo);
-                        if (search == null) {
-                            search = new SearchFeature(cf.getGeometry());
-                            search.setName(cb.toString());
-                            search.setGeometryType(PureNewFeature.geomTypes.POLYGON);
-                        } else {
-                            search = new SearchFeature(
-                                    search.getGeometry().union(cf.getGeometry()));
-                            search.setName(searchName);
-                        }
+                        searchGeoms.add(cf.getGeometry());
                     }
+                    final Geometry[] searchGeomsArr = searchGeoms.toArray(
+                            new Geometry[0]);
+                    final GeometryCollection coll = new GeometryFactory().createGeometryCollection(searchGeomsArr);
+
+                    final Geometry newG = coll.buffer(0.1d);
+                    search = new SearchFeature(newG);
+                    search.setGeometryType(PureNewFeature.geomTypes.POLYGON);
                     return search;
                 }
 
