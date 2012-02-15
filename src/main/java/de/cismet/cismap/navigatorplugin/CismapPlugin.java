@@ -12,13 +12,8 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
-import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.plugin.context.PluginContext;
-import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
-import Sirius.navigator.plugin.interfaces.PluginMethod;
-import Sirius.navigator.plugin.interfaces.PluginProperties;
-import Sirius.navigator.plugin.interfaces.PluginSupport;
-import Sirius.navigator.plugin.interfaces.PluginUI;
+import Sirius.navigator.plugin.interfaces.*;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
 import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.search.dynamic.SearchProgressDialog;
@@ -42,11 +37,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-import net.infonode.docking.DockingWindow;
-import net.infonode.docking.RootWindow;
-import net.infonode.docking.SplitWindow;
-import net.infonode.docking.TabWindow;
-import net.infonode.docking.View;
+import net.infonode.docking.*;
 import net.infonode.docking.mouse.DockingWindowActionMouseButtonListener;
 import net.infonode.docking.properties.RootWindowProperties;
 import net.infonode.docking.theme.DockingWindowsTheme;
@@ -59,11 +50,7 @@ import net.infonode.util.Direction;
 
 import org.jdom.Element;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.Request;
-import org.mortbay.jetty.Server;
+import org.mortbay.jetty.*;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -72,13 +59,7 @@ import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -90,46 +71,16 @@ import java.awt.event.InputEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.KeyStroke;
-import javax.swing.RepaintManager;
-import javax.swing.SwingWorker;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -139,14 +90,7 @@ import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
-import de.cismet.cismap.commons.features.DefaultFeatureCollection;
-import de.cismet.cismap.commons.features.Feature;
-import de.cismet.cismap.commons.features.FeatureCollectionEvent;
-import de.cismet.cismap.commons.features.FeatureCollectionListener;
-import de.cismet.cismap.commons.features.FeatureGroup;
-import de.cismet.cismap.commons.features.FeatureGroups;
-import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.commons.features.SearchFeature;
+import de.cismet.cismap.commons.features.*;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
@@ -160,12 +104,11 @@ import de.cismet.cismap.commons.gui.infowidgets.Legend;
 import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
-
-// import de.cismet.cismap.commons.gui.overviewwidget.OverviewWidget;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
-import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchCreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.actions.CustomAction;
 import de.cismet.cismap.commons.gui.printing.Scale;
 import de.cismet.cismap.commons.gui.shapeexport.ShapeExport;
@@ -202,14 +145,7 @@ import de.cismet.tools.configuration.ConfigurationManager;
 
 import de.cismet.tools.groovysupport.GroovierConsole;
 
-import de.cismet.tools.gui.BasicGuiComponentProvider;
-import de.cismet.tools.gui.CheckThreadViolationRepaintManager;
-import de.cismet.tools.gui.CustomButtonProvider;
-import de.cismet.tools.gui.EventDispatchThreadHangMonitor;
-import de.cismet.tools.gui.JPopupMenuButton;
-import de.cismet.tools.gui.Static2DTools;
-import de.cismet.tools.gui.StaticSwingTools;
-import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
+import de.cismet.tools.gui.*;
 import de.cismet.tools.gui.downloadmanager.DownloadManagerAction;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
@@ -288,7 +224,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final List<JMenuItem> menues = TypeSafeCollections.newArrayList();
     private final Map<DefaultMetaTreeNode, CidsFeature> featuresInMap = TypeSafeCollections.newHashMap();
     private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = TypeSafeCollections.newHashMap();
-    private String newGeometryMode = CreateNewGeometryListener.LINESTRING;
+    private String newGeometryMode = CreateGeometryListenerInterface.LINESTRING;
     private WFSFormFactory wfsFormFactory;
     private final Set<View> wfsFormViews = TypeSafeCollections.newHashSet();
     private final Vector<View> wfs = TypeSafeCollections.newVector();
@@ -334,8 +270,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 log.debug("searchMenuSelectedAction"); // NOI18N
                             }
 
-                            final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)
-                                mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                            final MetaSearchCreateSearchGeometryListener searchListener =
+                                (MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
+                                    MappingComponent.CREATE_SEARCH_POLYGON);
                             final PureNewFeature lastGeometry = searchListener.getLastSearchFeature();
 
                             if (lastGeometry == null) {
@@ -408,21 +345,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
 
                                         if (mniSearchRectangle.isSelected()) {
-                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                            ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                                CreateSearchGeometryListener.RECTANGLE);
+                                                MetaSearchCreateSearchGeometryListener.RECTANGLE);
                                         } else if (mniSearchPolygon.isSelected()) {
-                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                            ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                                CreateSearchGeometryListener.POLYGON);
+                                                MetaSearchCreateSearchGeometryListener.POLYGON);
                                         } else if (mniSearchEllipse.isSelected()) {
-                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                            ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                                CreateSearchGeometryListener.ELLIPSE);
+                                                MetaSearchCreateSearchGeometryListener.ELLIPSE);
                                         } else if (mniSearchPolyline.isSelected()) {
-                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                            ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                                CreateSearchGeometryListener.LINESTRING);
+                                                MetaSearchCreateSearchGeometryListener.LINESTRING);
                                         }
                                     }
                                 });
@@ -451,9 +388,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
-                                        ((CreateSearchGeometryListener)mapC.getInputListener(
+                                        ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                 MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                            CreateSearchGeometryListener.RECTANGLE);
+                                            MetaSearchCreateSearchGeometryListener.RECTANGLE);
                                     }
                                 });
                         }
@@ -481,9 +418,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
-                                        ((CreateSearchGeometryListener)mapC.getInputListener(
+                                        ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                 MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                            CreateSearchGeometryListener.POLYGON);
+                                            MetaSearchCreateSearchGeometryListener.POLYGON);
                                     }
                                 });
                         }
@@ -511,10 +448,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
-                                        final CreateSearchGeometryListener searchListener =
-                                            ((CreateSearchGeometryListener)mapC.getInputListener(
+                                        final MetaSearchCreateSearchGeometryListener searchListener =
+                                            ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON));
-//                                        searchListener.setMode(CreateSearchGeometryListener.POLYGON);
+//                                        searchListener.setMode(MetaSearchCreateSearchGeometryListener.POLYGON);
 
                                         de.cismet.tools.CismetThreadPool.execute(
                                             new javax.swing.SwingWorker<SearchFeature, Void>() {
@@ -588,9 +525,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
-                                        ((CreateSearchGeometryListener)mapC.getInputListener(
+                                        ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                 MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                            CreateSearchGeometryListener.ELLIPSE);
+                                            MetaSearchCreateSearchGeometryListener.ELLIPSE);
                                     }
                                 });
                         }
@@ -619,9 +556,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
-                                        ((CreateSearchGeometryListener)mapC.getInputListener(
+                                        ((MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                 MappingComponent.CREATE_SEARCH_POLYGON)).setMode(
-                                            CreateSearchGeometryListener.LINESTRING);
+                                            MetaSearchCreateSearchGeometryListener.LINESTRING);
                                     }
                                 });
                         }
@@ -641,8 +578,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 log.debug("redoSearchAction"); // NOI18N
                             }
 
-                            final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)
-                                mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                            final MetaSearchCreateSearchGeometryListener searchListener =
+                                (MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
+                                    MappingComponent.CREATE_SEARCH_POLYGON);
                             searchListener.redoLastSearch();
                             mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
                         }
@@ -662,8 +600,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 log.debug("searchShowLastFeatureAction"); // NOI18N
                             }
 
-                            final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)
-                                mapC.getInputListener(MappingComponent.CREATE_SEARCH_POLYGON);
+                            final MetaSearchCreateSearchGeometryListener searchListener =
+                                (MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
+                                    MappingComponent.CREATE_SEARCH_POLYGON);
                             searchListener.showLastFeature();
                             mapC.setInteractionMode(MappingComponent.CREATE_SEARCH_POLYGON);
                         }
@@ -708,8 +647,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                         try {
                                             final float buffer = Float.valueOf(s);
 
-                                            final CreateSearchGeometryListener searchListener =
-                                                (CreateSearchGeometryListener)mapC.getInputListener(
+                                            final MetaSearchCreateSearchGeometryListener searchListener =
+                                                (MetaSearchCreateSearchGeometryListener)mapC.getInputListener(
                                                     MappingComponent.CREATE_SEARCH_POLYGON);
                                             final PureNewFeature lastFeature = searchListener.getLastSearchFeature();
 
@@ -1034,7 +973,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
 
             if (plugin) {
-                final CreateSearchGeometryListener listener = new CreateSearchGeometryListener(mapC, metaSearch);
+                final MetaSearchCreateSearchGeometryListener listener = new MetaSearchCreateSearchGeometryListener(
+                        mapC,
+                        metaSearch);
                 mapC.addInputListener(MappingComponent.CREATE_SEARCH_POLYGON, listener);
                 mapC.addPropertyChangeListener(listener);
                 listener.addPropertyChangeListener(this);
@@ -4025,7 +3966,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 @Override
                 public void run() {
                     ((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(
-                        CreateNewGeometryListener.POINT);
+                        CreateGeometryListenerInterface.POINT);
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
@@ -4042,7 +3983,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 @Override
                 public void run() {
                     ((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(
-                        CreateNewGeometryListener.POLYGON);
+                        CreateGeometryListenerInterface.POLYGON);
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
@@ -4059,7 +4000,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 @Override
                 public void run() {
                     ((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).setMode(
-                        CreateNewGeometryListener.LINESTRING);
+                        CreateGeometryListenerInterface.LINESTRING);
                     mapC.setInteractionMode(MappingComponent.NEW_POLYGON);
                 }
             });
@@ -5103,17 +5044,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 //            }
         } else if (mapC.getInteractionMode().equals(MappingComponent.NEW_POLYGON)) {
             if (((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(
-                            CreateNewGeometryListener.POLYGON)) {
+                            CreateGeometryListenerInterface.POLYGON)) {
                 if (!cmdNewPolygon.isSelected()) {
                     cmdNewPolygon.setSelected(true);
                 }
             } else if (((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(
-                            CreateNewGeometryListener.LINESTRING)) {
+                            CreateGeometryListenerInterface.LINESTRING)) {
                 if (!cmdNewLinestring.isSelected()) {
                     cmdNewLinestring.setSelected(true);
                 }
             } else if (((CreateNewGeometryListener)mapC.getInputListener(MappingComponent.NEW_POLYGON)).isInMode(
-                            CreateNewGeometryListener.POINT)) {
+                            CreateGeometryListenerInterface.POINT)) {
                 if (!cmdNewPoint.isSelected()) {
                     cmdNewPoint.setSelected(true);
                 }
@@ -5515,29 +5456,30 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * DOCUMENT ME!
      */
     protected void visualizeSearchMode() {
-        final CreateSearchGeometryListener searchListener = (CreateSearchGeometryListener)mapC.getInputListener(
+        final MetaSearchCreateSearchGeometryListener searchListener = (MetaSearchCreateSearchGeometryListener)
+            mapC.getInputListener(
                 MappingComponent.CREATE_SEARCH_POLYGON);
         final String searchMode = searchListener.getMode();
         final PureNewFeature lastGeometry = searchListener.getLastSearchFeature();
 
-        if (CreateSearchGeometryListener.RECTANGLE.equals(searchMode)) {
+        if (MetaSearchCreateSearchGeometryListener.RECTANGLE.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchRectangle.png")));
-        } else if (CreateSearchGeometryListener.POLYGON.equals(searchMode)) {
+        } else if (MetaSearchCreateSearchGeometryListener.POLYGON.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchPolygon.png")));
-        } else if (CreateSearchGeometryListener.ELLIPSE.equals(searchMode)) {
+        } else if (MetaSearchCreateSearchGeometryListener.ELLIPSE.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchEllipse.png")));
-        } else if (CreateSearchGeometryListener.LINESTRING.equals(searchMode)) {
+        } else if (MetaSearchCreateSearchGeometryListener.LINESTRING.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchPolyline.png")));
         }
 
-        mniSearchRectangle.setSelected(CreateSearchGeometryListener.RECTANGLE.equals(searchMode));
-        mniSearchPolygon.setSelected(CreateSearchGeometryListener.POLYGON.equals(searchMode));
-        mniSearchEllipse.setSelected(CreateSearchGeometryListener.ELLIPSE.equals(searchMode));
-        mniSearchPolyline.setSelected(CreateSearchGeometryListener.LINESTRING.equals(searchMode));
+        mniSearchRectangle.setSelected(MetaSearchCreateSearchGeometryListener.RECTANGLE.equals(searchMode));
+        mniSearchPolygon.setSelected(MetaSearchCreateSearchGeometryListener.POLYGON.equals(searchMode));
+        mniSearchEllipse.setSelected(MetaSearchCreateSearchGeometryListener.ELLIPSE.equals(searchMode));
+        mniSearchPolyline.setSelected(MetaSearchCreateSearchGeometryListener.LINESTRING.equals(searchMode));
 
         if (lastGeometry == null) {
             mniSearchShowLastFeature.setIcon(null);
@@ -5588,8 +5530,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
-        if (CreateSearchGeometryListener.PROPERTY_FORGUI_LAST_FEATURE.equals(evt.getPropertyName())
-                    || CreateSearchGeometryListener.PROPERTY_FORGUI_MODE.equals(evt.getPropertyName())) {
+        if (MetaSearchCreateSearchGeometryListener.PROPERTY_FORGUI_LAST_FEATURE.equals(evt.getPropertyName())
+                    || MetaSearchCreateSearchGeometryListener.PROPERTY_FORGUI_MODE.equals(evt.getPropertyName())) {
             visualizeSearchMode();
         }
     }
