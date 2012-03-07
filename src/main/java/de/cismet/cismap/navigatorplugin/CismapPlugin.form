@@ -111,6 +111,9 @@
               <Image iconType="3" name="/images/rectangle.png"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchPolygon1">
           <Properties>
@@ -127,6 +130,9 @@
               <Image iconType="3" name="/images/polygon.png"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchEllipse1">
           <Properties>
@@ -143,6 +149,9 @@
               <Image iconType="3" name="/images/ellipse.png"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchPolyline1">
           <Properties>
@@ -159,6 +168,9 @@
               <Image iconType="3" name="/images/polyline.png"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <Component class="javax.swing.JSeparator" name="jSeparator12">
         </Component>
@@ -577,6 +589,9 @@
                   <Image iconType="3" name="/images/rectangle.png"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+              </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchPolygon">
               <Properties>
@@ -593,6 +608,9 @@
                   <Image iconType="3" name="/images/polygon.png"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+              </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchEllipse">
               <Properties>
@@ -609,6 +627,9 @@
                   <Image iconType="3" name="/images/ellipse.png"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+              </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JRadioButtonMenuItem" name="mniSearchPolyline">
               <Properties>
@@ -625,6 +646,9 @@
                   <Image iconType="3" name="/images/polyline.png"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+              </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator8">
             </MenuItem>

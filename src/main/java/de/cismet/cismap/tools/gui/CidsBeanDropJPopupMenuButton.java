@@ -154,17 +154,29 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
 
     @Override
     public void dragEnter(final DropTargetDragEvent dtde) {
-        super.setIcon(targetIcon);
+        if (isSelected()) {
+            super.setSelectedIcon(targetIcon);
+        } else {
+            super.setIcon(targetIcon);
+        }
     }
 
     @Override
     public void dragExit(final DropTargetEvent dte) {
-        super.setIcon(defaultIcon);
+        if (isSelected()) {
+            super.setSelectedIcon(defaultIcon);
+        } else {
+            super.setIcon(defaultIcon);
+        }
     }
 
     @Override
     public void dragOver(final DropTargetDragEvent dtde) {
-        super.setIcon(targetIcon);
+        if (isSelected()) {
+            super.setSelectedIcon(targetIcon);
+        } else {
+            super.setIcon(targetIcon);
+        }
     }
 
     @Override

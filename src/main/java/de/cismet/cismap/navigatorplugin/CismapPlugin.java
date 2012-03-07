@@ -1788,10 +1788,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniBookmarkManager = new javax.swing.JMenuItem();
         mniBookmarkSidebar = new javax.swing.JMenuItem();
         popMenSearch = new javax.swing.JPopupMenu();
-        mniSearchRectangle1 = new javax.swing.JRadioButtonMenuItem();
-        mniSearchPolygon1 = new javax.swing.JRadioButtonMenuItem();
-        mniSearchEllipse1 = new javax.swing.JRadioButtonMenuItem();
-        mniSearchPolyline1 = new javax.swing.JRadioButtonMenuItem();
+        mniSearchRectangle1 = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchPolygon1 = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchEllipse1 = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchPolyline1 = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
         jSeparator12 = new javax.swing.JSeparator();
         mniSearchCidsFeature1 = new javax.swing.JRadioButtonMenuItem();
         mniSearchShowLastFeature1 = new javax.swing.JMenuItem();
@@ -1888,10 +1896,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         sepAfterPos = new javax.swing.JSeparator();
         mniHistorySidebar = new javax.swing.JMenuItem();
         menSearch = new javax.swing.JMenu();
-        mniSearchRectangle = new javax.swing.JRadioButtonMenuItem();
-        mniSearchPolygon = new javax.swing.JRadioButtonMenuItem();
-        mniSearchEllipse = new javax.swing.JRadioButtonMenuItem();
-        mniSearchPolyline = new javax.swing.JRadioButtonMenuItem();
+        mniSearchRectangle = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchPolygon = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchEllipse = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        mniSearchPolyline = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
         jSeparator8 = new javax.swing.JSeparator();
         mniSearchCidsFeature = new javax.swing.JRadioButtonMenuItem();
         mniSearchShowLastFeature = new javax.swing.JMenuItem();
