@@ -383,6 +383,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             mniSearchRectangle.setSelected(true);
                             cmdPluginSearch.setIcon(
                                 new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
+                            cmdPluginSearch.setSelectedIcon(
+                                new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
                             EventQueue.invokeLater(new Runnable() {
 
                                     @Override
@@ -412,6 +414,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             cmdPluginSearch.setSelected(true);
                             mniSearchPolygon.setSelected(true);
                             cmdPluginSearch.setIcon(
+                                new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolygon.png"))); // NOI18N
+                            cmdPluginSearch.setSelectedIcon(
                                 new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolygon.png"))); // NOI18N
                             EventQueue.invokeLater(new Runnable() {
 
@@ -520,6 +524,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             mniSearchEllipse.setSelected(true);
                             cmdPluginSearch.setIcon(
                                 new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchEllipse.png"))); // NOI18N
+                            cmdPluginSearch.setSelectedIcon(
+                                new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchEllipse.png"))); // NOI18N
                             EventQueue.invokeLater(new Runnable() {
 
                                     @Override
@@ -549,6 +555,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             cmdPluginSearch.setSelected(true);
                             mniSearchPolyline.setSelected(true);
                             cmdPluginSearch.setIcon(
+                                new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolyline.png"))); // NOI18N
+                            cmdPluginSearch.setSelectedIcon(
                                 new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchPolyline.png"))); // NOI18N
 
                             EventQueue.invokeLater(new Runnable() {
@@ -5481,14 +5489,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         if (MetaSearchCreateSearchGeometryListener.RECTANGLE.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchRectangle.png")));
+            cmdPluginSearch.setSelectedIcon(new javax.swing.ImageIcon(
+                    getClass().getResource("/images/pluginSearchRectangle.png")));
         } else if (MetaSearchCreateSearchGeometryListener.POLYGON.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
+                    getClass().getResource("/images/pluginSearchPolygon.png")));
+            cmdPluginSearch.setSelectedIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchPolygon.png")));
         } else if (MetaSearchCreateSearchGeometryListener.ELLIPSE.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchEllipse.png")));
+            cmdPluginSearch.setSelectedIcon(new javax.swing.ImageIcon(
+                    getClass().getResource("/images/pluginSearchEllipse.png")));
         } else if (MetaSearchCreateSearchGeometryListener.LINESTRING.equals(searchMode)) {
             cmdPluginSearch.setIcon(new javax.swing.ImageIcon(
+                    getClass().getResource("/images/pluginSearchPolyline.png")));
+            cmdPluginSearch.setSelectedIcon(new javax.swing.ImageIcon(
                     getClass().getResource("/images/pluginSearchPolyline.png")));
         }
 
