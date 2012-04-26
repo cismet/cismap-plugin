@@ -1080,6 +1080,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             CismapBroker.getInstance().addActiveLayerListener(featureInfo);
             CismapBroker.getInstance().addActiveLayerListener(statusBar);
             CismapBroker.getInstance().addStatusListener(statusBar);
+            if (legend instanceof StatusListener) {
+                CismapBroker.getInstance().addStatusListener(legend);
+            }
             CismapBroker.getInstance().addMapClickListener(featureInfo);
             CismapBroker.getInstance().addMapSearchListener(this);
             CismapBroker.getInstance().addMapDnDListener(this);
