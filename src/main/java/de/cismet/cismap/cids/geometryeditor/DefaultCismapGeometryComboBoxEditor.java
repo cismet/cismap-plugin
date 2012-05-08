@@ -210,18 +210,26 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
                             if (cismapFeatures.getAllFeatures().contains(selectedFeature)) {
                                 if (LOG.isDebugEnabled()) {
-                                    LOG.debug("feature already exist");                                // NOI18N
+                                    LOG.debug("Feature already exists. Remove it from map."); // NOI18N
                                 }
-                            } else {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("add selectedFeature " + selectedFeature + " with geometry " // NOI18N
-                                                + selectedFeature.getGeometry());
-                                }
-                                if (selectedFeature.getGeometry() == null) {
-                                    selectedFeature.setGeometry((Geometry)value.getProperty(GEOM_FIELD));
-                                }
-                                cismapFeatures.addFeature(selectedFeature);
+
+                                // As you see some lines above, selectedFeature contains a recently created object.
+                                // CidsFeature.equals(Object) only compares some essential attributes, and so tells
+                                // that selectedFeature is in the map. Without replacing the feature in the map with
+                                // the selectedFeature all following invocations on selectedFeature won't have an
+                                // effect on the feature in the map, especially setEditable(true) would be useless.
+                                cismapFeatures.removeFeature(selectedFeature);
                             }
+
+                            if (selectedFeature.getGeometry() == null) {
+                                selectedFeature.setGeometry((Geometry)value.getProperty(GEOM_FIELD));
+                            }
+
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Add selectedFeature '" + selectedFeature + "' with geometry '" // NOI18N
+                                            + selectedFeature.getGeometry() + "' to feature collection.");
+                            }
+                            cismapFeatures.addFeature(selectedFeature);
 
                             selectedFeature.setEditable(true);
 
