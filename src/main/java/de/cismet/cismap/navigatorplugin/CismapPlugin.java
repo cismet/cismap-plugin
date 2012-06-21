@@ -5819,6 +5819,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         final SwingWorker<Vector<Feature>, Void> addToMapWorker =
                             new SwingWorker<Vector<Feature>, Void>() {
 
+                                private Map<DefaultMetaTreeNode, CidsFeature> tmpFeaturesInMap = null;
+                                private Map<Feature, DefaultMetaTreeNode> tmpFeaturesInMapReverse = null;
+
                                 @Override
                                 protected Vector<Feature> doInBackground() throws Exception {
                                     final Iterator<DefaultMetaTreeNode> mapIter = featuresInMap.keySet().iterator();
@@ -5852,10 +5855,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             log.debug("allFeaturesToAdd:" + allFeaturesToAdd); // NOI18N
                                         }
 
-                                        // log.fatal("cidsFeature.hashCode():"+cidsFeature.hashCode());
-                                        // log.fatal("feturesInMap:"+featuresInMap);
-
-// log.fatal("featuresInMap.containsValue(cidsFeature):"+featuresInMap.containsValue(cidsFeature));
                                         if (!(featuresInMap.containsValue(cidsFeature))) {
                                             v.addAll(allFeaturesToAdd);
 
@@ -5867,38 +5866,29 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                 featuresInMapReverse.put(feature, node);
                                             }
                                             if (log.isDebugEnabled()) {
-// featuresInMap.put(node, cidsFeature);
-// featuresInMapReverse.put(cidsFeature, node);
                                                 log.debug("featuresInMap.put(node,cidsFeature):" + node + ","
                                                             + cidsFeature); // NOI18Ns
                                             }
-
-// log.fatal("feturesInMap:"+featuresInMap);
-// log.fatal("featuresInMapReverse:"+featuresInMapReverse);
                                         }
                                     }
-
+                                    tmpFeaturesInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>(featuresInMap);
+                                    tmpFeaturesInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>(
+                                            featuresInMapReverse);
                                     return v;
                                 }
 
-// private Feature getFeatureParent(Feature feature) {
-// if (feature instanceof SubFeature) {
-// SubFeature current = (SubFeature) feature;
-// if (current.getParentFeature() != null) {
-// return getFeatureParent(current.getParentFeature());
-// }
-// }
-// return feature;
-// }
                                 @Override
                                 protected void done() {
                                     try {
                                         showObjectsWaitDialog.setVisible(false);
-// showObjectsWaitDialog.dispose();
                                         final Vector<Feature> v = get();
 
                                         mapC.getFeatureLayer().setVisible(true);
                                         mapC.getFeatureCollection().substituteFeatures(v);
+                                        featuresInMap.clear();
+                                        featuresInMap.putAll(tmpFeaturesInMap);
+                                        featuresInMapReverse.clear();
+                                        featuresInMapReverse.putAll(tmpFeaturesInMapReverse);
 
                                         if (!mapC.isFixedMapExtent()) {
                                             mapC.zoomToFeatureCollection(mapC.isFixedMapScale());

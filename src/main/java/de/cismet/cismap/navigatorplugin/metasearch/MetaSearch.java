@@ -10,6 +10,7 @@ package de.cismet.cismap.navigatorplugin.metasearch;
 import Sirius.navigator.connection.SessionManager;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserGroup;
 
 import edu.umd.cs.piccolo.PNode;
@@ -248,11 +249,14 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
 
         final UserGroup currentUserGroup;
+        final User currentUser;
         if (SessionManager.isInitialized() && SessionManager.isConnected()) {
-            currentUserGroup = SessionManager.getSession().getUser().getUserGroup();
+            currentUser = SessionManager.getSession().getUser();
+            currentUserGroup = currentUser.getUserGroup();
         } else {
             LOG.warn("Could not determine current user. All search classes will be added to search.");
             currentUserGroup = null;
+            currentUser=null;
         }
 
         if (parent == null) {
@@ -315,15 +319,15 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
                 final SearchClass searchClass = new SearchClass(domain, table);
 
-                if ((metaClassCacheService != null) && (currentUserGroup != null)) {
+                if ((metaClassCacheService != null) && (currentUser != null)) {
                     final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
                             searchClass.getCidsClass());
 
                     if ((metaClass != null) && (metaClass.getPermissions() != null)
-                                && metaClass.getPermissions().hasReadPermission(currentUserGroup)) {
+                                && metaClass.getPermissions().hasReadPermission(currentUser)) {
                         searchTopic.insert(searchClass);
                     } else {
-                        LOG.error("Could not determine if user group '" + currentUserGroup
+                        LOG.error("Could not determine if user'" + currentUser
                                     + "' has read permission on '" + searchClass + "'.");
                     }
                 }

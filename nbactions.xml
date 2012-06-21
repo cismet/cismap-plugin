@@ -7,7 +7,8 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
-            <exec.args>-classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <jalopy.skip>true</jalopy.skip>
+            <exec.args>-Djava.library.path=/Users/thorsten/Development/worldwind.sdk.1.2 -Ddirectory.extension=WUNDA -classpath ${de.cismet.cids.classpath}:/Users/thorsten/Development/SimpleCismap3D/lib/worldwind.jar:/Users/thorsten/Development/SimpleCismap3D/lib/jogl.jar:/Users/thorsten/Development/SimpleCismap3D/lib/gluegen-rt.jar:/Users/thorsten/Development/SimpleCismap3D/dist/SimpleCismap3D.jar de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
             <exec.executable>java</exec.executable>
         </properties>
     </action>
@@ -31,17 +32,33 @@
         </activatedProfiles>
     </action>
     <action>
-            <actionName>debug</actionName>
-            <goals>
-                <goal>process-classes</goal>
-                <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
-            </goals>
-            <properties>
-                <exec.classpathScope>runtime</exec.classpathScope>
-                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
-                <jpda.listen>true</jpda.listen>
-                <exec.executable>java</exec.executable>
-            </properties>
-        </action>
+        <actionName>debug</actionName>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
+        </goals>
+        <properties>
+            <jalopy.skip>true</jalopy.skip>
+            <exec.classpathScope>runtime</exec.classpathScope>
+            <exec.workingdir>${de.cismet.cids.navigator.workingDir.wunda}</exec.workingdir>
+            <exec.args>-Ddirectory.extension=WUNDA -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Xms256m -Xmx1024m -Duser.country=DE -Duser.language=de -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <jpda.listen>true</jpda.listen>
+            <exec.executable>java</exec.executable>
+        </properties>
+
+    </action>
+    <action>
+        <actionName>profile</actionName>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
+        </goals>
+        <properties>
+            <jalopy.skip>true</jalopy.skip>
+            <exec.args>${profiler.args} -classpath -classpath %classpath de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <profiler.action>profile</profiler.action>
+            <exec.executable>${profiler.java}</exec.executable>
+        </properties>
+    </action>
 
 </actions>
