@@ -80,11 +80,21 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public String getUIClassID() {
         return uiClassID;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  beans  DOCUMENT ME!
+     */
     @Override
     public void beansDropped(final ArrayList<CidsBean> beans) {
         mappingComponent.setInteractionMode(interactionMode);
@@ -128,6 +138,11 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
         super.setIcon(defaultIcon);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  defaultIcon  DOCUMENT ME!
+     */
     @Override
     public void setIcon(final Icon defaultIcon) {
         super.setIcon(defaultIcon);
@@ -152,6 +167,11 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
         return targetIcon;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dtde  DOCUMENT ME!
+     */
     @Override
     public void dragEnter(final DropTargetDragEvent dtde) {
         if (isSelected()) {
@@ -161,6 +181,11 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dte  DOCUMENT ME!
+     */
     @Override
     public void dragExit(final DropTargetEvent dte) {
         if (isSelected()) {
@@ -170,6 +195,11 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dtde  DOCUMENT ME!
+     */
     @Override
     public void dragOver(final DropTargetDragEvent dtde) {
         if (isSelected()) {
@@ -179,10 +209,20 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dtde  DOCUMENT ME!
+     */
     @Override
     public void drop(final DropTargetDropEvent dtde) {
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  dtde  DOCUMENT ME!
+     */
     @Override
     public void dropActionChanged(final DropTargetDragEvent dtde) {
     }
