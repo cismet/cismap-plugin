@@ -146,21 +146,41 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public String getBindingProperty() {
         return "selectedItem"; // NOI18N
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public Object getNullSourceValue() {
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public Object getErrorSourceValue() {
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public Converter getConverter() {
         return new Converter<CidsBean, Feature>() {
@@ -284,6 +304,11 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
             };
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public Validator getValidator() {
         return null;
@@ -315,6 +340,11 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
         this.cismap = cismap;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public MetaClass getMetaClass() {
         return metaClass;
