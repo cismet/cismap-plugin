@@ -3431,7 +3431,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             for (final Object o : c) {
                 if (o instanceof Feature) {
-                    final Geometry newG = ((Feature)o).getGeometry().buffer(Double.parseDouble(s));
+                    final int srid = ((Feature)o).getGeometry().getSRID();
+                    final Geometry oldG = CrsTransformer.transformToMetricCrs(((Feature)o).getGeometry());
+                    Geometry newG = oldG.buffer(Double.parseDouble(s));
+                    newG = CrsTransformer.transformToGivenCrs(newG, CrsTransformer.createCrsFromSrid(srid));
+
                     if (o instanceof PureNewFeature) {
                         ((Feature)o).setGeometry(newG);
                         ((PureNewFeature)o).setGeometryType(PureNewFeature.geomTypes.POLYGON);
