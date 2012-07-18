@@ -3580,11 +3580,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     private void mniAboutActionPerformed(final java.awt.event.ActionEvent evt) {
         if (about == null) {
-            about = new AboutDialog(this, true);
+            about = new AboutDialog(StaticSwingTools.getParentFrame(this.panAll), true);
         }
 
-        about.setLocationRelativeTo(this);
-        about.setVisible(true);
+        StaticSwingTools.showDialog(this.panAll, about, true);
     }
 
     /**
@@ -4047,8 +4046,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                 @Override
                                 public void run() {
-                                    clipboarder.setLocationRelativeTo(CismapPlugin.this);
-                                    clipboarder.setVisible(true);
+                                    StaticSwingTools.showDialog(CismapPlugin.this.panAll, clipboarder, true);
                                 }
                             });
 
@@ -4464,9 +4462,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniOptionsActionPerformed(final java.awt.event.ActionEvent evt) {
-        final OptionsDialog od = new OptionsDialog(this, true);
-        od.setLocationRelativeTo(this);
-        od.setVisible(true);
+        final OptionsDialog od = new OptionsDialog(StaticSwingTools.getParentFrame(this), true);
+        StaticSwingTools.showDialog(this.panAll, od, true);
     }
 
     /**
@@ -6105,8 +6102,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
-                        showObjectsWaitDialog.setVisible(true);
+                        StaticSwingTools.showDialog(CismapPlugin.this.panAll, showObjectsWaitDialog, true);
 
                         final SwingWorker<List<Feature>, Void> addToMapWorker = new SwingWorker<List<Feature>, Void>() {
 
