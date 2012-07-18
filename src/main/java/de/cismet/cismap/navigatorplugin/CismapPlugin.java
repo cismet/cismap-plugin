@@ -13,7 +13,11 @@
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.plugin.context.PluginContext;
-import Sirius.navigator.plugin.interfaces.*;
+import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
+import Sirius.navigator.plugin.interfaces.PluginMethod;
+import Sirius.navigator.plugin.interfaces.PluginProperties;
+import Sirius.navigator.plugin.interfaces.PluginSupport;
+import Sirius.navigator.plugin.interfaces.PluginUI;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
 import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.search.dynamic.SearchProgressDialog;
@@ -138,7 +142,14 @@ import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
-import de.cismet.cismap.commons.features.*;
+import de.cismet.cismap.commons.features.DefaultFeatureCollection;
+import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureCollectionEvent;
+import de.cismet.cismap.commons.features.FeatureCollectionListener;
+import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.FeatureGroups;
+import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
