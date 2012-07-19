@@ -996,8 +996,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
-            clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this), true);
-            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), false);
+            clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this.panAll), true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this.panAll), false);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -3583,7 +3583,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             about = new AboutDialog(StaticSwingTools.getParentFrame(this.panAll), true);
         }
 
-        StaticSwingTools.showDialog(this.panAll, about, true);
+        StaticSwingTools.showDialog(about);
     }
 
     /**
@@ -4046,7 +4046,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                 @Override
                                 public void run() {
-                                    StaticSwingTools.showDialog(CismapPlugin.this.panAll, clipboarder, true);
+                                    StaticSwingTools.showDialog(clipboarder);
                                 }
                             });
 
@@ -4462,8 +4462,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniOptionsActionPerformed(final java.awt.event.ActionEvent evt) {
-        final OptionsDialog od = new OptionsDialog(StaticSwingTools.getParentFrame(this), true);
-        StaticSwingTools.showDialog(this.panAll, od, true);
+        final OptionsDialog od = new OptionsDialog(StaticSwingTools.getParentFrame(this.panAll), true);
+        StaticSwingTools.showDialog(od);
     }
 
     /**
@@ -6102,7 +6102,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        StaticSwingTools.showDialog(CismapPlugin.this.panAll, showObjectsWaitDialog, true);
+                        StaticSwingTools.showDialog(showObjectsWaitDialog);
 
                         final SwingWorker<List<Feature>, Void> addToMapWorker = new SwingWorker<List<Feature>, Void>() {
 
