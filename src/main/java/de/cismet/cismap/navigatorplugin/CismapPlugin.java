@@ -67,6 +67,7 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
@@ -117,6 +118,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.swing.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -996,8 +998,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
-            clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this.panAll), true);
-            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this.panAll), false);
+            clipboarder = new ClipboardWaitDialog(this, true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(this, false);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -4752,7 +4754,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     @Override
     public void setVisible(final boolean b) {
-        if (!plugin) {
+        if (plugin) {
+            final JFrame mainWindow = ComponentRegistry.getRegistry().getMainWindow();
+            clipboarder = new ClipboardWaitDialog(mainWindow, true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(mainWindow, false);
+        } else {
             super.setVisible(b);
         }
     }
