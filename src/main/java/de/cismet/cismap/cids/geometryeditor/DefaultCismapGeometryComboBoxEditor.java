@@ -203,8 +203,9 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             }
 
                             cidsFeature = new CidsFeature(cidsFeatureMetaObject) {
+
                                     private Geometry lastGeom;
-                                    
+
                                     @Override
                                     public void setGeometry(final Geometry geom) {
                                         if (geom == null) {
