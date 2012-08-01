@@ -204,20 +204,27 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
                             cidsFeature = new CidsFeature(cidsFeatureMetaObject) {
 
+                                    private Geometry lastGeom;
+
                                     @Override
                                     public void setGeometry(final Geometry geom) {
                                         if (geom == null) {
-                                            LOG.warn("ATTENTION geom=null");             // NOI18N
+                                            LOG.warn("ATTENTION geom=null");              // NOI18N
                                         }
-                                        final Geometry oldValue = getGeometry();
+                                        final Geometry oldValue = lastGeom;
                                         super.setGeometry(geom);
                                         try {
                                             if (((oldValue == null) && (geom != null))
-                                                        || ((oldValue != null) && !oldValue.equals(geom))) {
+                                                        || ((oldValue != null) && !oldValue.equalsExact(geom))) {
                                                 geometryBean.setProperty(GEOM_FIELD, geom);
+                                                if (geom != null) {
+                                                    lastGeom = (Geometry)geom.clone();
+                                                } else {
+                                                    lastGeom = null;
+                                                }
                                             }
                                         } catch (final Exception e) {
-                                            LOG.error("Error when setting the geomtry.", e); // NOI18N
+                                            LOG.error("Error when setting the geometry.", e); // NOI18N
                                         }
                                     }
                                 };
@@ -292,7 +299,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             final Geometry geom = value.getGeometry();
 
                             if (((oldValue == null) && (geom != null))
-                                        || ((oldValue != null) && !oldValue.equals(geom))) {
+                                        || ((oldValue != null) && !oldValue.equalsExact(geom))) {
                                 geometryBean.setProperty(GEOM_FIELD, value.getGeometry());
                             }
                         } catch (final Exception ex) {

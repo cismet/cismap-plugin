@@ -13,7 +13,11 @@
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.plugin.context.PluginContext;
-import Sirius.navigator.plugin.interfaces.*;
+import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
+import Sirius.navigator.plugin.interfaces.PluginMethod;
+import Sirius.navigator.plugin.interfaces.PluginProperties;
+import Sirius.navigator.plugin.interfaces.PluginSupport;
+import Sirius.navigator.plugin.interfaces.PluginUI;
 import Sirius.navigator.plugin.listener.MetaNodeSelectionListener;
 import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.search.dynamic.SearchProgressDialog;
@@ -63,6 +67,7 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
@@ -113,6 +118,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.swing.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -138,7 +144,14 @@ import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
-import de.cismet.cismap.commons.features.*;
+import de.cismet.cismap.commons.features.DefaultFeatureCollection;
+import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureCollectionEvent;
+import de.cismet.cismap.commons.features.FeatureCollectionListener;
+import de.cismet.cismap.commons.features.FeatureGroup;
+import de.cismet.cismap.commons.features.FeatureGroups;
+import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
@@ -985,8 +998,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
-            clipboarder = new ClipboardWaitDialog(StaticSwingTools.getParentFrame(this), true);
-            showObjectsWaitDialog = new ShowObjectsWaitDialog(StaticSwingTools.getParentFrame(this), false);
+            clipboarder = new ClipboardWaitDialog(this, true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(this, false);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -2104,14 +2117,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
             });
 
@@ -2982,14 +2995,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
             });
 
@@ -3569,11 +3582,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     private void mniAboutActionPerformed(final java.awt.event.ActionEvent evt) {
         if (about == null) {
-            about = new AboutDialog(this, true);
+            about = new AboutDialog(StaticSwingTools.getParentFrame(this.panAll), true);
         }
 
-        about.setLocationRelativeTo(this);
-        about.setVisible(true);
+        StaticSwingTools.showDialog(about);
     }
 
     /**
@@ -4036,8 +4048,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                 @Override
                                 public void run() {
-                                    clipboarder.setLocationRelativeTo(CismapPlugin.this);
-                                    clipboarder.setVisible(true);
+                                    StaticSwingTools.showDialog(clipboarder);
                                 }
                             });
 
@@ -4453,9 +4464,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniOptionsActionPerformed(final java.awt.event.ActionEvent evt) {
-        final OptionsDialog od = new OptionsDialog(this, true);
-        od.setLocationRelativeTo(this);
-        od.setVisible(true);
+        final OptionsDialog od = new OptionsDialog(StaticSwingTools.getParentFrame(this.panAll), true);
+        StaticSwingTools.showDialog(od);
     }
 
     /**
@@ -4744,7 +4754,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     @Override
     public void setVisible(final boolean b) {
-        if (!plugin) {
+        if (plugin) {
+            final JFrame mainWindow = ComponentRegistry.getRegistry().getMainWindow();
+            clipboarder = new ClipboardWaitDialog(mainWindow, true);
+            showObjectsWaitDialog = new ShowObjectsWaitDialog(mainWindow, false);
+        } else {
             super.setVisible(b);
         }
     }
@@ -5833,7 +5847,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (MetaSearchCreateSearchGeometryListener.PROPERTY_FORGUI_LAST_FEATURE.equals(evt.getPropertyName())
-                    || MetaSearchCreateSearchGeometryListener.PROPERTY_FORGUI_MODE.equals(evt.getPropertyName())) {
+                    || MetaSearchCreateSearchGeometryListener.PROPERTY_FORGUI_MODE.equals(evt.getPropertyName())
+                    || MetaSearchCreateSearchGeometryListener.PROPERTY_MODE.equals(evt.getPropertyName())) {
             visualizeSearchMode();
         }
     }
@@ -6094,8 +6109,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        showObjectsWaitDialog.setLocationRelativeTo(CismapPlugin.this);
-                        showObjectsWaitDialog.setVisible(true);
+                        StaticSwingTools.showDialog(showObjectsWaitDialog);
 
                         final SwingWorker<List<Feature>, Void> addToMapWorker = new SwingWorker<List<Feature>, Void>() {
 
