@@ -3488,10 +3488,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         menHelp.add(mniNews);
 
-        mniAbout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
-                java.awt.event.KeyEvent.VK_A,
-                java.awt.event.InputEvent.ALT_MASK
-                        | java.awt.event.InputEvent.CTRL_MASK));
         mniAbout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAbout.text")); // NOI18N
         mniAbout.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
