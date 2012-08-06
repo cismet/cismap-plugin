@@ -2233,6 +2233,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         panAll.add(panToolbar, java.awt.BorderLayout.NORTH);
 
         panMain.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        panMain.setFocusCycleRoot(true);
         panMain.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
@@ -2717,6 +2718,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniLoadConfig.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniLoadConfig.text"));                                                    // NOI18N
+        mniLoadConfig.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadConfig.tooltip"));                                                 // NOI18N
         mniLoadConfig.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2733,6 +2737,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSaveConfig.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSaveConfig.text"));                                                    // NOI18N
+        mniSaveConfig.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSaveConfig.tooltip"));                                                 // NOI18N
         mniSaveConfig.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2746,6 +2753,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniLoadConfigFromServer.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniLoadConfigFromServer.text"));                                                    // NOI18N
+        mniLoadConfigFromServer.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadConfigFromServer.tooltip"));                                                 // NOI18N
         mniLoadConfigFromServer.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2768,6 +2778,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSaveLayout.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSaveLayout.text"));                                                    // NOI18N
+        mniSaveLayout.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSaveLayout.tooltip"));                                                 // NOI18N
         mniSaveLayout.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2784,6 +2797,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniLoadLayout.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniLoadLayout.text"));                                                    // NOI18N
+        mniLoadLayout.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadLayout.tooltip"));                                                 // NOI18N
         mniLoadLayout.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2801,6 +2817,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniClipboard.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniClipboard.text"));                                                         // NOI18N
+        mniClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniClipboard.tooltip"));                                                      // NOI18N
         mniClipboard.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2818,6 +2837,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniGeoLinkClipboard.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniGeoLinkClipboard.text"));                                                         // NOI18N
+        mniGeoLinkClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniGeoLinkClipboard.tooltip"));                                                      // NOI18N
         mniGeoLinkClipboard.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2832,6 +2854,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.InputEvent.CTRL_MASK));
         mniPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/frameprint16.png")));          // NOI18N
         mniPrint.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniPrint.text")); // NOI18N
+        mniPrint.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniPrint.tooltip"));                                                                // NOI18N
         mniPrint.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2846,6 +2871,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.KeyEvent.VK_F4,
                 java.awt.event.InputEvent.ALT_MASK));
         mniClose.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniClose.text")); // NOI18N
+        mniClose.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniClose.tooltip"));                                                                // NOI18N
         mniClose.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2869,6 +2897,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         mniRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/reload16.gif")));                // NOI18N
         mniRefresh.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniRefresh.text")); // NOI18N
+        mniRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniRefresh.tooltip"));                                                                  // NOI18N
         mniRefresh.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2884,6 +2915,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniZoomToSelectedObjects.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniZoomToSelectedObjects.text"));                                    // NOI18N
+        mniZoomToSelectedObjects.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniZoomToSelectedObjects.tooltip"));                                 // NOI18N
         mniZoomToSelectedObjects.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2898,6 +2932,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniZoomToAllObjects.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniZoomToAllObjects.text"));                                   // NOI18N
+        mniZoomToAllObjects.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniZoomToAllObjects.tooltip"));                                // NOI18N
         mniZoomToAllObjects.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2913,6 +2950,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniRemoveSelectedObject.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniRemoveSelectedObject.text"));                               // NOI18N
+        mniRemoveSelectedObject.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniRemoveSelectedObject.tooltip"));                            // NOI18N
         mniRemoveSelectedObject.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2927,6 +2967,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniRemoveAllObjects.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniRemoveAllObjects.text"));                                   // NOI18N
+        mniRemoveAllObjects.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniRemoveAllObjects.tooltip"));                                // NOI18N
         mniRemoveAllObjects.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2946,6 +2989,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.InputEvent.CTRL_MASK));
         mniBack.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/back16.png")));               // NOI18N
         mniBack.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniBack.text")); // NOI18N
+        mniBack.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniBack.tooltip"));                                                               // NOI18N
         mniBack.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2960,6 +3006,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.InputEvent.CTRL_MASK));
         mniForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/forward16.png")));               // NOI18N
         mniForward.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniForward.text")); // NOI18N
+        mniForward.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniForward.tooltip"));                                                                  // NOI18N
         mniForward.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2972,6 +3021,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniHome.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_HOME, 0));
         mniHome.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home16.png")));               // NOI18N
         mniHome.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniHome.text")); // NOI18N
+        mniHome.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniHome.tooltip"));                                                               // NOI18N
         mniHome.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3012,6 +3064,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchRectangle.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchRectangle.text"));                                                       // NOI18N
+        mniSearchRectangle.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchRectangle.tooltip"));                                                    // NOI18N
         mniSearchRectangle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/rectangle.png"))); // NOI18N
         menSearch.add(mniSearchRectangle);
 
@@ -3020,6 +3075,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolygon.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchPolygon.text"));                                                     // NOI18N
+        mniSearchPolygon.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchPolygon.tooltip"));                                                  // NOI18N
         mniSearchPolygon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
         menSearch.add(mniSearchPolygon);
 
@@ -3028,6 +3086,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchEllipse.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchEllipse.text_1"));                                                   // NOI18N
+        mniSearchEllipse.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchEllipse.tooltip"));                                                  // NOI18N
         mniSearchEllipse.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/ellipse.png"))); // NOI18N
         menSearch.add(mniSearchEllipse);
 
@@ -3036,6 +3097,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchPolyline.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchPolyline.text_1"));                                                    // NOI18N
+        mniSearchPolyline.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchLine.tooltip"));                                                       // NOI18N
         mniSearchPolyline.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polyline.png"))); // NOI18N
         menSearch.add(mniSearchPolyline);
         menSearch.add(jSeparator8);
@@ -3045,6 +3109,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSearchCidsFeature.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniSearchCidsFeature.text"));                                                     // NOI18N
+        mniSearchCidsFeature.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniSearchCidsFeature.tooltip"));                                                  // NOI18N
         mniSearchCidsFeature.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/polygon.png"))); // NOI18N
         mniSearchCidsFeature.addActionListener(new java.awt.event.ActionListener() {
 
@@ -3099,6 +3166,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         mniOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/tooloptions.png")));             // NOI18N
         mniOptions.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniOptions.text")); // NOI18N
+        mniOptions.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniOptions.tooltip"));                                                                  // NOI18N
         mniOptions.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3116,6 +3186,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniBufferSelectedGeom.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniBufferSelectedGeom.text"));                                                    // NOI18N
+        mniBufferSelectedGeom.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniBufferSelectedGeom.tooltip"));                                                 // NOI18N
         mniBufferSelectedGeom.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3133,6 +3206,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniGotoPoint.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniGotoPoint.text"));                                                  // NOI18N
+        mniGotoPoint.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniGotoPoint.tooltip"));                                               // NOI18N
         mniGotoPoint.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3148,6 +3224,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.InputEvent.CTRL_MASK));
         mniScale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/scale.png")));                 // NOI18N
         mniScale.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniScale.text")); // NOI18N
+        mniScale.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniScale.tooltip"));                                                                // NOI18N
         mniScale.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3176,6 +3255,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/layers.png")));                  // NOI18N
         mniLayer.setMnemonic('L');
         mniLayer.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLayer.text")); // NOI18N
+        mniLayer.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLayer.tooltip"));                                                                // NOI18N
         mniLayer.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3194,6 +3276,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniCapabilities.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniCapabilities.text"));                                           // NOI18N
+        mniCapabilities.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniCapabilities.tooltip"));                                        // NOI18N
         mniCapabilities.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3212,6 +3297,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniFeatureInfo.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniFeatureInfo.text"));                                                              // NOI18N
+        mniFeatureInfo.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniFeatureInfo.tooltip"));                                                           // NOI18N
         mniFeatureInfo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3230,6 +3318,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniServerInfo.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniServerInfo.text"));                                                           // NOI18N
+        mniServerInfo.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniServerInfo.tooltip"));                                                        // NOI18N
         mniServerInfo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3248,6 +3339,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniLayerInfo.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniLayerInfo.text"));                                                           // NOI18N
+        mniLayerInfo.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLayerInfo.tooltip"));                                                        // NOI18N
         mniLayerInfo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3264,6 +3358,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png")));                       // NOI18N
         mniLegend.setMnemonic('L');
         mniLegend.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniLegend.text")); // NOI18N
+        mniLegend.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLegend.tooltip"));                                                                 // NOI18N
         mniLegend.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3281,6 +3378,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniFeatureControl.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniFeatureControl.text"));                                                     // NOI18N
+        mniFeatureControl.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniFeatureControl.tooltip"));                                                  // NOI18N
         mniFeatureControl.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3296,6 +3396,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/map.png"))); // NOI18N
         mniMap.setMnemonic('M');
         mniMap.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniMap.text"));           // NOI18N
+        mniMap.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniMap.tooltip")); // NOI18N
         mniMap.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3312,6 +3413,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 getClass().getResource("/de/cismet/cismap/navigatorplugin/map.png")));                                  // NOI18N
         mniOverview.setMnemonic('M');
         mniOverview.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniOverview.text")); // NOI18N
+        mniOverview.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniOverview.tooltip"));                                                                   // NOI18N
         mniOverview.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3358,6 +3462,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniOnlineHelp.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniOnlineHelp.text"));                                                  // NOI18N
+        mniOnlineHelp.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniOnlineHelp.tooltip"));                                               // NOI18N
         mniOnlineHelp.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3369,6 +3476,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         mniNews.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/news.png")));                 // NOI18N
         mniNews.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniNews.text")); // NOI18N
+        mniNews.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniNews.tooltip"));                                                               // NOI18N
         mniNews.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -3383,6 +3493,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 java.awt.event.InputEvent.ALT_MASK
                         | java.awt.event.InputEvent.CTRL_MASK));
         mniAbout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAbout.text")); // NOI18N
+        mniAbout.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAbout.tooltip"));                                                                // NOI18N
         mniAbout.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
