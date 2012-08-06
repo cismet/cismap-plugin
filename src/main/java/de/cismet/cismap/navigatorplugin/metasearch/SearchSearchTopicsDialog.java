@@ -136,37 +136,26 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         sepButtons = new javax.swing.JSeparator();
         txtSearchParameter = new javax.swing.JTextField();
         chkHere = new javax.swing.JCheckBox();
-        gluFiller = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 32767));
+        gluFiller = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         sepSearchTopics = new javax.swing.JSeparator();
         scpSearchTopics = new javax.swing.JScrollPane();
         pnlSearchTopics = new de.cismet.cismap.navigatorplugin.metasearch.SearchTopicsPanel();
-        gluTop = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 32767));
-        gluBottom = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 0),
-                new java.awt.Dimension(0, 32767));
+        gluTop = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        gluBottom = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.title")); // NOI18N
+        setTitle(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.title")); // NOI18N
         setMinimumSize(new java.awt.Dimension(500, 300));
         setModal(true);
+        setPreferredSize(new java.awt.Dimension(500, 300));
         addWindowListener(new java.awt.event.WindowAdapter() {
-
-                @Override
-                public void windowClosing(final java.awt.event.WindowEvent evt) {
-                    formWindowClosing(evt);
-                }
-            });
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        lblSearchParameter.setText(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.lblSearchParameter.text")); // NOI18N
+        lblSearchParameter.setText(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.lblSearchParameter.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -177,20 +166,16 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
         pnlButtons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
 
-        btnClose.setText(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.btnClose.text")); // NOI18N
+        btnClose.setText(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.btnClose.text")); // NOI18N
         btnClose.setFocusPainted(false);
         btnClose.setMaximumSize(new java.awt.Dimension(100, 25));
         btnClose.setMinimumSize(new java.awt.Dimension(59, 25));
         btnClose.setPreferredSize(new java.awt.Dimension(100, 25));
         btnClose.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    btnCloseActionPerformed(evt);
-                }
-            });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloseActionPerformed(evt);
+            }
+        });
         pnlButtons.add(btnClose);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -202,9 +187,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(pnlButtons, gridBagConstraints);
 
-        chkCaseSensitive.setText(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.chkCaseSensitive.text")); // NOI18N
+        chkCaseSensitive.setText(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.chkCaseSensitive.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -219,18 +202,14 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         getContentPane().add(sepButtons, gridBagConstraints);
 
-        txtSearchParameter.setText(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.txtSearchParameter.text")); // NOI18N
+        txtSearchParameter.setText(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.txtSearchParameter.text")); // NOI18N
         txtSearchParameter.setMinimumSize(new java.awt.Dimension(250, 25));
         txtSearchParameter.setPreferredSize(new java.awt.Dimension(250, 25));
         txtSearchParameter.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    txtSearchParameterActionPerformed(evt);
-                }
-            });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchParameterActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -239,9 +218,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         gridBagConstraints.insets = new java.awt.Insets(2, 5, 5, 5);
         getContentPane().add(txtSearchParameter, gridBagConstraints);
 
-        chkHere.setText(org.openide.util.NbBundle.getMessage(
-                SearchSearchTopicsDialog.class,
-                "SearchSearchTopicsDialog.chkHere.text")); // NOI18N
+        chkHere.setText(org.openide.util.NbBundle.getMessage(SearchSearchTopicsDialog.class, "SearchSearchTopicsDialog.chkHere.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -290,39 +267,39 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         getContentPane().add(gluBottom, gridBagConstraints);
 
         pack();
-    } // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void txtSearchParameterActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtSearchParameterActionPerformed
+    private void txtSearchParameterActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchParameterActionPerformed
         // Avoid invalid input.
         if (pnlSearchCancel.isEnabled()) {
             pnlSearchCancel.startSearch();
         }
-    } //GEN-LAST:event_txtSearchParameterActionPerformed
+    }//GEN-LAST:event_txtSearchParameterActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCloseActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCloseActionPerformed
+    private void btnCloseActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         setVisible(false);
-    }                                                                            //GEN-LAST:event_btnCloseActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void formWindowClosing(final java.awt.event.WindowEvent evt) { //GEN-FIRST:event_formWindowClosing
+    private void formWindowClosing(final java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         if (!searchRunning) {
             setVisible(false);
         }
-    }                                                                      //GEN-LAST:event_formWindowClosing
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * DOCUMENT ME!
