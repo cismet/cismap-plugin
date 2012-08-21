@@ -705,7 +705,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         final String s = (String)JOptionPane.showInputDialog(
-                                                null,
+                                                StaticSwingTools.getParentFrame(CismapPlugin.this.mapC),
                                                 "Geben Sie den Abstand des zu erzeugenden\n"       // NOI18N
                                                         + "Puffers der letzten Suchgeometrie an.", // NOI18N
                                                 "Puffer",                                          // NOI18N
@@ -768,7 +768,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             }
                                         } catch (final NumberFormatException ex) {
                                             JOptionPane.showMessageDialog(
-                                                null,
+                                                StaticSwingTools.getParentFrame(CismapPlugin.this.mapC),
                                                 "The given value was not a floating point value.!",
                                                 "Error",
                                                 JOptionPane.ERROR_MESSAGE); // NOI18N
@@ -3539,7 +3539,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
-                    null,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniBufferSelectedGeom.Dialog.text"),                    // NOI18N
@@ -3583,7 +3583,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         } else {
             JOptionPane.showMessageDialog(
-                null,
+                StaticSwingTools.getParentFrame(mapC),
                 org.openide.util.NbBundle.getMessage(
                     CismapPlugin.class,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.noneselected"), // NOI18N
@@ -3730,7 +3730,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final double x = (c.getX1() + c.getX2()) / 2;
             final double y = (c.getY1() + c.getY2()) / 2;
             final String s = JOptionPane.showInputDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniGotoPointActionPerformed.JOptionPane.message"), // NOI18N
@@ -3756,7 +3756,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private void mniScaleActionPerformed(final java.awt.event.ActionEvent evt) {
         try {
             final String s = JOptionPane.showInputDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.scaleManually"),
                     ((int)mapC.getScaleDenominator())
                             + "");                               // NOI18N
@@ -4070,7 +4070,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 loadLayout(name);
             } else {
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniLoadLayoutActionPerformed(ActionEvent).JOptionPane.msg"),   // NOI18N
@@ -5168,7 +5168,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 if (isInit) {
                     JOptionPane.showMessageDialog(
-                        this,
+                        StaticSwingTools.getParentFrame(mapC),
                         org.openide.util.NbBundle.getMessage(
                             CismapPlugin.class,
                             "CismapPlugin.loadLayout(String).JOptionPane.message1"), // NOI18N
@@ -5179,7 +5179,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     setupDefaultLayout();
                 } else {
                     JOptionPane.showMessageDialog(
-                        this,
+                        StaticSwingTools.getParentFrame(mapC),
                         org.openide.util.NbBundle.getMessage(
                             CismapPlugin.class,
                             "CismapPlugin.loadLayout(String).JOptionPane.message2"), // NOI18N
@@ -5206,7 +5206,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             } else {
                 log.fatal("File does not exist)");                               // NOI18N
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
@@ -5252,7 +5252,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(
-                this,
+                StaticSwingTools.getParentFrame(mapC),
                 org.openide.util.NbBundle.getMessage(
                     CismapPlugin.class,
                     "CismapPlugin.saveLayout(String).JOptionPane.message"),    // NOI18N
@@ -5326,7 +5326,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 activeLayers.drop((DropTargetDropEvent)mde.getDte());
             } else {
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.dropOnMap(MapDnDEvent).JOptionPane.message")); // NOI18N
