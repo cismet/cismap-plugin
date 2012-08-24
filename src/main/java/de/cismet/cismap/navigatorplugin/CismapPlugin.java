@@ -196,6 +196,7 @@ import de.cismet.lookupoptions.gui.OptionsDialog;
 
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.JnlpTools;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
 
@@ -933,14 +934,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) { // NOI18N
             RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
         }
-
+        
+        // There is no way to adjust the Locale using the Jnlp file.
         try {
-            final String l = System.getProperty("user.language");           // NOI18N
-            final String c = System.getProperty("user.country");            // NOI18N
-            System.out.println("Locale=" + l + "_" + c);                    // NOI18N
-            Locale.setDefault(new Locale(l, c));
-        } catch (Exception e) {
-            log.warn("Error while changing the user language and country"); // NOI18N
+            JnlpTools.adjustDefaultLocale();
+
+            System.out.println("Using default Locale: " + Locale.getDefault());
+        } catch (final SecurityException e) {
+            System.err.println("You have insufficient rights to set the default locale."); // NOI18N
         }
 
         try {
@@ -3511,16 +3512,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3528,14 +3529,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -3592,7 +3593,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
