@@ -196,6 +196,7 @@ import de.cismet.lookupoptions.gui.OptionsDialog;
 
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.JnlpTools;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
 
@@ -934,13 +935,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
         }
 
+        // There is no way to adjust the Locale using the Jnlp file.
         try {
-            final String l = System.getProperty("user.language");           // NOI18N
-            final String c = System.getProperty("user.country");            // NOI18N
-            System.out.println("Locale=" + l + "_" + c);                    // NOI18N
-            Locale.setDefault(new Locale(l, c));
-        } catch (Exception e) {
-            log.warn("Error while changing the user language and country"); // NOI18N
+            JnlpTools.adjustDefaultLocale();
+
+            System.out.println("Using default Locale: " + Locale.getDefault());
+        } catch (final SecurityException e) {
+            System.err.println("You have insufficient rights to set the default locale."); // NOI18N
         }
 
         try {
@@ -4809,6 +4810,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     @Override
     public java.util.Collection getMenus() {
         return menues;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public CapabilityWidget getCapabilities() {
+        return capabilities;
     }
 
     /**
