@@ -185,6 +185,9 @@ import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.cismap.tools.gui.CidsBeanDropJPopupMenuButton;
 
+import de.cismet.ext.CExtContext;
+import de.cismet.ext.CExtManager;
+
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
 
@@ -289,7 +292,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final Map<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
     private final List<JMenuItem> menues = new ArrayList<JMenuItem>();
-    private final Map<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
+    private final Map<DefaultMetaTreeNode, Feature> featuresInMap = new HashMap<DefaultMetaTreeNode, Feature>();
     private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>();
     private String newGeometryMode = CreateGeometryListenerInterface.LINESTRING;
     private WFSFormFactory wfsFormFactory;
@@ -6211,7 +6214,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                         final SwingWorker<List<Feature>, Void> addToMapWorker = new SwingWorker<List<Feature>, Void>() {
 
-                                private Map<DefaultMetaTreeNode, CidsFeature> tmpFeaturesInMap = null;
+                                private Map<DefaultMetaTreeNode, Feature> tmpFeaturesInMap = null;
                                 private Map<Feature, DefaultMetaTreeNode> tmpFeaturesInMapReverse = null;
 
                                 @Override
@@ -6228,7 +6231,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                         }
                                     }
 
-                                    final List<Feature> v = new ArrayList<Feature>();
+                                    final List<Feature> features = new ArrayList<Feature>();
 
                                     for (final DefaultMetaTreeNode node : nodes) {
                                         final MetaObjectNode mon = ((ObjectTreeNode)node).getMetaObjectNode();
@@ -6238,45 +6241,64 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             mo = ((ObjectTreeNode)node).getMetaObject();
                                         }
 
-                                        final CidsFeature cidsFeature = new CidsFeature(mo);
-                                        cidsFeature.setEditable(editable);
+                                        final CExtContext context = new CExtContext(
+                                                CExtContext.CTX_REFERENCE,
+                                                mo.getBean());
+                                        // there always is a default
+                                        final MapVisualisationProvider mvp = CExtManager.getInstance()
+                                                    .getExtension(MapVisualisationProvider.class, context);
 
-                                        final List<Feature> allFeaturesToAdd = new ArrayList<Feature>(
-                                                FeatureGroups.expandAll(cidsFeature));
+                                        final Feature feature = mvp.getFeature(mo.getBean());
+                                        if (feature == null) {
+                                            // no map visualisation available, ignore
+                                            continue;
+                                        }
+
+                                        feature.setEditable(editable);
+
+                                        final List<Feature> allFeaturesToAdd;
+                                        if (feature instanceof FeatureGroup) {
+                                            final FeatureGroup fg = (FeatureGroup)feature;
+                                            allFeaturesToAdd = new ArrayList<Feature>(FeatureGroups.expandAll(fg));
+                                        } else {
+                                            allFeaturesToAdd = Arrays.asList(feature);
+                                        }
+
                                         if (log.isDebugEnabled()) {
                                             log.debug("allFeaturesToAdd:" + allFeaturesToAdd); // NOI18N
                                         }
 
-                                        if (!(featuresInMap.containsValue(cidsFeature))) {
-                                            v.addAll(allFeaturesToAdd);
+                                        if (!(featuresInMap.containsValue(feature))) {
+                                            features.addAll(allFeaturesToAdd);
 
                                             // node -> masterfeature
-                                            featuresInMap.put(node, cidsFeature);
+                                            featuresInMap.put(node, feature);
 
-                                            for (final Feature feature : allFeaturesToAdd) {
+                                            for (final Feature f : allFeaturesToAdd) {
                                                 // master and all subfeatures -> node
-                                                featuresInMapReverse.put(feature, node);
+                                                featuresInMapReverse.put(f, node);
                                             }
                                             if (log.isDebugEnabled()) {
                                                 log.debug("featuresInMap.put(node,cidsFeature):" + node + "," // NOI18Ns
-                                                            + cidsFeature);
+                                                            + feature);
                                             }
                                         }
                                     }
-                                    tmpFeaturesInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>(featuresInMap);
+                                    tmpFeaturesInMap = new HashMap<DefaultMetaTreeNode, Feature>(featuresInMap);
                                     tmpFeaturesInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>(
                                             featuresInMapReverse);
-                                    return v;
+
+                                    return features;
                                 }
 
                                 @Override
                                 protected void done() {
                                     try {
                                         showObjectsWaitDialog.setVisible(false);
-                                        final List<Feature> v = get();
+                                        final List<Feature> features = get();
 
                                         mapC.getFeatureLayer().setVisible(true);
-                                        mapC.getFeatureCollection().substituteFeatures(v);
+                                        mapC.getFeatureCollection().substituteFeatures(features);
                                         featuresInMap.clear();
                                         featuresInMap.putAll(tmpFeaturesInMap);
                                         featuresInMapReverse.clear();
