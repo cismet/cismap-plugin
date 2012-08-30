@@ -5,11 +5,6 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * CismapPlugin.java
- *
- * Created on 14. Februar 2006, 12:34
- */
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.plugin.context.PluginContext;
@@ -67,7 +62,6 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.applet.AppletContext;
@@ -118,13 +112,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javax.swing.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -191,11 +185,15 @@ import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.cismap.tools.gui.CidsBeanDropJPopupMenuButton;
 
+import de.cismet.ext.CExtContext;
+import de.cismet.ext.CExtManager;
+
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
 
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.JnlpTools;
 import de.cismet.tools.StaticDebuggingTools;
 import de.cismet.tools.StaticDecimalTools;
 
@@ -294,7 +292,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final Map<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
     private final List<JMenuItem> menues = new ArrayList<JMenuItem>();
-    private final Map<DefaultMetaTreeNode, CidsFeature> featuresInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>();
+    private final Map<DefaultMetaTreeNode, Feature> featuresInMap = new HashMap<DefaultMetaTreeNode, Feature>();
     private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>();
     private String newGeometryMode = CreateGeometryListenerInterface.LINESTRING;
     private WFSFormFactory wfsFormFactory;
@@ -705,7 +703,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                     @Override
                                     public void run() {
                                         final String s = (String)JOptionPane.showInputDialog(
-                                                null,
+                                                StaticSwingTools.getParentFrame(CismapPlugin.this.mapC),
                                                 "Geben Sie den Abstand des zu erzeugenden\n"       // NOI18N
                                                         + "Puffers der letzten Suchgeometrie an.", // NOI18N
                                                 "Puffer",                                          // NOI18N
@@ -768,7 +766,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             }
                                         } catch (final NumberFormatException ex) {
                                             JOptionPane.showMessageDialog(
-                                                null,
+                                                StaticSwingTools.getParentFrame(CismapPlugin.this.mapC),
                                                 "The given value was not a floating point value.!",
                                                 "Error",
                                                 JOptionPane.ERROR_MESSAGE); // NOI18N
@@ -841,7 +839,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenu menHistory;
     private javax.swing.JMenu menSearch;
     private javax.swing.JMenu menWindows;
-    private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniAddBookmark;
     private javax.swing.JMenuItem mniBack;
     private javax.swing.JMenuItem mniBookmarkManager;
@@ -934,13 +931,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
         }
 
+        // There is no way to adjust the Locale using the Jnlp file.
         try {
-            final String l = System.getProperty("user.language");           // NOI18N
-            final String c = System.getProperty("user.country");            // NOI18N
-            System.out.println("Locale=" + l + "_" + c);                    // NOI18N
-            Locale.setDefault(new Locale(l, c));
-        } catch (Exception e) {
-            log.warn("Error while changing the user language and country"); // NOI18N
+            JnlpTools.adjustDefaultLocale();
+
+            System.out.println("Using default Locale: " + Locale.getDefault());
+        } catch (final SecurityException e) {
+            System.err.println("You have insufficient rights to set the default locale."); // NOI18N
         }
 
         try {
@@ -2072,7 +2069,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menHelp = new javax.swing.JMenu();
         mniOnlineHelp = new javax.swing.JMenuItem();
         mniNews = new javax.swing.JMenuItem();
-        mniAbout = new javax.swing.JMenuItem();
 
         mnuConfigServer.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/de/cismet/cismap/commons/raster/wms/res/server.png"))); // NOI18N
@@ -2117,14 +2113,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
             });
 
@@ -3047,14 +3043,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
             });
 
@@ -3488,19 +3484,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         menHelp.add(mniNews);
 
-        mniAbout.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAbout.text")); // NOI18N
-        mniAbout.setToolTipText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.mniAbout.tooltip"));                                                                // NOI18N
-        mniAbout.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniAboutActionPerformed(evt);
-                }
-            });
-        menHelp.add(mniAbout);
-
         mnuBar.add(menHelp);
 
         setJMenuBar(mnuBar);
@@ -3539,7 +3522,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
-                    null,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniBufferSelectedGeom.Dialog.text"),                    // NOI18N
@@ -3583,7 +3566,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         } else {
             JOptionPane.showMessageDialog(
-                null,
+                StaticSwingTools.getParentFrame(mapC),
                 org.openide.util.NbBundle.getMessage(
                     CismapPlugin.class,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.noneselected"), // NOI18N
@@ -3730,7 +3713,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final double x = (c.getX1() + c.getX2()) / 2;
             final double y = (c.getY1() + c.getY2()) / 2;
             final String s = JOptionPane.showInputDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniGotoPointActionPerformed.JOptionPane.message"), // NOI18N
@@ -3756,7 +3739,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private void mniScaleActionPerformed(final java.awt.event.ActionEvent evt) {
         try {
             final String s = JOptionPane.showInputDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.scaleManually"),
                     ((int)mapC.getScaleDenominator())
                             + "");                               // NOI18N
@@ -4070,7 +4053,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 loadLayout(name);
             } else {
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.mniLoadLayoutActionPerformed(ActionEvent).JOptionPane.msg"),   // NOI18N
@@ -4816,6 +4799,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @return  DOCUMENT ME!
      */
+    public CapabilityWidget getCapabilities() {
+        return capabilities;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     @Override
     public String getId() {
         return "cismap"; // NOI18N
@@ -5168,7 +5160,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 if (isInit) {
                     JOptionPane.showMessageDialog(
-                        this,
+                        StaticSwingTools.getParentFrame(mapC),
                         org.openide.util.NbBundle.getMessage(
                             CismapPlugin.class,
                             "CismapPlugin.loadLayout(String).JOptionPane.message1"), // NOI18N
@@ -5179,7 +5171,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     setupDefaultLayout();
                 } else {
                     JOptionPane.showMessageDialog(
-                        this,
+                        StaticSwingTools.getParentFrame(mapC),
                         org.openide.util.NbBundle.getMessage(
                             CismapPlugin.class,
                             "CismapPlugin.loadLayout(String).JOptionPane.message2"), // NOI18N
@@ -5206,7 +5198,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             } else {
                 log.fatal("File does not exist)");                               // NOI18N
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
@@ -5252,7 +5244,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(
-                this,
+                StaticSwingTools.getParentFrame(mapC),
                 org.openide.util.NbBundle.getMessage(
                     CismapPlugin.class,
                     "CismapPlugin.saveLayout(String).JOptionPane.message"),    // NOI18N
@@ -5326,7 +5318,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 activeLayers.drop((DropTargetDropEvent)mde.getDte());
             } else {
                 JOptionPane.showMessageDialog(
-                    this,
+                    StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.dropOnMap(MapDnDEvent).JOptionPane.message")); // NOI18N
@@ -6222,7 +6214,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                         final SwingWorker<List<Feature>, Void> addToMapWorker = new SwingWorker<List<Feature>, Void>() {
 
-                                private Map<DefaultMetaTreeNode, CidsFeature> tmpFeaturesInMap = null;
+                                private Map<DefaultMetaTreeNode, Feature> tmpFeaturesInMap = null;
                                 private Map<Feature, DefaultMetaTreeNode> tmpFeaturesInMapReverse = null;
 
                                 @Override
@@ -6239,7 +6231,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                         }
                                     }
 
-                                    final List<Feature> v = new ArrayList<Feature>();
+                                    final List<Feature> features = new ArrayList<Feature>();
 
                                     for (final DefaultMetaTreeNode node : nodes) {
                                         final MetaObjectNode mon = ((ObjectTreeNode)node).getMetaObjectNode();
@@ -6249,45 +6241,64 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             mo = ((ObjectTreeNode)node).getMetaObject();
                                         }
 
-                                        final CidsFeature cidsFeature = new CidsFeature(mo);
-                                        cidsFeature.setEditable(editable);
+                                        final CExtContext context = new CExtContext(
+                                                CExtContext.CTX_REFERENCE,
+                                                mo.getBean());
+                                        // there always is a default
+                                        final MapVisualisationProvider mvp = CExtManager.getInstance()
+                                                    .getExtension(MapVisualisationProvider.class, context);
 
-                                        final List<Feature> allFeaturesToAdd = new ArrayList<Feature>(
-                                                FeatureGroups.expandAll(cidsFeature));
+                                        final Feature feature = mvp.getFeature(mo.getBean());
+                                        if (feature == null) {
+                                            // no map visualisation available, ignore
+                                            continue;
+                                        }
+
+                                        feature.setEditable(editable);
+
+                                        final List<Feature> allFeaturesToAdd;
+                                        if (feature instanceof FeatureGroup) {
+                                            final FeatureGroup fg = (FeatureGroup)feature;
+                                            allFeaturesToAdd = new ArrayList<Feature>(FeatureGroups.expandAll(fg));
+                                        } else {
+                                            allFeaturesToAdd = Arrays.asList(feature);
+                                        }
+
                                         if (log.isDebugEnabled()) {
                                             log.debug("allFeaturesToAdd:" + allFeaturesToAdd); // NOI18N
                                         }
 
-                                        if (!(featuresInMap.containsValue(cidsFeature))) {
-                                            v.addAll(allFeaturesToAdd);
+                                        if (!(featuresInMap.containsValue(feature))) {
+                                            features.addAll(allFeaturesToAdd);
 
                                             // node -> masterfeature
-                                            featuresInMap.put(node, cidsFeature);
+                                            featuresInMap.put(node, feature);
 
-                                            for (final Feature feature : allFeaturesToAdd) {
+                                            for (final Feature f : allFeaturesToAdd) {
                                                 // master and all subfeatures -> node
-                                                featuresInMapReverse.put(feature, node);
+                                                featuresInMapReverse.put(f, node);
                                             }
                                             if (log.isDebugEnabled()) {
                                                 log.debug("featuresInMap.put(node,cidsFeature):" + node + "," // NOI18Ns
-                                                            + cidsFeature);
+                                                            + feature);
                                             }
                                         }
                                     }
-                                    tmpFeaturesInMap = new HashMap<DefaultMetaTreeNode, CidsFeature>(featuresInMap);
+                                    tmpFeaturesInMap = new HashMap<DefaultMetaTreeNode, Feature>(featuresInMap);
                                     tmpFeaturesInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>(
                                             featuresInMapReverse);
-                                    return v;
+
+                                    return features;
                                 }
 
                                 @Override
                                 protected void done() {
                                     try {
                                         showObjectsWaitDialog.setVisible(false);
-                                        final List<Feature> v = get();
+                                        final List<Feature> features = get();
 
                                         mapC.getFeatureLayer().setVisible(true);
-                                        mapC.getFeatureCollection().substituteFeatures(v);
+                                        mapC.getFeatureCollection().substituteFeatures(features);
                                         featuresInMap.clear();
                                         featuresInMap.putAll(tmpFeaturesInMap);
                                         featuresInMapReverse.clear();

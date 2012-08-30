@@ -23,6 +23,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+import de.cismet.tools.gui.StaticSwingTools;
+
 /**
  * DOCUMENT ME!
  *
@@ -69,7 +71,7 @@ public class EditorPaneExample1 extends JFrame {
                         urlLabel.setToolTipText(pane.getText());
                     } catch (IOException e) {
                         JOptionPane.showMessageDialog(
-                            pane,
+                            StaticSwingTools.getParentFrame(pane),
                             new String[] { "Unable to open file", url },
                             "File Open Error", // NOI18N
                             JOptionPane.ERROR_MESSAGE);
