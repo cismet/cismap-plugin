@@ -354,7 +354,9 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         Geometry searchGeometry = null;
 
         if (chkHere.isSelected()) {
-            final BoundingBox boundingBox = CismapBroker.getInstance().getMappingComponent().getCurrentBoundingBox();
+            final BoundingBox boundingBox = CismapBroker.getInstance()
+                        .getMappingComponent()
+                        .getCurrentBoundingBoxFromCamera();
             final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getMappingComponent()
                             .getMappingModel().getSrs().getCode());
 

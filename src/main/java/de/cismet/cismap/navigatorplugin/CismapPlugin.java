@@ -3641,7 +3641,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        final BoundingBox bb = mapC.getCurrentBoundingBox();
+                        final BoundingBox bb = mapC.getCurrentBoundingBoxFromCamera();
                         final String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1="
                                     + bb.getX1()                                                       // NOI18N
                                     + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2(); // NOI18N
@@ -3709,7 +3709,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
 
         try {
-            final BoundingBox c = mapC.getCurrentBoundingBox();
+            final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
             final double x = (c.getX1() + c.getX2()) / 2;
             final double y = (c.getY1() + c.getY2()) / 2;
             final String s = JOptionPane.showInputDialog(
@@ -6367,34 +6367,34 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 final double[][] pointCoordinates = new double[4][2];
 
                 // x1 y1
-                pointCoordinates[0][0] = mapC.getCurrentBoundingBox().getX1();
-                pointCoordinates[0][1] = mapC.getCurrentBoundingBox().getY1();
+                pointCoordinates[0][0] = mapC.getCurrentBoundingBoxFromCamera().getX1();
+                pointCoordinates[0][1] = mapC.getCurrentBoundingBoxFromCamera().getY1();
 
                 // x2 y1
-                pointCoordinates[1][0] = mapC.getCurrentBoundingBox().getX2();
-                pointCoordinates[1][1] = mapC.getCurrentBoundingBox().getY1();
+                pointCoordinates[1][0] = mapC.getCurrentBoundingBoxFromCamera().getX2();
+                pointCoordinates[1][1] = mapC.getCurrentBoundingBoxFromCamera().getY1();
 
                 // x2 y2
-                pointCoordinates[2][0] = mapC.getCurrentBoundingBox().getX2();
-                pointCoordinates[2][1] = mapC.getCurrentBoundingBox().getY2();
+                pointCoordinates[2][0] = mapC.getCurrentBoundingBoxFromCamera().getX2();
+                pointCoordinates[2][1] = mapC.getCurrentBoundingBoxFromCamera().getY2();
 
                 // x1 y2
-                pointCoordinates[3][0] = mapC.getCurrentBoundingBox().getX1();
-                pointCoordinates[3][1] = mapC.getCurrentBoundingBox().getY2();
+                pointCoordinates[3][0] = mapC.getCurrentBoundingBoxFromCamera().getX1();
+                pointCoordinates[3][1] = mapC.getCurrentBoundingBoxFromCamera().getY2();
 
                 return pointCoordinates;
-            } else if (propertyName.equalsIgnoreCase("coordinateString")) { // NOI18N
-                return "("                                                  // NOI18N
-                            + mapC.getCurrentBoundingBox().getX1() + ","    // NOI18N
-                            + mapC.getCurrentBoundingBox().getX1() + ") ("  // NOI18N
-                            + mapC.getCurrentBoundingBox().getX2() + ","    // NOI18N
-                            + mapC.getCurrentBoundingBox().getX2() + ") ("  // NOI18N
-                            + mapC.getCurrentBoundingBox().getX2() + ","    // NOI18N
-                            + mapC.getCurrentBoundingBox().getY2() + ") ("  // NOI18N
-                            + mapC.getCurrentBoundingBox().getX1() + ","    // NOI18N
-                            + mapC.getCurrentBoundingBox().getY2() + ")";   // NOI18N
-            } else if (propertyName.equalsIgnoreCase("ogcFeatureString")) { // NOI18N
-                mapC.getCurrentBoundingBox().getGeometryFromTextCompatibleString();
+            } else if (propertyName.equalsIgnoreCase("coordinateString")) {          // NOI18N
+                return "("                                                           // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX1() + ","   // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX1() + ") (" // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX2() + ","   // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX2() + ") (" // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX2() + ","   // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getY2() + ") (" // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getX1() + ","   // NOI18N
+                            + mapC.getCurrentBoundingBoxFromCamera().getY2() + ")";  // NOI18N
+            } else if (propertyName.equalsIgnoreCase("ogcFeatureString")) {          // NOI18N
+                mapC.getCurrentBoundingBoxFromCamera().getGeometryFromTextCompatibleString();
             }
 
             return null;
