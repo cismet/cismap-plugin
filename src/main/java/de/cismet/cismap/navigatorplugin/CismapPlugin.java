@@ -1225,7 +1225,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.setFolder(".cismap" + dirExtension); // NOI18N
             configurationManager.addConfigurable(this);
 
-            configurationManager.addConfigurable(capabilities);
+//            configurationManager.addConfigurable(capabilities);
             configurationManager.addConfigurable(wfsFormFactory);
             configurationManager.addConfigurable(mapC);
             configurationManager.addConfigurable(activeLayers);
@@ -1235,6 +1235,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!plugin) {
                 configurationManager.addConfigurable(OptionsClient.getInstance());
             }
+
+            configurationManager.addConfigurable(capabilities);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -4679,13 +4681,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 });
         }
 
-        if (serverFirst) {
-            configurationManager.configureFromClasspath();
-        } else {
-            configurationManager.configure();
-        }
+        java.awt.EventQueue.invokeLater(new Runnable() {
 
-        setButtonSelectionAccordingToMappingComponent();
+                @Override
+                public void run() {
+                    if (serverFirst) {
+                        configurationManager.configureFromClasspath();
+                    } else {
+                        configurationManager.configure();
+                    }
+
+                    setButtonSelectionAccordingToMappingComponent();
+                }
+            });
+
+//        if (serverFirst) {
+//            configurationManager.configureFromClasspath();
+//        } else {
+//            configurationManager.configure();
+//        }
+//
+//        setButtonSelectionAccordingToMappingComponent();
     }
 
     /**
