@@ -801,6 +801,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JToggleButton cmdNewPolygon;
     private javax.swing.JToggleButton cmdNodeAdd;
     private javax.swing.JToggleButton cmdNodeMove;
+    private javax.swing.JToggleButton cmdNodeReflectGeometry;
     private javax.swing.JToggleButton cmdNodeRemove;
     private javax.swing.JToggleButton cmdNodeRotateGeometry;
     private javax.swing.JToggleButton cmdPan;
@@ -1224,7 +1225,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.setFolder(".cismap" + dirExtension); // NOI18N
             configurationManager.addConfigurable(this);
 
-//            configurationManager.addConfigurable(capabilities);
+            configurationManager.addConfigurable(capabilities);
             configurationManager.addConfigurable(wfsFormFactory);
             configurationManager.addConfigurable(mapC);
             configurationManager.addConfigurable(activeLayers);
@@ -1234,8 +1235,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!plugin) {
                 configurationManager.addConfigurable(OptionsClient.getInstance());
             }
-
-            configurationManager.addConfigurable(capabilities);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -1994,6 +1993,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdNodeAdd = new javax.swing.JToggleButton();
         cmdNodeRemove = new javax.swing.JToggleButton();
         cmdNodeRotateGeometry = new javax.swing.JToggleButton();
+        cmdNodeReflectGeometry = new javax.swing.JToggleButton();
         jSeparator5 = new javax.swing.JSeparator();
         cmdSnap = new javax.swing.JToggleButton();
         jSeparator11 = new javax.swing.JSeparator();
@@ -2115,14 +2115,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
             });
 
@@ -2634,6 +2634,25 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         tlbMain.add(cmdNodeRotateGeometry);
 
+        cmdGroupNodes.add(cmdNodeReflectGeometry);
+        cmdNodeReflectGeometry.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/mirror.png"))); // NOI18N
+        cmdNodeReflectGeometry.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.cmdNodeReflectGeometry.toolTipText"));                                             // NOI18N
+        cmdNodeReflectGeometry.setBorderPainted(false);
+        cmdNodeReflectGeometry.setFocusPainted(false);
+        cmdNodeReflectGeometry.setFocusable(false);
+        cmdNodeReflectGeometry.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cmdNodeReflectGeometry.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cmdNodeReflectGeometry.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    cmdNodeReflectGeometryActionPerformed(evt);
+                }
+            });
+        tlbMain.add(cmdNodeReflectGeometry);
+
         jSeparator5.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator5.setMaximumSize(new java.awt.Dimension(2, 32767));
         jSeparator5.setPreferredSize(new java.awt.Dimension(2, 10));
@@ -3045,14 +3064,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
             });
 
@@ -3578,6 +3597,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 JOptionPane.WARNING_MESSAGE);
         }
     }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+        EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    // mapC.setInteractionMode(MappingComponent.SELECT);
+                    mapC.setHandleInteractionMode(MappingComponent.REFLECT_POLYGON);
+                }
+            });
+    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4633,38 +4668,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         validateTree();
                     }
                 });
-        } catch (final Throwable t) {
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        } catch (final Exception e) {
+            EventQueue.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        log.warn("Error in validateTree()", t); // NOI18N
+                        log.warn("Error in validateTree()", e); // NOI18N
                         validateTree();
                     }
                 });
         }
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        if (serverFirst) {
+            configurationManager.configureFromClasspath();
+        } else {
+            configurationManager.configure();
+        }
 
-                @Override
-                public void run() {
-                    if (serverFirst) {
-                        configurationManager.configureFromClasspath();
-                    } else {
-                        configurationManager.configure();
-                    }
-
-                    setButtonSelectionAccordingToMappingComponent();
-                }
-            });
-
-//        if (serverFirst) {
-//            configurationManager.configureFromClasspath();
-//        } else {
-//            configurationManager.configure();
-//        }
-//
-//        setButtonSelectionAccordingToMappingComponent();
+        setButtonSelectionAccordingToMappingComponent();
     }
 
     /**
