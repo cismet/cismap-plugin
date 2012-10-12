@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -26,6 +27,8 @@ import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -1162,16 +1165,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             String fallBackConfig = null;
 
             try {
+                final User user = SessionManager.getSession().getUser();
+                final UserGroup userGroup = user.getUserGroup();
+
                 final String prefix = "cismapconfig:"; // NOI18N
-                final String username = Sirius.navigator.connection.SessionManager.getSession().getUser().getName();
-                final String groupname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getName();
-                final String domainname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getDomain();
+                final String username = user.getName();
+                final String groupname = userGroup.getName();
+                final String domainname = userGroup.getDomain();
 
                 // First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
@@ -3516,16 +3516,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3533,14 +3533,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -3597,14 +3597,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3613,7 +3613,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setHandleInteractionMode(MappingComponent.REFLECT_POLYGON);
                 }
             });
-    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
