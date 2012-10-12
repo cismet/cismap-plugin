@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -26,6 +27,8 @@ import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 import Sirius.server.search.builtin.GeoSearch;
 
 import com.jgoodies.looks.HeaderStyle;
@@ -1161,16 +1164,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             String fallBackConfig = null;
 
             try {
+                final UserGroup userGroup = SessionManager.getSession().getUser().getUserGroup();
+                log.fatal("check for all userGroups");
+                // TODO check for all userGroups
+
+                final User user = Sirius.navigator.connection.SessionManager.getSession().getUser();
                 final String prefix = "cismapconfig:"; // NOI18N
-                final String username = Sirius.navigator.connection.SessionManager.getSession().getUser().getName();
-                final String groupname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getName();
-                final String domainname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getDomain();
+                final String username = user.getName();
+                final String groupname = userGroup.getName();
+                final String domainname = userGroup.getDomain();
 
                 // First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
