@@ -14,7 +14,6 @@ import java.awt.Component;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 
 import de.cismet.cismap.commons.features.Feature;
@@ -30,7 +29,7 @@ import de.cismet.cismap.navigatorplugin.CidsFeature;
  * @author   thorsten.hell@cismet.de
  * @version  $Revision$, $Date$
  */
-public class FeatureComboBoxRenderer extends DefaultListCellRenderer implements ListCellRenderer {
+public class FeatureComboBoxRenderer extends DefaultListCellRenderer {
 
     //~ Instance fields --------------------------------------------------------
 

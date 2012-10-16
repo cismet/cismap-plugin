@@ -17,12 +17,13 @@ import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.log4j.Logger;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.awt.event.ActionEvent;
 
 import java.lang.reflect.Constructor;
 
@@ -40,7 +41,6 @@ import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 
 import de.cismet.cids.utils.ClassloadingHelper;
-import de.cismet.cids.utils.abstracts.AbstractCidsBeanAction;
 import de.cismet.cids.utils.interfaces.CidsBeanAction;
 import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
 
@@ -62,8 +62,6 @@ import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.tools.BlacklistClassloading;
 
-import de.cismet.tools.collections.TypeSafeCollections;
-
 /**
  * DOCUMENT ME!
  *
@@ -77,15 +75,16 @@ public class CidsFeature implements XStyledFeature,
     FeatureGroup,
     CidsBeanActionsProvider {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(CidsFeature.class);
+
     //~ Instance fields --------------------------------------------------------
 
     private Paint featureFG = Color.black;
     private Paint featureBG = Color.gray;
-//    private Paint featureHighFG = Color.blue;
-//    private Paint featureHighBG = Color.darkGray;
     private float featureTranslucency = 0.5f;
     private float featureBorder = 10.0f;
-//    private String[] renderFeatures = null;
     private String renderFeatureString = null;
     private String renderMultipleFeatures = null;
     private int renderAllFeatures = 1;
@@ -93,8 +92,6 @@ public class CidsFeature implements XStyledFeature,
     private Geometry geom;
     private MetaObject mo;
     private MetaClass mc;
-    // private MetaObjectNode mon;
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private boolean editable = false;
     private String namenszusatz = "";                                 // NOI18N
     private FeatureRenderer featureRenderer = null;
@@ -106,7 +103,8 @@ public class CidsFeature implements XStyledFeature,
     private Image pointSymbol = null;
     private double pointSymbolSweetSpotX = 0d;
     private double pointSymbolSweetSpotY = 0d;
-    private final Collection<Feature> subFeatures = TypeSafeCollections.newArrayList();
+    private final Collection<Feature> subFeatures = new ArrayList<Feature>();
+
     // CidsFeature is FeatureGroup + SubFeature
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
@@ -172,16 +170,13 @@ public class CidsFeature implements XStyledFeature,
     private CidsFeature(final MetaObject mo,
             final String localRenderFeatureString,
             final SubFeatureAwareFeatureRenderer rootRenderer) throws IllegalArgumentException {
-//        log.debug("New CIDSFEATURE");
-//        log.fatal(mo + " of " + mo.getMetaClass());
         this.parentFeatureRenderer = rootRenderer;
         try {
-//            this.mon = mon;
             this.mo = mo;
             this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
             initFeatureSettings();
-            // renderFeature auswerten
 
+            // evaluate renderFeature
             try {
                 if (localRenderFeatureString != null) {
                     renderFeatureString = localRenderFeatureString;
@@ -189,8 +184,8 @@ public class CidsFeature implements XStyledFeature,
 
                 if ((renderFeatureString != null) && !renderFeatureString.equals("")) { // NOI18N
                     final String[] renderFeatures = renderFeatureString.split(",");     // NOI18N
-                    if (log.isDebugEnabled()) {
-                        log.debug("renderFeatures: " + Arrays.asList(renderFeatures));  // NOI18N
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("renderFeatures: " + Arrays.asList(renderFeatures));  // NOI18N
                     }
                     if (renderFeatures.length == 1) {
                         final Object tester = mo.getBean().getProperty(renderFeatureString);
@@ -203,8 +198,8 @@ public class CidsFeature implements XStyledFeature,
                         } else if (tester instanceof CidsBean) {
                             geom = searchGeometryInMetaObject(((CidsBean)tester).getMetaObject());
                         } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Wert in Attribut RENDER_FEATURE = " + renderFeatureString
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Wert in Attribut RENDER_FEATURE = " + renderFeatureString
                                             + " hat zu keinem Geometrieobjekt gefuehrt.");
                             }
                         }
@@ -213,9 +208,9 @@ public class CidsFeature implements XStyledFeature,
                         createSubFeatures(renderFeatures);
                     }
                 }
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrie unter Attribut mit dem Namen: "
+            } catch (final Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("RENDER_FEATURE war fehlerhaft gesetzt. Geometrie unter Attribut mit dem Namen: "
                                 + renderFeatureString + " konnte nicht gefunden werden",
                         e);
                 }
@@ -226,9 +221,9 @@ public class CidsFeature implements XStyledFeature,
                 // Defaultfall: Es ist kein explizites Geometriefeld angegeben
                 geom = searchGeometryInMetaObject(mo);
             }
-        } catch (Throwable t) {
-            log.error("Error CidsFeature(MetaObjectNode mon)", t);                     // NOI18N
-            throw new IllegalArgumentException("Error on creating a CidsFeatures", t); // NOI18N
+        } catch (final Exception e) {
+            LOG.error("Error CidsFeature(MetaObjectNode mon)", e);                     // NOI18N
+            throw new IllegalArgumentException("Error on creating a CidsFeatures", e); // NOI18N
         }
     }
 
@@ -245,8 +240,10 @@ public class CidsFeature implements XStyledFeature,
         final Collection c = mo.getAttributesByType(Geometry.class, 1);
         for (final Object elem : c) {
             final ObjectAttribute oa = (ObjectAttribute)elem;
+
             return (Geometry)oa.getValue();
         }
+
         return null;
     }
 
@@ -260,6 +257,7 @@ public class CidsFeature implements XStyledFeature,
         if ((rootRenderer == null) && (featureRenderer instanceof SubFeatureAwareFeatureRenderer)) {
             rootRenderer = (SubFeatureAwareFeatureRenderer)featureRenderer;
         }
+
         for (String renderFeature : renderFeatures) {
             renderFeature = renderFeature.trim();
             final Object tester = mo.getBean().getProperty(renderFeature);
@@ -289,28 +287,21 @@ public class CidsFeature implements XStyledFeature,
                 subFeatures.add(result);
             } else {
                 // features without geom can cause trouble in other code parts -> we do not add them.
-                log.warn("Did not add Feature " + result + " because the geometry is null"); // NOI18N
+                LOG.warn("Did not add Feature " + result + " because the geometry is null"); // NOI18N
             }
         }
         geom = FeatureGroups.getEnclosingGeometry(subFeatures);
         hide(true);
-        if (log.isDebugEnabled()) {
-            log.debug("subFeatures: " + subFeatures);                                        // NOI18N
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("subFeatures: " + subFeatures); // NOI18N
         }
     }
 
     /**
-     * public CidsFeature(MetaObject mo, String property) throws IllegalArgumentException { log.debug("New
-     * CIDSFEATURE"); try { // this.mon = mon; this.mo = mo; this.mc = mo.getMetaClass(); initFeatureSettings(); //TODO
-     * noch irgendwie sinnvoll den namenszusatz f\u00FCllen Object test = mo.getBean().getProperty(property); if (test
-     * instanceof Geometry) { geom = (Geometry) test; if (geom == null) { throw new
-     * IllegalArgumentException("Geometry==null"); } } else { throw new
-     * IllegalArgumentException(java.util.ResourceBundle.getBundle("de/cismet/cismap/navigatorplugin/Bundle").getString("CidsFeature.Keine_Geometrie_im_�bergebenen_ObjectAttribute."));
-     * } } catch (Throwable t) { throw new IllegalArgumentException("Error while creating a CidsFeatures", t); } }.
-     *
-     * @throws  Throwable  DOCUMENT ME!
+     * DOCUMENT ME!
      */
-    private void initFeatureSettings() throws Throwable {
+    private void initFeatureSettings() {
         try {
             if (CismapBroker.getInstance().getMappingComponent().getMappingModel() instanceof ActiveLayerModel) {
                 if (((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel()).getSrs()
@@ -322,40 +313,46 @@ public class CidsFeature implements XStyledFeature,
         }
         try {
             renderFeatureString = getAttribValue("RENDER_FEATURE", mo, mc).toString();                            // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("RENDER_FEATURE=" + renderFeatureString);                                               // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("RENDER_FEATURE=" + renderFeatureString);                                               // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("RENDER_FEATURE corrupt or missing", t);                                                     // NOI18N
+        } catch (Exception t) {
+            LOG.info("RENDER_FEATURE corrupt or missing", t);                                                     // NOI18N
         }
         try {
             renderMultipleFeatures = getAttribValue("RENDER_MULTIPLE_FEATURES", mo, mc).toString();               // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("RENDER_MULTIPLE_FEATURES=" + renderMultipleFeatures);                                  // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("RENDER_MULTIPLE_FEATURES=" + renderMultipleFeatures);                                  // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("RENDER_MULTIPLE_FEATURES corrupt or missing", t);                                           // NOI18N
+        } catch (Exception t) {
+            LOG.info("RENDER_MULTIPLE_FEATURES corrupt or missing", t);                                           // NOI18N
         }
         try {
             renderAllFeatures = new Integer(getAttribValue("RENDER_ALL_FEATURES", mo, mc).toString()).intValue(); // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("renderAllFeatures=" + renderAllFeatures);                                              // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("renderAllFeatures=" + renderAllFeatures);                                              // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("RENDER_AKK_FEATURES corrupt or missing", t);                                                // NOI18N
+        } catch (Exception t) {
+            LOG.info("RENDER_AKK_FEATURES corrupt or missing", t);                                                // NOI18N
         }
         try {
-//            hiding = new Boolean(getAttribValue("HIDE_FEATURE", mo, mc).toString()).booleanValue();
-            if (log.isDebugEnabled()) {
-                log.debug("HIDE_FEATURE=" + hiding);                                                              // NOI18N
+            final Object hideFeature = getAttribValue("HIDE_FEATURE", mo, mc);                                    // NOI18N
+            if (hideFeature == null) {
+                hiding = false;
+            } else {
+                hiding = Boolean.valueOf(hideFeature.toString());
             }
-        } catch (Throwable t) {
-            log.info(("HIDE_FEATURE corrupt or missing"), t);                                                     // NOI18N
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("HIDE_FEATURE=" + hiding);             // NOI18N
+            }
+        } catch (final Exception e) {
+            LOG.info(("HIDE_FEATURE corrupt or missing"), e);    // NOI18N
         }
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("VERSUCHE FEATURERENDERER ZU SETZEN");                                                  // NOI18N
-            }                                                                                                     // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("VERSUCHE FEATURERENDERER ZU SETZEN"); // NOI18N
+            }                                                    // NOI18N
 
             final Class<?> clazz = ClassloadingHelper.getDynamicClass(
                     mc,
@@ -363,38 +360,38 @@ public class CidsFeature implements XStyledFeature,
             final Constructor<?> constructor = clazz.getConstructor();
             featureRenderer = (FeatureRenderer)constructor.newInstance();
             ((CustomCidsFeatureRenderer)featureRenderer).setMetaObject(mo);
-            if (log.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 // Method assignM=assigner.getMethod("assign", new Class[] {Connection.class,String[].class,
                 // UniversalContainer.class});
-                log.debug("HAT GEKLAPPT:" + clazz);                                                        // NOI18N
+                LOG.debug("HAT GEKLAPPT:" + clazz);                                                        // NOI18N
             }
-        } catch (Throwable t) {
-            log.warn(("FEATURE_RENDERER corrupt or missing"), t);                                          // NOI18N
+        } catch (Exception t) {
+            LOG.warn(("FEATURE_RENDERER corrupt or missing"), t);                                          // NOI18N
         }
         try {
             final float featureTranslucencyValue = new Float(getAttribValue("FEATURE_TRANSLUCENCY", mo, mc).toString())
                         .floatValue();                                                                     // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_TRANSLUCENCY=" + featureTranslucencyValue);                             // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_TRANSLUCENCY=" + featureTranslucencyValue);                             // NOI18N
             }
             featureTranslucency = featureTranslucencyValue;
-        } catch (Throwable t) {
-            log.info("FEATURE_TRANSLUCENCY corrupt or missing", t);                                        // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_TRANSLUCENCY corrupt or missing", t);                                        // NOI18N
         }
         try {
             setFeatureBorder(new Float(getAttribValue("FEATURE_BORDER", mo, mc).toString()).floatValue()); // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("featureBorder=" + featureBorder);                                               // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("featureBorder=" + featureBorder);                                               // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_BORDER corrupt or missing", t);                                              // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_BORDER corrupt or missing", t);                                              // NOI18N
             try {
                 setFeatureBorder(new Float(getAttribValue("UMGEBUNG", mo, mc).toString()).floatValue());   // NOI18N
-                if (log.isDebugEnabled()) {
-                    log.debug("featureBorder=" + featureBorder);                                           // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("featureBorder=" + featureBorder);                                           // NOI18N
                 }
-            } catch (Throwable tt) {
-                log.info("UMGEBUNG corrupt or missing", tt);                                               // NOI18N
+            } catch (Exception tt) {
+                LOG.info("UMGEBUNG corrupt or missing", tt);                                               // NOI18N
             }
         }
         try {
@@ -404,11 +401,11 @@ public class CidsFeature implements XStyledFeature,
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
             featureFG = new Color(r, g, b);
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_FG corrupt or missing", t);                                                  // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_FG corrupt or missing", t);                                                  // NOI18N
         }
         try {
             final String s = getAttribValue("FEATURE_BG", mo, mc).toString();                              // NOI18N
@@ -417,11 +414,11 @@ public class CidsFeature implements XStyledFeature,
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
             featureBG = new Color(r, g, b);
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_BG corrupt or missing", t);                                                  // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_BG corrupt or missing", t);                                                  // NOI18N
         }
         try {
             final String s = getAttribValue("FEATURE_HIGH_FG", mo, mc).toString();                         // NOI18N
@@ -429,12 +426,12 @@ public class CidsFeature implements XStyledFeature,
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
             }
 //            featureHighFG = new Color(r, g, b);
-        } catch (Throwable t) {
-            log.info("FEATURE_HIGH_FG corrupt or missing", t);                                             // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_HIGH_FG corrupt or missing", t);                                             // NOI18N
         }
         try {
             final String s = getAttribValue("FEATURE_HIGH_BG", mo, mc).toString();                         // NOI18N
@@ -443,38 +440,38 @@ public class CidsFeature implements XStyledFeature,
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
 //            featureHighFG = new Color(r, g, b);
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_HIGH_BG corrupt or missing", t);                                             // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_HIGH_BG corrupt or missing", t);                                             // NOI18N
         }
         try {
             final String path = getAttribValue("FEATURE_POINT_SYMBOL", mo, mc).toString();                 // NOI18N
             pointSymbol = new javax.swing.ImageIcon(getClass().getResource(path)).getImage();
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_POINT_SYMBOL=" + path);                                                 // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_POINT_SYMBOL=" + path);                                                 // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL Error", t);                                                     // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_POINT_SYMBOL Error", t);                                                     // NOI18N
         }
         try {
             final String x = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_X", mo, mc).toString();        // NOI18N
             pointSymbolSweetSpotX = new Double(x).doubleValue();
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);                                        // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);                                        // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);                                         // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);                                         // NOI18N
         }
         try {
             final String y = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_Y", mo, mc).toString();        // NOI18N
             pointSymbolSweetSpotY = new Double(y).doubleValue();
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);                                        // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);                                        // NOI18N
             }
-        } catch (Throwable t) {
-            log.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);                                         // NOI18N
+        } catch (Exception t) {
+            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);                                         // NOI18N
         }
         try {
             final String supportingRasterService = String.valueOf(getAttribValue(
@@ -495,8 +492,8 @@ public class CidsFeature implements XStyledFeature,
                     mo,
                     mc);                                                                                       // NOI18N
             final String serviceName = (String)getAttribValue("FEATURESUPPORTINGRASTERSERVICE_NAME", mo, mc);  // NOI18N
-            if (log.isDebugEnabled()) {
-                log.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);                   // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("FEATURESUPPORTINGRASTERSERVICE_TYPE=" + supportingRasterService);                   // NOI18N
             }
             final Class c = BlacklistClassloading.forName(supportingRasterService);
             if (supportingRasterServiceUrl != null) {
@@ -509,15 +506,15 @@ public class CidsFeature implements XStyledFeature,
                 this.featureAwareRasterService = (FeatureAwareRasterService)constructor.newInstance();
             }
             featureAwareRasterService.setName(serviceName);
-        } catch (Throwable t) {
-            if (log.isDebugEnabled()) {
-                log.debug("Error while creating the FeaureSupportingRasterService, or it does not exist.", t); // NOI18N
+        } catch (Exception t) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error while creating the FeaureSupportingRasterService, or it does not exist.", t); // NOI18N
             }
         }
 
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("VERSUCHE OBJECTACTIONSPROVIDER ZU SETZEN"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("VERSUCHE OBJECTACTIONSPROVIDER ZU SETZEN"); // NOI18N
             }                                                          // NOI18N
 
             final Class<?> clazz = ClassloadingHelper.getDynamicClass(
@@ -530,17 +527,17 @@ public class CidsFeature implements XStyledFeature,
                 for (final CidsBeanAction cba : cidsBeanActions) {
                     cba.setCidsBean(getMetaObject().getBean());
                 }
-                if (log.isDebugEnabled()) {
-                    log.debug("HAT GEKLAPPT:" + clazz);              // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("HAT GEKLAPPT:" + clazz);              // NOI18N
                 }
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("ACTION_PROVIDER corrupt or missing"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("ACTION_PROVIDER corrupt or missing"); // NOI18N
                 }
             }
-        } catch (Throwable t) {
-            if (log.isDebugEnabled()) {
-                log.debug(("ACTION_PROVIDER corrupt or missing"), t); // NOI18N
+        } catch (Exception t) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(("ACTION_PROVIDER corrupt or missing"), t); // NOI18N
             }
         }
     }
@@ -553,13 +550,21 @@ public class CidsFeature implements XStyledFeature,
      * @param   mc    DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
      */
     private Object getAttribValue(final String name, final MetaObject mo, final MetaClass mc) {
+        if ((name == null) || (mo == null) || (mc == null)) {
+            throw new IllegalArgumentException("no argument must be null"); // NOI18N
+        }
+
         final Collection coa = mo.getAttributeByName(name, 1);
         final Collection cca = mc.getAttributeByName(name);
-        if (log.isDebugEnabled()) {
-            log.debug("mc.getAttributeByName(" + name + ")=" + cca); // NOI18N
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("mc.getAttributeByName(" + name + ")=" + cca); // NOI18N
         }
+
         if (coa.size() == 1) {
             final ObjectAttribute oa = (ObjectAttribute)(coa.toArray()[0]);
             return oa.getValue();
@@ -589,7 +594,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public Stroke getLineStyle() {
-        if (subFeatures.size() == 0) {
+        if (subFeatures.isEmpty()) {
             if (parentFeatureRenderer != null) {
                 return parentFeatureRenderer.getLineStyle(this);
             } else if (featureRenderer != null) {
@@ -601,7 +606,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public Paint getLinePaint() {
-        if (subFeatures.size() == 0) {
+        if (subFeatures.isEmpty()) {
             if (parentFeatureRenderer != null) {
                 return parentFeatureRenderer.getLinePaint(this);
             } else if ((featureRenderer != null) && (featureRenderer.getLinePaint() != null)) {
@@ -621,7 +626,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public Paint getFillingPaint() {
-        if (subFeatures.size() == 0) {
+        if (subFeatures.isEmpty()) {
             if (parentFeatureRenderer != null) {
                 return parentFeatureRenderer.getFillingStyle(this);
             } else if ((featureRenderer != null) && (featureRenderer.getFillingStyle() != null)) {
@@ -636,7 +641,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public boolean canBeSelected() {
-        return subFeatures.size() == 0;
+        return subFeatures.isEmpty();
     }
 
     @Override
@@ -654,8 +659,8 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public String getName() {
-        if (log.isDebugEnabled()) {
-            log.debug("getName() von " + mo);                 // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getName() von " + mo);                 // NOI18N
         }
         try {
             if ((featureRenderer instanceof CustomCidsFeatureRenderer)
@@ -664,16 +669,16 @@ public class CidsFeature implements XStyledFeature,
             } else {
                 return mo.toString() + namenszusatz;
             }
-        } catch (Throwable t) {
-            log.info("Error while identifying the name.", t); // NOI18N
+        } catch (Exception t) {
+            LOG.info("Error while identifying the name.", t); // NOI18N
             return null;
         }
     }
 
     @Override
     public JComponent getInfoComponent(final Refreshable refresh) {
-        if (log.isDebugEnabled()) {
-            log.debug("getInfoComponent"); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getInfoComponent"); // NOI18N
         }
         if (parentFeatureRenderer != null) {
             return parentFeatureRenderer.getInfoComponent(refresh, this);
@@ -689,19 +694,19 @@ public class CidsFeature implements XStyledFeature,
         ImageIcon ii = null;
         try {
             ii = new ImageIcon(mc.getObjectIconData());
-        } catch (Throwable t) {
-            log.info("Error on reading icon data. Trying to load class icon.", t); // NOI18N
+        } catch (Exception t) {
+            LOG.info("Error on reading icon data. Trying to load class icon.", t); // NOI18N
             try {
                 ii = new ImageIcon(mc.getIconData());
-            } catch (Throwable tt) {
-                log.info("Error on reading icon data.", tt);                       // NOI18N
+            } catch (Exception tt) {
+                LOG.info("Error on reading icon data.", tt);                       // NOI18N
 
                 ii = null;
             }
             ii = null;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("getIconImage:" + ii); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getIconImage:" + ii); // NOI18N
         }
         return ii;
     }
@@ -757,7 +762,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public boolean isEditable() {
-        return editable && (subFeatures.size() == 0);
+        return editable && (subFeatures.isEmpty());
     }
 
     @Override
@@ -798,7 +803,6 @@ public class CidsFeature implements XStyledFeature,
     public int hashCode() {
         int retValue;
         if (mo != null) {
-//            retValue = mo.hashCode();
             final String thisString = mo.getID() + "@" + mo.getMetaClass().getID() + "(" + this.renderFeatureString
                         + ")";
             retValue = thisString.hashCode();
@@ -818,12 +822,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public boolean isHidden() {
-//        if (subFeatures.size() == 0) {
-//            return hiding;
-//        } else {
-//            return true;
-//        }
-        return false;
+        return hiding;
     }
 
     @Override
@@ -833,19 +832,6 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public FeatureAwareRasterService getSupportingRasterService() {
-//        if (featureAwareRasterService == null) {
-//            try {
-//                String tablename = this.getMetaClass().getTableName();
-//                String domain = this.getMetaClass().getDomain();
-//                String lazyClassName = "de.cismet.cids.custom.featuresupportingrasterservices." +
-//                        domain.toLowerCase() + "." + tablename.substring(0, 1).toUpperCase() +
-//                        tablename.substring(1).toLowerCase() + "FeatureSupportingRasterService";
-//                Class lazyClass = BlacklistClassloading.forName(lazyClassName);
-//                Constructor constructor = lazyClass.getConstructor();
-//                featureAwareRasterService = (FeatureAwareRasterService) constructor.newInstance();
-//            } catch (Throwable t) {
-//            }
-//        }
         return featureAwareRasterService;
     }
 
@@ -881,11 +867,11 @@ public class CidsFeature implements XStyledFeature,
                     && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
                 final String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length()); // NOI18N
-                log.fatal("attrField" + attrField);                                                                    // NOI18N
+                LOG.fatal("attrField" + attrField);                                                                    // NOI18N
                 final String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {
-                log.error("AttrFieldProblem", e);                                                                      // NOI18N
+                LOG.error("AttrFieldProblem", e);                                                                      // NOI18N
             }
         }
         return supportingRasterServiceRasterLayerName;
@@ -893,8 +879,8 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public Object clone() {
-        if (log.isDebugEnabled()) {
-            log.debug("CLONE"); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("CLONE"); // NOI18N
         }
         try {
             return super.clone();
@@ -922,7 +908,7 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public int getLineWidth() {
-        if (subFeatures.size() == 0) {
+        if (subFeatures.isEmpty()) {
             if ((featureRenderer != null) && (featureRenderer.getLineStyle() != null)
                         && (featureRenderer.getLineStyle() instanceof BasicStroke)) {
                 return (int)((BasicStroke)featureRenderer.getLineStyle()).getLineWidth();
@@ -973,19 +959,6 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public void setParentFeature(final FeatureGroup parentFeature) {
         this.parentFeature = parentFeature;
-//        if (parentFeature instanceof CidsFeature) {
-//            CidsFeature cidsParent = (CidsFeature) parentFeature;
-//            if (cidsParent.getParentFeatureRenderer() != null) {
-//                //obersten parent feature renderer durchreichen
-//                parentFeatureRenderer = cidsParent.getParentFeatureRenderer();
-//            } else {
-//                //erstmals parent feature renderer gefunden
-//                FeatureRenderer fr = cidsParent.getFeatureRenderer();
-//                if (fr instanceof SubFeatureAwareFeatureRenderer) {
-//                    parentFeatureRenderer = (SubFeatureAwareFeatureRenderer) fr;
-//                }
-//            }
-//        }
     }
 
     /**
