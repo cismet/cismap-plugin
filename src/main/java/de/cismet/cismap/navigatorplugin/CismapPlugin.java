@@ -1170,8 +1170,22 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 final String prefix = "cismapconfig:"; // NOI18N
                 final String username = user.getName();
-                final String groupname = userGroup.getName();
-                final String domainname = userGroup.getDomain();
+                final String groupname;
+                final String domainname;
+                if (userGroup != null) {
+                     groupname = userGroup.getName();
+                     domainname = userGroup.getDomain();
+                } else {
+                    String tmpGroupname = null;
+                    String tmpDomainname = null;
+                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                        tmpGroupname = potentialUserGroup.getName();
+                        tmpDomainname = potentialUserGroup.getDomain();
+                        break;
+                    }
+                    groupname = tmpGroupname;
+                    domainname = tmpDomainname;
+                }
 
                 // First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
