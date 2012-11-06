@@ -4666,7 +4666,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        validateTree();
+                        synchronized (getTreeLock()) {
+                            validateTree();
+                        }
                     }
                 });
         } catch (final Exception e) {
@@ -4675,7 +4677,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     @Override
                     public void run() {
                         log.warn("Error in validateTree()", e); // NOI18N
-                        validateTree();
+                        synchronized (getTreeLock()) {
+                            validateTree();
+                        }
                     }
                 });
         }
