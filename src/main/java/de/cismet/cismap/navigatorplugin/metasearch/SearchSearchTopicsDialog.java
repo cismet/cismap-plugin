@@ -16,12 +16,11 @@ import Sirius.navigator.search.dynamic.SearchControlListener;
 import Sirius.navigator.search.dynamic.SearchControlPanel;
 import Sirius.navigator.ui.ComponentRegistry;
 
-import Sirius.server.search.CidsServerSearch;
-import Sirius.server.search.builtin.FullTextSearch;
-
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -32,6 +31,9 @@ import java.util.Collection;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+import de.cismet.cids.server.search.builtin.FullTextSearch;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
@@ -343,7 +345,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     @Override
-    public CidsServerSearch assembleSearch() {
+    public MetaObjectNodeServerSearch assembleSearch() {
         final Collection<String> selectedSearchClasses = MetaSearch.instance().getSelectedSearchClassesForQuery();
 
         LOG.info("Starting search for '" + txtSearchParameter.getText() + "' in '" + selectedSearchClasses
@@ -365,9 +367,11 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
             searchGeometry.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
         }
 
-        fullTextSearch = new FullTextSearch(txtSearchParameter.getText(),
-                chkCaseSensitive.isSelected(),
-                searchGeometry);
+        // default search is always present
+        fullTextSearch = Lookup.getDefault().lookup(FullTextSearch.class);
+        fullTextSearch.setSearchText(txtSearchParameter.getText());
+        fullTextSearch.setCaseSensitive(chkCaseSensitive.isSelected());
+        fullTextSearch.setGeometry(searchGeometry);
         fullTextSearch.setValidClassesFromStrings(selectedSearchClasses);
 
         return fullTextSearch;

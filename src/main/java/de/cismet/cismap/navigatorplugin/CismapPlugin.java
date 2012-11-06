@@ -26,7 +26,6 @@ import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.search.builtin.GeoSearch;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -133,6 +132,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+
+import de.cismet.cids.server.search.builtin.GeoSearch;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
@@ -3515,16 +3516,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3532,14 +3533,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -3596,14 +3597,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3612,7 +3613,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setHandleInteractionMode(MappingComponent.REFLECT_POLYGON);
                 }
             });
-    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4678,7 +4679,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     }
                 });
         }
-        
+
         if (serverFirst) {
             configurationManager.configureFromClasspath();
         } else {
@@ -5316,7 +5317,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         // Damits auch mit -1 funzt:
         transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
-        final GeoSearch gs = new GeoSearch(transformed);
+        // there is always the default implementation
+        final GeoSearch gs = Lookup.getDefault().lookup(GeoSearch.class);
+        gs.setGeometry(geom);
         gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
         CidsSearchExecutor.searchAndDisplayResultsWithDialog(gs);
     }
