@@ -26,7 +26,6 @@ import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.search.builtin.GeoSearch;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -133,6 +132,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+
+import de.cismet.cids.server.search.builtin.GeoSearch;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
@@ -5320,7 +5321,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         // Damits auch mit -1 funzt:
         transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
-        final GeoSearch gs = new GeoSearch(transformed);
+        // there is always the default implementation
+        final GeoSearch gs = Lookup.getDefault().lookup(GeoSearch.class);
+        gs.setGeometry(geom);
         gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
         CidsSearchExecutor.searchAndDisplayResultsWithDialog(gs);
     }
