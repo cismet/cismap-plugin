@@ -5323,7 +5323,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         // there is always the default implementation
         final GeoSearch gs = Lookup.getDefault().lookup(GeoSearch.class);
-        gs.setGeometry(geom);
+        gs.setGeometry(transformed);
         gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
         CidsSearchExecutor.searchAndDisplayResultsWithDialog(gs);
     }
