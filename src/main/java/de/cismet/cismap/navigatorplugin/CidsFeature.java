@@ -60,7 +60,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
-import de.cismet.tools.BlacklistClassloading;
+import de.cismet.commons.classloading.BlacklistClassloading;
 
 /**
  * DOCUMENT ME!
