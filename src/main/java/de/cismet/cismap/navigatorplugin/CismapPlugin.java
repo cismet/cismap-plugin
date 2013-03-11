@@ -328,9 +328,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private Element cismapPluginUIPreferences;
     private List<String> windows2skip;
     private SearchProgressDialog searchProgressDialog;
-
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
-
     private Action searchMenuSelectedAction = new AbstractAction() {
 
             @Override
@@ -1497,7 +1495,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 mniClose.setVisible(false);
                 pluginMethods.put(showObjectsMethod.getId(), showObjectsMethod);
-                appletContext = context.getEnvironment().getAppletContext();
 
                 // TODO What the hell is this?
                 this.context.getMetadata().addMetaNodeSelectionListener(new NodeChangeListener());
@@ -1880,12 +1877,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     private void openUrlInExternalBrowser(final String url) {
         try {
-            if (appletContext == null) {
-                de.cismet.tools.BrowserLauncher.openURL(url);
-            } else {
-                final java.net.URL u = new java.net.URL(url);
-                appletContext.showDocument(u, "cismetBrowser");         // NOI18N
-            }
+            de.cismet.tools.BrowserLauncher.openURL(url);
         } catch (final Exception e) {
             log.warn("Error while opening: " + url + ". Try again", e); // NOI18N
 
@@ -6493,6 +6485,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
     }
 }
+
 /**
  * DOCUMENT ME!
  *
