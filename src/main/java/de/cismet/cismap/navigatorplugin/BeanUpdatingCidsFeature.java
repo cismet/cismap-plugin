@@ -76,7 +76,11 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
     public void setGeometry(final Geometry geom) {
         super.setGeometry(geom);
         try {
-            cidsBean.setProperty(geoPropertyName, geom);
+            final Geometry oldGeom = (Geometry)cidsBean.getProperty(geoPropertyName);
+            // oldGeom !(===) geom
+            if (!((oldGeom == geom) || ((oldGeom != null) && oldGeom.equals(geom)))) {
+                cidsBean.setProperty(geoPropertyName, geom);
+            }
         } catch (Exception e) {
             log.error("error while storing updated geometry in bean", e);
         }
