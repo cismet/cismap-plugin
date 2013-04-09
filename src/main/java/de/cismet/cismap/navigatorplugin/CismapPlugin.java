@@ -3601,8 +3601,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 @Override
                 public void run() {
-                    // mapC.setInteractionMode(MappingComponent.SELECT);
                     mapC.setHandleInteractionMode(MappingComponent.REFLECT_POLYGON);
+                    mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
     } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
@@ -4552,8 +4552,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 @Override
                 public void run() {
-                    // mapC.setInteractionMode(MappingComponent.SELECT);
                     mapC.setHandleInteractionMode(MappingComponent.ROTATE_POLYGON);
+                    mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
     }
@@ -5471,6 +5471,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!cmdNodeRemove.isSelected()) {
                 cmdNodeRotateGeometry.setSelected(true);
             }
+        } else if (mapC.getHandleInteractionMode().equals(MappingComponent.REFLECT_POLYGON)) {
+            if (!cmdNodeRemove.isSelected()) {
+                cmdNodeReflectGeometry.setSelected(true);
+            }
+        }
+
+        if (!mapC.getInteractionMode().equals(MappingComponent.SELECT)) {
+            cmdGroupNodes.clearSelection();
         }
 
         if (mapC.isSnappingEnabled()) {
