@@ -81,10 +81,10 @@ public class GotoPointDialog extends javax.swing.JDialog {
                 if (instance == null) {
                     instance = new GotoPointDialog();
                 }
-                instance.visualizePosition();
-                instance.setTfCoordinatesTextToCenterOfCamera();
             }
         }
+        instance.visualizePosition();
+        instance.setTfCoordinatesTextToCenterOfCamera();
         return instance;
     }
 
@@ -208,7 +208,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPositionActionPerformed
+    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnPositionActionPerformed
         try {
             final String[] sa = tfCoordinates.getText().split(",");                 // NOI18N
             final Double gotoX = new Double(sa[0]);
@@ -221,25 +221,25 @@ public class GotoPointDialog extends javax.swing.JDialog {
         } finally {
             setVisible(false);
         }
-    }//GEN-LAST:event_btnPositionActionPerformed
+    }                                                                               //GEN-LAST:event_btnPositionActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCancelActionPerformed
         setVisible(false);
-    }//GEN-LAST:event_btnCancelActionPerformed
+    }                                                                             //GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbMarkPointItemStateChanged(final java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbMarkPointItemStateChanged
+    private void cbMarkPointItemStateChanged(final java.awt.event.ItemEvent evt) { //GEN-FIRST:event_cbMarkPointItemStateChanged
         visualizePosition();
-    }//GEN-LAST:event_cbMarkPointItemStateChanged
+    }                                                                              //GEN-LAST:event_cbMarkPointItemStateChanged
 
     /**
      * DOCUMENT ME!
@@ -278,7 +278,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
             final double screenx = mapC.getWtst().getScreenX(x);
             final double screeny = mapC.getWtst().getScreenY(y);
             pMark.setOffset(screenx, screeny);
-            
+
             mapC.rescaleStickyNodes();
             pMark.setVisible(true);
         } else {
