@@ -118,9 +118,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.tfCoordinates.text")); // NOI18N
+        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.tfCoordinates.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -130,28 +128,20 @@ public class GotoPointDialog extends javax.swing.JDialog {
         jPanel1.add(tfCoordinates, gridBagConstraints);
 
         cbMarkPoint.setSelected(true);
-        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.cbMarkPoint.text"));        // NOI18N
-        cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
+        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.text")); // NOI18N
+        cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
         cbMarkPoint.addItemListener(new java.awt.event.ItemListener() {
-
-                @Override
-                public void itemStateChanged(final java.awt.event.ItemEvent evt) {
-                    cbMarkPointItemStateChanged(evt);
-                }
-            });
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbMarkPointItemStateChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(cbMarkPoint, gridBagConstraints);
 
-        lblMessage.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.lblMessage.text")); // NOI18N
+        lblMessage.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblMessage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -162,11 +152,9 @@ public class GotoPointDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(lblMessage, gridBagConstraints);
 
-        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/markPoint.png")));                  // NOI18N
+        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/markPoint.png"))); // NOI18N
         lblIcon.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblIcon.text")); // NOI18N
-        lblIcon.setToolTipText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.cbMarkPoint.toolTipText"));                                                          // NOI18N
+        lblIcon.setToolTipText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
@@ -185,30 +173,22 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
 
-        btnPosition.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.btnPosition.text")); // NOI18N
+        btnPosition.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnPosition.text")); // NOI18N
         btnPosition.setMaximumSize(new java.awt.Dimension(100, 25));
         btnPosition.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    btnPositionActionPerformed(evt);
-                }
-            });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPositionActionPerformed(evt);
+            }
+        });
         jPanel2.add(btnPosition);
 
-        btnCancel.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.btnCancel.text")); // NOI18N
+        btnCancel.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnCancel.text")); // NOI18N
         btnCancel.setMaximumSize(new java.awt.Dimension(90, 25));
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    btnCancelActionPerformed(evt);
-                }
-            });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
         jPanel2.add(btnCancel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -223,18 +203,18 @@ public class GotoPointDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 6, 10);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         pack();
-    } // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnPositionActionPerformed
+    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPositionActionPerformed
         try {
             final String[] sa = tfCoordinates.getText().split(",");                 // NOI18N
             final Double gotoX = new Double(sa[0]);
@@ -247,25 +227,25 @@ public class GotoPointDialog extends javax.swing.JDialog {
         } finally {
             setVisible(false);
         }
-    }                                                                               //GEN-LAST:event_btnPositionActionPerformed
+    }//GEN-LAST:event_btnPositionActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         setVisible(false);
-    }                                                                             //GEN-LAST:event_btnCancelActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbMarkPointItemStateChanged(final java.awt.event.ItemEvent evt) { //GEN-FIRST:event_cbMarkPointItemStateChanged
+    private void cbMarkPointItemStateChanged(final java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbMarkPointItemStateChanged
         visualizePosition();
-    }                                                                              //GEN-LAST:event_cbMarkPointItemStateChanged
+    }//GEN-LAST:event_cbMarkPointItemStateChanged
 
     /**
      * DOCUMENT ME!
