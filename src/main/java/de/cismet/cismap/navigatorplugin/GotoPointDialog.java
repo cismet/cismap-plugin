@@ -11,6 +11,8 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import javax.swing.Icon;
@@ -35,9 +37,13 @@ import de.cismet.tools.gui.StaticSwingTools;
  */
 public class GotoPointDialog extends javax.swing.JDialog {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static volatile GotoPointDialog instance = null;
+
     //~ Instance fields --------------------------------------------------------
 
-    private MappingComponent mapC;
+    private MappingComponent mapC = CismapBroker.getInstance().getMappingComponent();
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private ImageIcon mark = new javax.swing.ImageIcon(getClass().getResource(
                 "/de/cismet/cismap/commons/gui/res/markPoint.png")); // NOI18N
@@ -56,21 +62,31 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form GotoPointDialog.
-     *
-     * @param  mapC   DOCUMENT ME!
-     * @param  modal  DOCUMENT ME!
      */
-    public GotoPointDialog(final MappingComponent mapC, final boolean modal) {
-        super(StaticSwingTools.getParentFrame(mapC), modal);
-        this.mapC = mapC;
+    private GotoPointDialog() {
+        super();
         initComponents();
         lblIcon.setIcon(mark);
         initTfCoordinatesText();
-        setLocationRelativeTo(StaticSwingTools.getParentFrame(mapC));
-        setVisible(true);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static GotoPointDialog getInstance() {
+        if (instance == null) {
+            synchronized (GotoPointDialog.class) {
+                if (instance == null) {
+                    instance = new GotoPointDialog();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
@@ -79,6 +95,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         tfCoordinates = new javax.swing.JTextField();
         btnPosition = new javax.swing.JButton();
@@ -88,75 +105,103 @@ public class GotoPointDialog extends javax.swing.JDialog {
         lblIcon = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.title")); // NOI18N
+        setIconImage(null);
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.tfCoordinates.text")); // NOI18N
+        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.tfCoordinates.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 233;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(tfCoordinates, gridBagConstraints);
 
-        btnPosition.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnPosition.text")); // NOI18N
+        btnPosition.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.btnPosition.text")); // NOI18N
         btnPosition.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPositionActionPerformed(evt);
-            }
-        });
 
-        btnCancel.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnCancel.text")); // NOI18N
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    btnPositionActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(btnPosition, gridBagConstraints);
+
+        btnCancel.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.btnCancel.text")); // NOI18N
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
-            }
-        });
 
-        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.text")); // NOI18N
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    btnCancelActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(btnCancel, gridBagConstraints);
 
-        lblMessage.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblMessage.text")); // NOI18N
+        cbMarkPoint.setSelected(true);
+        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.text"));        // NOI18N
+        cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(cbMarkPoint, gridBagConstraints);
+
+        lblMessage.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.lblMessage.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(lblMessage, gridBagConstraints);
 
         lblIcon.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblIcon.text")); // NOI18N
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap(47, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnPosition)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(tfCoordinates)
-                            .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbMarkPoint)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblMessage)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(lblIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cbMarkPoint, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(tfCoordinates, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnPosition)
-                    .addComponent(btnCancel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        lblIcon.setToolTipText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.toolTipText"));                                                          // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 19;
+        gridBagConstraints.ipady = 21;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        getContentPane().add(lblIcon, gridBagConstraints);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    } // </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPositionActionPerformed
+    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnPositionActionPerformed
         try {
             final String[] sa = tfCoordinates.getText().split(",");                 // NOI18N
             final Double gotoX = new Double(sa[0]);
@@ -171,16 +216,16 @@ public class GotoPointDialog extends javax.swing.JDialog {
         } finally {
             setVisible(false);
         }
-    }//GEN-LAST:event_btnPositionActionPerformed
+    }                                                                               //GEN-LAST:event_btnPositionActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCancelActionPerformed
         setVisible(false);
-    }//GEN-LAST:event_btnCancelActionPerformed
+    }                                                                             //GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -202,9 +247,14 @@ public class GotoPointDialog extends javax.swing.JDialog {
         mapC.getHighlightingLayer().addChild(pMark);
         mapC.addStickyNode(pMark);
         final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
+        final MappingComponent mappingComponent = CismapBroker.getInstance().getMappingComponent();
         final double x = (c.getX1() + c.getX2()) / 2;
         final double y = (c.getY1() + c.getY2()) / 2;
-        pMark.setOffset(x, y);
+        final double screenx = mappingComponent.getWtst().getScreenX(x);
+        final double screeny = mappingComponent.getWtst().getScreenY(y);
+//        pMark.setX(x);
+//        pMark.setY(y);
+        pMark.setOffset(screenx, screeny);
         pMark.setVisible(true);
         mapC.rescaleStickyNodes();
 

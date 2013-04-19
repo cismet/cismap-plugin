@@ -3737,7 +3737,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         if (log.isDebugEnabled()) {
             log.debug("mniGotoPointActionPerformed"); // NOI18N
         }
-        final GotoPointDialog gotoPointDialog = new GotoPointDialog(mapC, true);
+        final GotoPointDialog gotoPointDialog = GotoPointDialog.getInstance();
+        StaticSwingTools.showDialog(mapC, gotoPointDialog, true);
+        gotoPointDialog.setVisible(true);
 //        try {
 //            final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
 //            final double x = (c.getX1() + c.getX2()) / 2;
