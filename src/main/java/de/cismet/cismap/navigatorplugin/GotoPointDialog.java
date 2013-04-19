@@ -54,6 +54,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
     private javax.swing.JButton btnPosition;
     private javax.swing.JCheckBox cbMarkPoint;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblIcon;
     private javax.swing.JLabel lblImage;
     private javax.swing.JLabel lblMessage;
@@ -85,7 +86,6 @@ public class GotoPointDialog extends javax.swing.JDialog {
                 }
             }
         }
-        instance.visualizePosition();
         instance.setTfCoordinatesTextToCenterOfCamera();
         return instance;
     }
@@ -101,12 +101,13 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         tfCoordinates = new javax.swing.JTextField();
-        btnPosition = new javax.swing.JButton();
-        btnCancel = new javax.swing.JButton();
         cbMarkPoint = new javax.swing.JCheckBox();
         lblMessage = new javax.swing.JLabel();
         lblIcon = new javax.swing.JLabel();
         lblImage = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        btnPosition = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.title")); // NOI18N
@@ -117,7 +118,9 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.tfCoordinates.text")); // NOI18N
+        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.tfCoordinates.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -126,49 +129,29 @@ public class GotoPointDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(tfCoordinates, gridBagConstraints);
 
-        btnPosition.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnPosition.text")); // NOI18N
-        btnPosition.setMaximumSize(new java.awt.Dimension(100, 25));
-        btnPosition.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPositionActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        jPanel1.add(btnPosition, gridBagConstraints);
-
-        btnCancel.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnCancel.text")); // NOI18N
-        btnCancel.setMaximumSize(new java.awt.Dimension(90, 25));
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        jPanel1.add(btnCancel, gridBagConstraints);
-
         cbMarkPoint.setSelected(true);
-        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.text")); // NOI18N
-        cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
+        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.text"));        // NOI18N
+        cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
         cbMarkPoint.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbMarkPointItemStateChanged(evt);
-            }
-        });
+
+                @Override
+                public void itemStateChanged(final java.awt.event.ItemEvent evt) {
+                    cbMarkPointItemStateChanged(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(cbMarkPoint, gridBagConstraints);
 
-        lblMessage.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblMessage.text")); // NOI18N
+        lblMessage.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.lblMessage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -179,9 +162,11 @@ public class GotoPointDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(lblMessage, gridBagConstraints);
 
-        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/markPoint.png"))); // NOI18N
+        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/markPoint.png")));                  // NOI18N
         lblIcon.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblIcon.text")); // NOI18N
-        lblIcon.setToolTipText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
+        lblIcon.setToolTipText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.cbMarkPoint.toolTipText"));                                                          // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
@@ -198,6 +183,42 @@ public class GotoPointDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 8);
         jPanel1.add(lblImage, gridBagConstraints);
 
+        jPanel2.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
+
+        btnPosition.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.btnPosition.text")); // NOI18N
+        btnPosition.setMaximumSize(new java.awt.Dimension(100, 25));
+        btnPosition.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    btnPositionActionPerformed(evt);
+                }
+            });
+        jPanel2.add(btnPosition);
+
+        btnCancel.setText(org.openide.util.NbBundle.getMessage(
+                GotoPointDialog.class,
+                "GotoPointDialog.btnCancel.text")); // NOI18N
+        btnCancel.setMaximumSize(new java.awt.Dimension(90, 25));
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    btnCancelActionPerformed(evt);
+                }
+            });
+        jPanel2.add(btnCancel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(8, 3, 3, 3);
+        jPanel1.add(jPanel2, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -206,7 +227,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
         getContentPane().add(jPanel1, gridBagConstraints);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    } // </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
@@ -275,8 +296,8 @@ public class GotoPointDialog extends javax.swing.JDialog {
      * @param  y  DOCUMENT ME!
      */
     private void visualizePosition(final double x, final double y) {
-        if (cbMarkPoint.isSelected()) {
-            mapC.getHighlightingLayer().removeAllChildren();
+        mapC.getHighlightingLayer().removeChild(pMark);
+        if (cbMarkPoint.isSelected()) {            
             mapC.getHighlightingLayer().addChild(pMark);
             mapC.addStickyNode(pMark);
 
