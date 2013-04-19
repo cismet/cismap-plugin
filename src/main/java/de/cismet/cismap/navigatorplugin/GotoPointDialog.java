@@ -48,7 +48,6 @@ public class GotoPointDialog extends javax.swing.JDialog {
     private ImageIcon mark = new javax.swing.ImageIcon(getClass().getResource(
                 "/de/cismet/cismap/commons/gui/res/markPoint.png")); // NOI18N
     private FixedPImage pMark = new FixedPImage(mark.getImage());
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnPosition;
@@ -83,6 +82,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
                 if (instance == null) {
                     instance = new GotoPointDialog();
                 }
+                instance.visualizePosition();
             }
         }
         return instance;
@@ -162,6 +162,13 @@ public class GotoPointDialog extends javax.swing.JDialog {
         cbMarkPoint.setToolTipText(org.openide.util.NbBundle.getMessage(
                 GotoPointDialog.class,
                 "GotoPointDialog.cbMarkPoint.toolTipText")); // NOI18N
+        cbMarkPoint.addItemListener(new java.awt.event.ItemListener() {
+
+                @Override
+                public void itemStateChanged(final java.awt.event.ItemEvent evt) {
+                    cbMarkPointItemStateChanged(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
@@ -208,9 +215,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
             final Double gotoY = new Double(sa[1]);
             final BoundingBox bb = new BoundingBox(gotoX, gotoY, gotoX, gotoY);
             mapC.gotoBoundingBox(bb, true, false, mapC.getAnimationDuration());
-            if (cbMarkPoint.isSelected()) {
-                visualizePosition();
-            }
+            visualizePosition(gotoX, gotoY);
         } catch (final Exception skip) {
             log.error("Error in mniGotoPointActionPerformed", skip);                // NOI18N
         } finally {
@@ -229,6 +234,15 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void cbMarkPointItemStateChanged(final java.awt.event.ItemEvent evt) { //GEN-FIRST:event_cbMarkPointItemStateChanged
+        visualizePosition();
+    }                                                                              //GEN-LAST:event_cbMarkPointItemStateChanged
+
+    /**
+     * DOCUMENT ME!
      */
     private void initTfCoordinatesText() {
         final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
@@ -243,22 +257,31 @@ public class GotoPointDialog extends javax.swing.JDialog {
      * DOCUMENT ME!
      */
     private void visualizePosition() {
-        mapC.getHighlightingLayer().removeAllChildren();
-        mapC.getHighlightingLayer().addChild(pMark);
-        mapC.addStickyNode(pMark);
         final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
-        final MappingComponent mappingComponent = CismapBroker.getInstance().getMappingComponent();
         final double x = (c.getX1() + c.getX2()) / 2;
         final double y = (c.getY1() + c.getY2()) / 2;
-        final double screenx = mappingComponent.getWtst().getScreenX(x);
-        final double screeny = mappingComponent.getWtst().getScreenY(y);
-//        pMark.setX(x);
-//        pMark.setY(y);
-        pMark.setOffset(screenx, screeny);
-        pMark.setVisible(true);
-        mapC.rescaleStickyNodes();
+        visualizePosition(x, y);
+    }
 
-        // CismapBroker.getInstance().removeCrsChangeListener(this);
-        // CismapBroker.getInstance().addCrsChangeListener(this);
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  x  DOCUMENT ME!
+     * @param  y  DOCUMENT ME!
+     */
+    private void visualizePosition(final double x, final double y) {
+        if (cbMarkPoint.isSelected()) {
+            mapC.getHighlightingLayer().removeAllChildren();
+            mapC.getHighlightingLayer().addChild(pMark);
+            mapC.addStickyNode(pMark);
+
+            final double screenx = mapC.getWtst().getScreenX(x);
+            final double screeny = mapC.getWtst().getScreenY(y);
+            pMark.setOffset(screenx, screeny);
+            pMark.setVisible(true);
+            mapC.rescaleStickyNodes();
+        } else {
+            pMark.setVisible(false);
+        }
     }
 }
