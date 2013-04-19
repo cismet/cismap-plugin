@@ -79,6 +79,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         tfCoordinates = new javax.swing.JTextField();
         btnPosition = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -88,95 +89,74 @@ public class GotoPointDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.tfCoordinates.text")); // NOI18N
+        tfCoordinates.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.tfCoordinates.text")); // NOI18N
 
-        btnPosition.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.btnPosition.text")); // NOI18N
+        btnPosition.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnPosition.text")); // NOI18N
         btnPosition.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPositionActionPerformed(evt);
+            }
+        });
 
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    btnPositionActionPerformed(evt);
-                }
-            });
-
-        btnCancel.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.btnCancel.text")); // NOI18N
+        btnCancel.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.btnCancel.text")); // NOI18N
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
 
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    btnCancelActionPerformed(evt);
-                }
-            });
+        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.cbMarkPoint.text")); // NOI18N
 
-        cbMarkPoint.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.cbMarkPoint.text")); // NOI18N
-
-        lblMessage.setText(org.openide.util.NbBundle.getMessage(
-                GotoPointDialog.class,
-                "GotoPointDialog.lblMessage.text")); // NOI18N
+        lblMessage.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblMessage.text")); // NOI18N
 
         lblIcon.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblIcon.text")); // NOI18N
 
-        final javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-                layout.createSequentialGroup().addGap(61, 61, 61).addGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(lblMessage)
-                                .addGroup(
-                                    layout.createSequentialGroup().addComponent(btnPosition).addPreferredGap(
-                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(btnCancel))
-                                .addGroup(
-                                    layout.createSequentialGroup().addComponent(
-                                        tfCoordinates,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                                        263,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(
-                                        javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(
-                                        cbMarkPoint).addPreferredGap(
-                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(
-                                        lblIcon,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                                        19,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE))).addContainerGap(
-                    64,
-                    Short.MAX_VALUE)));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(47, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnPosition)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnCancel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(tfCoordinates)
+                            .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbMarkPoint)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))))
+        );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-                layout.createSequentialGroup().addContainerGap().addComponent(lblMessage).addGap(10, 10, 10).addGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(
-                        lblIcon,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        Short.MAX_VALUE).addComponent(
-                        cbMarkPoint,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        Short.MAX_VALUE).addComponent(
-                        tfCoordinates,
-                        javax.swing.GroupLayout.PREFERRED_SIZE,
-                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                        javax.swing.GroupLayout.PREFERRED_SIZE)).addPreferredGap(
-                    javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(btnPosition)
-                                .addComponent(btnCancel)).addContainerGap(21, Short.MAX_VALUE)));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblMessage)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(lblIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbMarkPoint, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tfCoordinates, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnPosition)
+                    .addComponent(btnCancel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         pack();
-    } // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnPositionActionPerformed
+    private void btnPositionActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPositionActionPerformed
         try {
             final String[] sa = tfCoordinates.getText().split(",");                 // NOI18N
             final Double gotoX = new Double(sa[0]);
@@ -191,16 +171,16 @@ public class GotoPointDialog extends javax.swing.JDialog {
         } finally {
             setVisible(false);
         }
-    }                                                                               //GEN-LAST:event_btnPositionActionPerformed
+    }//GEN-LAST:event_btnPositionActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         setVisible(false);
-    }                                                                             //GEN-LAST:event_btnCancelActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * DOCUMENT ME!
