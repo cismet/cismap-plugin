@@ -291,14 +291,15 @@ public class GotoPointDialog extends javax.swing.JDialog {
     }
 
     /**
-     * DOCUMENT ME!
+     * drafted from AbstractWFSForm visualizePosition().
      *
      * @param  x  DOCUMENT ME!
      * @param  y  DOCUMENT ME!
      */
     private void visualizePosition(final double x, final double y) {
-        if (pMark != null) {
+        if ((pMark != null) && (mapC.getHighlightingLayer().indexOfChild(pMark) > -1)) {
             mapC.getHighlightingLayer().removeChild(pMark);
+            // mapC.getHighlightingLayer().removeAllChildren();
         }
         if (cbMarkPoint.isSelected()) {
             mapC.getHighlightingLayer().addChild(pMark);
