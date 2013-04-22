@@ -178,8 +178,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
         lblImage.setText(org.openide.util.NbBundle.getMessage(GotoPointDialog.class, "GotoPointDialog.lblImage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 8);
         jPanel1.add(lblImage, gridBagConstraints);
@@ -297,10 +296,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
      * @param  y  DOCUMENT ME!
      */
     private void visualizePosition(final double x, final double y) {
-        if ((pMark != null) && (mapC.getHighlightingLayer().indexOfChild(pMark) > -1)) {
-            mapC.getHighlightingLayer().removeChild(pMark);
-            // mapC.getHighlightingLayer().removeAllChildren();
-        }
+        mapC.getHighlightingLayer().removeAllChildren();
         if (cbMarkPoint.isSelected()) {
             mapC.getHighlightingLayer().addChild(pMark);
             mapC.addStickyNode(pMark);
