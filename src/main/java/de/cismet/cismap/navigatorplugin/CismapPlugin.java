@@ -3737,28 +3737,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         if (log.isDebugEnabled()) {
             log.debug("mniGotoPointActionPerformed"); // NOI18N
         }
-
-        try {
-            final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
-            final double x = (c.getX1() + c.getX2()) / 2;
-            final double y = (c.getY1() + c.getY2()) / 2;
-            final String s = JOptionPane.showInputDialog(
-                    StaticSwingTools.getParentFrame(mapC),
-                    org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.mniGotoPointActionPerformed.JOptionPane.message"), // NOI18N
-                    StaticDecimalTools.round(x)
-                            + "," // NOI18N
-                            + StaticDecimalTools.round(y));
-
-            final String[] sa = s.split(",");                        // NOI18N
-            final Double gotoX = new Double(sa[0]);
-            final Double gotoY = new Double(sa[1]);
-            final BoundingBox bb = new BoundingBox(gotoX, gotoY, gotoX, gotoY);
-            mapC.gotoBoundingBox(bb, true, false, mapC.getAnimationDuration());
-        } catch (final Exception skip) {
-            log.error("Error in mniGotoPointActionPerformed", skip); // NOI18N
-        }
+        final GotoPointDialog gotoPointDialog = GotoPointDialog.getInstance();
+        StaticSwingTools.showDialog(mapC, gotoPointDialog, true);
     }
 
     /**
