@@ -181,4 +181,22 @@ public class A4HPersistent extends AbstractPrintingInscriber {
             };
         CismetThreadPool.execute(r);
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  newText  DOCUMENT ME!
+     */
+    protected void setTextOfJLabel1(final String newText) {
+        jLabel1.setText(newText);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  newText  DOCUMENT ME!
+     */
+    protected void setTextOfJLabel2(final String newText) {
+        jLabel2.setText(newText);
+    }
 }
