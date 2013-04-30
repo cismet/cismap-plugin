@@ -44,6 +44,7 @@
             <activatedProfile>cismet-dev-exec</activatedProfile>
         </activatedProfiles>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
             <jpda.listen>true</jpda.listen>
