@@ -1570,6 +1570,9 @@
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AddGeomDnDButton()"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JToggleButton" name="cmdNewLinearReferencing">
                   <Properties>
