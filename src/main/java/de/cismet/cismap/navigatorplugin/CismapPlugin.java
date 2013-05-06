@@ -75,7 +75,12 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -89,6 +94,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import java.net.URI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +122,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -185,6 +193,8 @@ import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
 import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.cismap.tools.gui.CidsBeanDropJPopupMenuButton;
+
+import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
 
 import de.cismet.ext.CExtContext;
 import de.cismet.ext.CExtManager;
@@ -782,6 +792,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         };
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cmdBack;
     private javax.swing.JButton cmdClipboard;
@@ -1231,6 +1242,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.addConfigurable(featureControl);
             configurationManager.addConfigurable(overviewComponent);
             configurationManager.addConfigurable(shapeExport);
+            configurationManager.addConfigurable((Configurable)btnAddGeometryWizard.getAction());
             if (!plugin) {
                 configurationManager.addConfigurable(OptionsClient.getInstance());
             }
@@ -1978,6 +1990,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdNewPolygon = new javax.swing.JToggleButton();
         cmdNewLinestring = new javax.swing.JToggleButton();
         cmdNewPoint = new javax.swing.JToggleButton();
+        btnAddGeometryWizard = new AddGeomDnDButton();
         cmdNewLinearReferencing = new javax.swing.JToggleButton();
         cmdMoveGeometry = new javax.swing.JToggleButton();
         cmdRemoveGeometry = new javax.swing.JToggleButton();
@@ -2108,14 +2121,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         popMenSearch.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
 
                 @Override
-                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
+                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
+                    popMenSearchPopupMenuWillBecomeVisible(evt);
                 }
                 @Override
                 public void popupMenuWillBecomeInvisible(final javax.swing.event.PopupMenuEvent evt) {
                 }
                 @Override
-                public void popupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {
-                    popMenSearchPopupMenuWillBecomeVisible(evt);
+                public void popupMenuCanceled(final javax.swing.event.PopupMenuEvent evt) {
                 }
             });
 
@@ -2228,12 +2241,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         panMain.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
-                public void mouseEntered(final java.awt.event.MouseEvent evt) {
-                    panMainMouseEntered(evt);
-                }
-                @Override
                 public void mouseExited(final java.awt.event.MouseEvent evt) {
                     panMainMouseExited(evt);
+                }
+                @Override
+                public void mouseEntered(final java.awt.event.MouseEvent evt) {
+                    panMainMouseEntered(evt);
                 }
             });
         panMain.setLayout(new java.awt.BorderLayout());
@@ -2502,6 +2515,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
         tlbMain.add(cmdNewPoint);
+
+        btnAddGeometryWizard.setAction(new AddGeometriesToMapWizardAction());
+        btnAddGeometryWizard.setFocusable(false);
+        btnAddGeometryWizard.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnAddGeometryWizard.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        tlbMain.add(btnAddGeometryWizard);
 
         cmdGroupPrimaryInteractionMode.add(cmdNewLinearReferencing);
         cmdNewLinearReferencing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/linref.png"))); // NOI18N
@@ -3057,14 +3076,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menSearch.addMenuListener(new javax.swing.event.MenuListener() {
 
                 @Override
-                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
+                public void menuSelected(final javax.swing.event.MenuEvent evt) {
+                    menSearchMenuSelected(evt);
                 }
                 @Override
                 public void menuDeselected(final javax.swing.event.MenuEvent evt) {
                 }
                 @Override
-                public void menuSelected(final javax.swing.event.MenuEvent evt) {
-                    menSearchMenuSelected(evt);
+                public void menuCanceled(final javax.swing.event.MenuEvent evt) {
                 }
             });
 
@@ -6470,6 +6489,120 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
          */
         @Override
         public void removePropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private final class AddGeomDnDButton extends JButton implements DropTargetListener {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final transient DropTarget dropTarget = new DropTarget(this, this);
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public AddGeometriesToMapWizardAction getAction() {
+            return (AddGeometriesToMapWizardAction)super.getAction();
+        }
+
+        @Override
+        public void dragEnter(final DropTargetDragEvent dtde) {
+            if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)
+                        || dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+            } else {
+                dtde.rejectDrag();
+            }
+        }
+
+        @Override
+        public void dragOver(final DropTargetDragEvent dtde) {
+            if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)
+                        || dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+            } else {
+                dtde.rejectDrag();
+            }
+        }
+
+        @Override
+        public void dropActionChanged(final DropTargetDragEvent dtde) {
+            if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)
+                        || dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+            } else {
+                dtde.rejectDrag();
+            }
+        }
+
+        @Override
+        public void dragExit(final DropTargetEvent dte) {
+            // noop
+        }
+
+        @Override
+        public void drop(final DropTargetDropEvent dtde) {
+            try {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+
+                boolean performAction = false;
+                if (dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)) {
+                    // unix drop
+                    final String uriList = (String)dtde.getTransferable().getTransferData(DnDUtils.URI_LIST_FLAVOR);
+                    final String[] uris = uriList.split(System.getProperty("line.separator"));      // NOI18N
+                    if (uris.length == 1) {
+                        final File file = new File(new URI(uris[0].replaceFirst("localhost", ""))); // NOI18N
+                        dtde.dropComplete(true);
+                        getAction().setInputFile(file);
+                        performAction = true;
+                    } else {
+                        dtde.dropComplete(false);
+                    }
+                } else if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    // win drop
+                    @SuppressWarnings("unchecked")
+                    final List<File> data = (List)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if (data.size() == 1) {
+                        final File file = data.get(0);
+                        dtde.dropComplete(true);
+                        getAction().setInputFile(file);
+                        performAction = true;
+                    } else {
+                        dtde.dropComplete(false);
+                    }
+                } else {
+                    final String data = (String)dtde.getTransferable().getTransferData(DataFlavor.stringFlavor);
+                    dtde.dropComplete(true);
+
+                    // String drop, empty file
+                    getAction().setInputData(data);
+                    performAction = true;
+                }
+
+                if (performAction) {
+                    final ActionEvent ae = new ActionEvent(this, 1, "data_dnd");
+
+                    // move the actual execution of the action to the end of the eventqueue so that the OS may complete
+                    // the DnD action
+                    EventQueue.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                getAction().actionPerformed(ae);
+                            }
+                        });
+                }
+            } catch (final Exception e) {
+                dtde.dropComplete(false);
+            }
         }
     }
 }
