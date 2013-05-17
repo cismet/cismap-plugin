@@ -39,6 +39,7 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
 
     //~ Instance fields --------------------------------------------------------
 
+    Geometry oldGeom = null;
     CidsBean cidsBean = null;
     String geoPropertyName;
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -68,6 +69,11 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
             throws IllegalArgumentException {
         this(cidsBean.getMetaObject());
         this.geoPropertyName = geoPropertyName;
+        if ((cidsBean != null) && (cidsBean.getProperty(geoPropertyName) != null)) {
+            oldGeom = (Geometry)((Geometry)cidsBean.getProperty(geoPropertyName)).clone();
+        } else {
+            oldGeom = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -76,7 +82,15 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
     public void setGeometry(final Geometry geom) {
         super.setGeometry(geom);
         try {
-            cidsBean.setProperty(geoPropertyName, geom);
+            // oldGeom !(===) geom
+            if (!((oldGeom == geom) || ((oldGeom != null) && oldGeom.equalsExact(geom)))) {
+                cidsBean.setProperty(geoPropertyName, geom);
+                if (geom != null) {
+                    oldGeom = (Geometry)geom.clone();
+                } else {
+                    oldGeom = null;
+                }
+            }
         } catch (Exception e) {
             log.error("error while storing updated geometry in bean", e);
         }
