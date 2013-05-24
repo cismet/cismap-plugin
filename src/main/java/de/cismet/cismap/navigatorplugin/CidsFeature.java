@@ -400,7 +400,15 @@ public class CidsFeature implements XStyledFeature,
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
-            featureFG = new Color(r, g, b);
+            
+            if (t.length == 4) {
+                // The feature colour has an alpha component
+                final int a = new Integer(t[3]).intValue();
+                featureFG = new Color(r, g, b, a);
+            } else {
+                featureFG = new Color(r, g, b);
+            }
+            
             if (LOG.isDebugEnabled()) {
                 LOG.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
             }
@@ -413,7 +421,15 @@ public class CidsFeature implements XStyledFeature,
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
-            featureBG = new Color(r, g, b);
+            
+            if (t.length == 4) {
+                // The feature colour has an alpha component
+                final int a = new Integer(t[3]).intValue();
+                featureBG = new Color(r, g, b, a);
+            } else {
+                featureBG = new Color(r, g, b);
+            }
+            
             if (LOG.isDebugEnabled()) {
                 LOG.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
             }
