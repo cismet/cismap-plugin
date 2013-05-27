@@ -168,6 +168,7 @@ import de.cismet.cismap.commons.gui.infowidgets.Legend;
 import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
+import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
@@ -1032,6 +1033,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             statusBar = new StatusBar(mapC);
             featureInfo = new FeatureInfoWidget();
             capabilities = new CapabilityWidget();
+            CapabilityWidgetOptionsPanel.setCapabilityWidget(capabilities);
             featureControl = new FeatureControl(mapC);
             debugPanel = new DebugPanel();
             debugPanel.setPCanvas(mapC);
@@ -3527,16 +3529,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
+    private void mniSearchCidsFeatureActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSearchCidsFeatureActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_mniSearchCidsFeatureActionPerformed
+    }//GEN-LAST:event_mniSearchCidsFeatureActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3544,14 +3546,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -3608,14 +3610,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3624,7 +3626,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4896,7 +4898,21 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             super.setVisible(b);
         }
     }
+    
+    /**
+     * @return the featureCollectionEventBlocker
+     */
+    public boolean isFeatureCollectionEventBlocker() {
+        return featureCollectionEventBlocker;
+    }
 
+    /**
+     * @param featureCollectionEventBlocker the featureCollectionEventBlocker to set
+     */
+    public void setFeatureCollectionEventBlocker(boolean featureCollectionEventBlocker) {
+        this.featureCollectionEventBlocker = featureCollectionEventBlocker;
+    }
+    
     /**
      * DOCUMENT ME!
      */
