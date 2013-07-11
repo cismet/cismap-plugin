@@ -46,6 +46,7 @@ import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
 
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
+import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
@@ -68,7 +69,7 @@ import de.cismet.commons.classloading.BlacklistClassloading;
  * @author   thorsten.hell@cismet.de
  * @version  $Revision$, $Date$
  */
-public class CidsFeature implements XStyledFeature,
+public class CidsFeature extends DefaultFeatureServiceFeature implements XStyledFeature,
     Highlightable,
     Bufferable,
     RasterLayerSupportedFeature,
