@@ -63,6 +63,12 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
 
     /**
      * Creates a new CidsBeanDropJPopupMenuButton object.
+     */
+    public CidsBeanDropJPopupMenuButton() {
+    }
+
+    /**
+     * Creates a new CidsBeanDropJPopupMenuButton object.
      *
      * @param  interactionMode   DOCUMENT ME!
      * @param  mappingComponent  DOCUMENT ME!
@@ -118,7 +124,7 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
                     final GeometryCollection coll = new GeometryFactory().createGeometryCollection(searchGeomsArr);
 
                     final Geometry newG = coll.buffer(0.1d);
-                    search = new SearchFeature(newG);
+                    search = new SearchFeature(newG, interactionMode);
                     search.setGeometryType(PureNewFeature.geomTypes.POLYGON);
                     return search;
                 }
