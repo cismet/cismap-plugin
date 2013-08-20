@@ -30,7 +30,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
 
-import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.AbstractNewFeature;
 import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
@@ -125,7 +125,7 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
 
                     final Geometry newG = coll.buffer(0.1d);
                     search = new SearchFeature(newG, interactionMode);
-                    search.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+                    search.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
                     return search;
                 }
 

@@ -20,7 +20,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JSeparator;
 
-import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.AbstractNewFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.AbstractCreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
@@ -31,10 +31,10 @@ import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
 
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.ELLIPSE;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.LINESTRING;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.POLYGON;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.RECTANGLE;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.ELLIPSE;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.LINESTRING;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.POLYGON;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.RECTANGLE;
 
 import static de.cismet.cismap.navigatorplugin.GeoSearchButton.createSearchBufferAction;
 import static de.cismet.cismap.navigatorplugin.GeoSearchButton.createSearchCidsFeatureAction;
@@ -257,7 +257,7 @@ public class GeoSearchMenu extends JMenu implements PropertyChangeListener {
      *
      * @param  lastFeature  DOCUMENT ME!
      */
-    private void setLastFeature(final PureNewFeature lastFeature) {
+    private void setLastFeature(final AbstractNewFeature lastFeature) {
         if (lastFeature == null) {
             mniSearchShowLastFeature1.setIcon(null);
             mniSearchShowLastFeature1.setEnabled(false);

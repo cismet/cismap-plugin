@@ -38,8 +38,8 @@ import javax.swing.JSeparator;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 
+import de.cismet.cismap.commons.features.AbstractNewFeature;
 import de.cismet.cismap.commons.features.DefaultFeatureCollection;
-import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
@@ -57,10 +57,10 @@ import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
 
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.ELLIPSE;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.LINESTRING;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.POLYGON;
-import static de.cismet.cismap.commons.features.PureNewFeature.geomTypes.RECTANGLE;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.ELLIPSE;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.LINESTRING;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.POLYGON;
+import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.RECTANGLE;
 
 import static de.cismet.cismap.navigatorplugin.GeoSearchButton.createSearchAction;
 import static de.cismet.cismap.navigatorplugin.GeoSearchButton.createSearchMenuSelectedAction;
@@ -311,7 +311,7 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                                 }
 
                                 final SearchFeature sf = new SearchFeature(newG, interactionMode);
-                                sf.setGeometryType(PureNewFeature.geomTypes.MULTIPOLYGON);
+                                sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
                                 return sf;
                             }
 
@@ -487,7 +487,7 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
 
                             // Geometrie ist jetzt eine Polygon (keine Linie, Ellipse, oder
                             // ähnliches mehr)
-                            lastFeature.setGeometryType(PureNewFeature.geomTypes.POLYGON);
+                            lastFeature.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
 
                             for (final Object feature
                                         : mappingComponent.getFeatureCollection().getAllFeatures()) {
@@ -673,7 +673,7 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
      *
      * @param  lastFeature  DOCUMENT ME!
      */
-    private void setLastFeature(final PureNewFeature lastFeature) {
+    private void setLastFeature(final AbstractNewFeature lastFeature) {
         if (lastFeature == null) {
             mniSearchShowLastFeature1.setIcon(null);
             mniSearchShowLastFeature1.setEnabled(false);
