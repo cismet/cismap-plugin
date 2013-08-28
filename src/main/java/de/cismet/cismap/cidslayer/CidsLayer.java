@@ -14,13 +14,19 @@ import Sirius.server.middleware.types.MetaClass;
 
 import org.apache.log4j.Logger;
 
-import org.deegree.security.session.Session;
 
 import org.jdom.Element;
 
 import org.openide.util.Exceptions;
 
+import java.util.LinkedList;
+import java.util.Map;
+
 import javax.swing.Icon;
+
+import javax.xml.stream.XMLInputFactory;
+
+import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
@@ -46,6 +52,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     //~ Instance fields --------------------------------------------------------
 
     private CidsLayerSearchStatement cidsStatement;
+    private String tableName;
+    private MetaClass metaClass;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -56,7 +64,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
      */
     public CidsLayer(final CidsLayer cl) {
         super(cl);
+        tableName = cl.tableName;
         cidsStatement = cl.getQuery();
+        metaClass = cl.metaClass;
     }
 
     /**
@@ -68,8 +78,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
      */
     public CidsLayer(final Element e) throws Exception {
         super(e);
-        //name = "CidsLayer";
-        //cidsStatement = new CidsLayerSearchStatement();
+        // name = "CidsLayer";
+        // cidsStatement = new CidsLayerSearchStatement();
     }
 
     /**
@@ -80,7 +90,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     public CidsLayer(final MetaClass clazz) {
         super();
         name = clazz.getName();
+        tableName = clazz.getTableName();
         cidsStatement = new CidsLayerSearchStatement(clazz);
+        metaClass = clazz;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -98,7 +110,18 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
 
     @Override
     protected FeatureFactory createFeatureFactory() throws Exception {
-        return new CidsFeatureFactory(this.getLayerProperties());
+        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        Map<String, LinkedList<org.deegree.style.se.unevaluated.Style>> styles = null;
+        try {
+            styles = org.deegree.style.persistence.sld.SLDParser.getStyles(factory.createXMLStreamReader(
+                        getClass().getResourceAsStream("/testSLD.xml")));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (styles == null) {
+            LOG.info("SLD Parser funtkioniert nicht");
+        }
+        return new CidsFeatureFactory(metaClass, this.getLayerProperties(), styles);
     }
 
     @Override
@@ -137,9 +160,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     @Override
     public Element toElement() {
         final Element parentElement = super.toElement();
-        final Element classId = new Element("classId");
-        classId.setText(String.valueOf(cidsStatement.getClassId()));
-        parentElement.addContent(classId);
+        final Element className = new Element("className");
+        className.setText(tableName);
+        parentElement.addContent(className);
         return parentElement;
     }
 
@@ -147,16 +170,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     public void initFromElement(final Element element) throws Exception {
         try {
             super.initFromElement(element);
-            final int classId = Integer.parseInt(element.getChildText("classId").trim());
-            final MetaClass clazz = SessionManager.getConnection()
-                        .getMetaClass(SessionManager.getSession().getUser(),
-                            classId,
-                            SessionManager.getSession().getUser().getDomain());
-            if (clazz == null) {
+            tableName = element.getChildText("className").trim();
+            metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
+                    tableName);
+            if (metaClass == null) {
                 return;
             }
-            //this.setName(clazz.getName());
-            setQuery(new CidsLayerSearchStatement(clazz));
+            // this.setName(clazz.getName());
+            setQuery(new CidsLayerSearchStatement(metaClass));
         } catch (ConnectionException ex) {
             LOG.error("Configuration could not be loaded", ex);
         }
