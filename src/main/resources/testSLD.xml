@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:wfs="http://www.opengis.net/wfs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fo="http://www.w3.org/1999/XSL/Format"
+  xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns="http://www.opengis.net/sld" version="1.1.0"
+  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd">
+  <sld:NamedLayer>
+    <!--  This styling file shows the use of SLD styling -->
+    <se:Name>StateBoundary</se:Name>
+
+
+    <!--<sld:LayerFeatureConstraints>
+      <sld:FeatureTypeConstraint>
+        <se:FeatureTypeName>app:SGID024_StateBoundary</se:FeatureTypeName>
+
+        <ogc:Filter>
+          <ogc:PropertyIsLessThanOrEqualTo>
+            <ogc:PropertyName>app:OBJECTID</ogc:PropertyName>
+            <ogc:Literal>322</ogc:Literal>
+          </ogc:PropertyIsLessThanOrEqualTo>
+        </ogc:Filter>
+        
+          </sld:FeatureTypeConstraint>
+        </sld:LayerFeatureConstraints>-->
+<sld:UserStyle>
+            <se:Name>default:SGID024_StateBoundary</se:Name>
+            <se:Description>
+                <se:Title>State of Utah</se:Title>
+            </se:Description>
+      
+            <se:FeatureTypeStyle>
+                <se:Name>SGID024_StateBoundary</se:Name>
+                <se:Description>
+                    <se:Title>State of Utah</se:Title>
+                </se:Description>
+                <se:Rule>
+                    <se:Name>SGID024_StateBoundary</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <!--<ogc:Filter>
+                        <ogc:PropertyIsLessThanOrEqualTo>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>20</ogc:Literal>
+                        </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:Filter>-->
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#CCCCCC</se:SvgParameter>
+                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+            </se:FeatureTypeStyle>
+
+        </sld:UserStyle>
+        <sld:UserStyle>
+            <se:Name>default:SGID024_StateBoundary</se:Name>
+            <se:Description>
+                <se:Title>State of Utah</se:Title>
+            </se:Description>
+      
+            <se:FeatureTypeStyle>
+                <se:Name>SGID024_StateBoundary</se:Name>
+                <se:Description>
+                    <se:Title>State of Utah</se:Title>
+                </se:Description>
+                <se:FeatureTypeName>VERMESSUNG_RISS<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
+                <se:Rule>
+                    <se:Name>SGID024_StateBoundary</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <!--<ogc:Filter>
+                        <ogc:PropertyIsLessThanOrEqualTo>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>20</ogc:Literal>
+                        </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:Filter>-->
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#00FF00</se:SvgParameter>
+                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+            </se:FeatureTypeStyle>
+
+        </sld:UserStyle>
+        <sld:UserStyle>
+            <se:Name>default:SGID024_StateBoundary</se:Name>
+            <se:Description>
+                <se:Title>State of Utah</se:Title>
+            </se:Description>
+      
+            <se:FeatureTypeStyle>
+                <se:Name>SGID024_StateBoundary</se:Name>
+                <se:Description>
+                    <se:Title>State of Utah</se:Title>
+                </se:Description>
+                <se:FeatureTypeName>ALKIS_LANDPARCEL<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
+                <se:Rule>
+                    <se:Name>SGID024_StateBoundary</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <!--<ogc:Filter>
+                        <ogc:PropertyIsLessThanOrEqualTo>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>20</ogc:Literal>
+                        </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:Filter>-->
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#0000FF</se:SvgParameter>
+                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+            </se:FeatureTypeStyle>
+        </sld:UserStyle>
+        <sld:UserStyle>
+            <se:Name>default:wk_sg</se:Name>
+            <se:Description>
+                    <se:Title>wk_sg</se:Title>
+                </se:Description>
+            <se:FeatureTypeStyle>
+                <se:Name>default</se:Name>
+                <se:Description>
+                    <se:Title>wk_sg</se:Title>
+                </se:Description>
+                <se:FeatureTypeName>WK_SG</se:FeatureTypeName>
+                <se:Rule>
+                    <se:Name>wk_sg</se:Name>
+                    <se:Description>
+                        <se:Title>wk_sg</se:Title>
+                    </se:Description>
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
+                        <se:Geometry>
+                            <ogc:PropertyName>geo_field</ogc:PropertyName>
+                        </se:Geometry>
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#FF0000</se:SvgParameter>
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:GraphicFill>
+                                 <se:Graphic>
+                            <se:ExternalGraphic>
+                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/schwarz"/>
+                                <se:Format>image/gif</se:Format>
+                            </se:ExternalGraphic>
+                            <!--<se:Mark>
+                                <se:WellKnownName>star</se:WellKnownName>
+                                <se:Fill>
+                                    <se:SvgParameter name="fill">#ff0000</se:SvgParameter>
+                                </se:Fill>
+                            </se:Mark>-->
+                            <se:Opacity>1</se:Opacity>
+                            <se:Size>0.1</se:Size>
+                            <se:AnchorPoint>
+                                <se:AnchorPointX>0.5</se:AnchorPointX>
+                                <se:AnchorPointY>0.5</se:AnchorPointY>
+                            </se:AnchorPoint>
+                        </se:Graphic>
+                            </se:GraphicFill>
+                            <se:SvgParameter name="stroke">#00FFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">2</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                    <se:PointSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
+                        <se:Graphic>
+                            <se:ExternalGraphic>
+                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/schwarz"/>
+                                <se:Format>image/gif</se:Format>
+                            </se:ExternalGraphic>
+                            <!--<se:Mark>
+                                <se:WellKnownName>star</se:WellKnownName>
+                                <se:Fill>
+                                    <se:SvgParameter name="fill">#ff0000</se:SvgParameter>
+                                </se:Fill>
+                            </se:Mark>-->
+                            <se:Opacity>1</se:Opacity>
+                            <se:Size>1</se:Size>
+                            <se:AnchorPoint>
+                                <se:AnchorPointX>0.5</se:AnchorPointX>
+                                <se:AnchorPointY>0.5</se:AnchorPointY>
+                            </se:AnchorPoint>
+                        </se:Graphic>
+                    </se:PointSymbolizer>
+                    <se:PointSymbolizer uom="http://www.opengeospatial.org/se/unity/pixel">
+                        <se:Graphic>
+                            <se:ExternalGraphic>
+                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/blau"/>
+                                <se:Format>image/gif</se:Format>
+                            </se:ExternalGraphic>
+                            <se:Opacity>1</se:Opacity>
+                            <se:Size>18</se:Size>
+                            <se:AnchorPoint>
+                                <se:AnchorPointX>0.5</se:AnchorPointX>
+                                <se:AnchorPointY>0.5</se:AnchorPointY>
+                            </se:AnchorPoint>
+                            <se:Displacement>
+                                <se:DisplacementX>1</se:DisplacementX>
+                                <se:DisplacementY>9</se:DisplacementY>
+                            </se:Displacement>
+                        </se:Graphic>
+                    </se:PointSymbolizer>
+                    <!--<se:TextSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
+						<se:Geometry>
+							<ogc:PropertyName>geo_field</ogc:PropertyName>
+						</se:Geometry>
+						<se:Label>
+							<ogc:PropertyName>lw_name</ogc:PropertyName>
+						</se:Label>
+						<se:Font>
+							<se:SvgParameter name="font-family">Arial</se:SvgParameter>
+							<se:SvgParameter name="font-family">Sans-Serif</se:SvgParameter>
+							<se:SvgParameter name="font-style">normal</se:SvgParameter>
+							<se:SvgParameter name="font-size">12</se:SvgParameter>
+							<se:SvgParameter name="font-color">#000000</se:SvgParameter>
+							<se:SvgParameter name="font-weight">bold</se:SvgParameter>
+						</se:Font>
+						<se:LabelPlacement>
+                                                    <se:PointPlacement auto="true">
+                                                        <se:AnchorPoint>
+                                <se:AnchorPointX>1.0</se:AnchorPointX>
+                                <se:AnchorPointY>0.0</se:AnchorPointY>
+                            </se:AnchorPoint>
+                                                        <se:Displacement>
+                                                            <se:DisplacementX>10</se:DisplacementX>
+                                                            <se:DisplacementY>10</se:DisplacementY>
+                                                        </se:Displacement>
+                                                    </se:PointPlacement>
+						</se:LabelPlacement>
+						<se:Halo>
+							<se:Fill>
+								<se:SvgParameter name="fill">#FFFFFF</se:SvgParameter>
+								<se:SvgParameter name="fill-opacity">0.5</se:SvgParameter>
+							</se:Fill>
+						</se:Halo>
+					</se:TextSymbolizer>
+                                        <se:TextSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
+						<se:Geometry>
+							<ogc:PropertyName>geo_field</ogc:PropertyName>
+						</se:Geometry>
+						<se:Label>
+							<ogc:PropertyName>lw_name</ogc:PropertyName>
+						</se:Label>
+						<se:Font>
+							<se:SvgParameter name="font-family">Arial</se:SvgParameter>
+							<se:SvgParameter name="font-family">Sans-Serif</se:SvgParameter>
+							<se:SvgParameter name="font-style">normal</se:SvgParameter>
+							<se:SvgParameter name="font-size">12</se:SvgParameter>
+							<se:SvgParameter name="font-color">#FFFFFF</se:SvgParameter>
+							<se:SvgParameter name="font-weight">bold</se:SvgParameter>
+						</se:Font>
+						<se:LabelPlacement>
+                                                    <se:PointPlacement auto="true">
+                                                        <se:AnchorPoint>
+                                <se:AnchorPointX>0.0</se:AnchorPointX>
+                                <se:AnchorPointY>0.0</se:AnchorPointY>
+                            </se:AnchorPoint>
+                                                        <se:Displacement>
+                                                            <se:DisplacementX>10</se:DisplacementX>
+                                                            <se:DisplacementY>10</se:DisplacementY>
+                                                        </se:Displacement>
+                                                    </se:PointPlacement>
+						</se:LabelPlacement>
+						<se:Halo>
+							<se:Fill>
+								<se:SvgParameter name="fill">#FFFFFF</se:SvgParameter>
+								<se:SvgParameter name="fill-opacity">0.5</se:SvgParameter>
+							</se:Fill>
+						</se:Halo>
+					</se:TextSymbolizer>-->
+                </se:Rule>
+            </se:FeatureTypeStyle>
+        </sld:UserStyle>
+        <!--<sld:UserStyle>
+            <se:Name>default:SGID024_StateBoundary</se:Name>
+            <se:Description>
+                <se:Title>State of Utah</se:Title>
+            </se:Description>
+      
+            <se:FeatureTypeStyle>
+                <se:Name>SGID024_StateBoundary</se:Name>
+                <se:Description>
+                    <se:Title>State of Utah</se:Title>
+                </se:Description>
+                <se:FeatureTypeName>WK_SG</se:FeatureTypeName>
+                <se:Rule>
+                    <se:Name>SGID024_StateBoundary</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <ogc:Filter>
+                        <ogc:PropertyIsLessThanOrEqualTo>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>5.2</ogc:Literal>
+                        </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:Filter>
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#05dede</se:SvgParameter>
+                            <se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+                <se:Rule>
+                    <se:Name>SGID014_StateBoundary2</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <ogc:Filter>
+                        <ogc:PropertyIsGreaterThan>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>5.2</ogc:Literal>
+                        </ogc:PropertyIsGreaterThan>
+                    </ogc:Filter>
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#0500de</se:SvgParameter>
+                            <se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#000000</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                        </se:Stroke>
+                        <se:PerpendicularOffset>-1.5</se:PerpendicularOffset>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+                <se:Rule>
+                    <se:Name>SGID014_StateBoundary2</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <ogc:Filter>
+                        <ogc:PropertyIsNull>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                        </ogc:PropertyIsNull>
+                    </ogc:Filter>
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#33FF33</se:SvgParameter>
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#CCCCCC</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">400</se:SvgParameter>
+                            <se:SvgParameter name="stroke-dasharray">10000,10000</se:SvgParameter>
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                        <se:PerpendicularOffset>-1.5</se:PerpendicularOffset>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+            </se:FeatureTypeStyle>
+
+        </sld:UserStyle>-->
+        <sld:UserStyle>
+            <se:Name>default:SGID024_StateBoundary</se:Name>
+            <se:Description>
+                <se:Title>State of Utah</se:Title>
+            </se:Description>
+      
+            <se:FeatureTypeStyle>
+                <se:Name>SGID024_StateBoundary</se:Name>
+                <se:Description>
+                    <se:Title>State of Utah</se:Title>
+                </se:Description>
+                <se:FeatureTypeName>WK_KG<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
+                <se:Rule>
+                    <se:Name>SGID024_StateBoundary</se:Name>
+                    <se:Description>
+                        <se:Title>State of Utah</se:Title>
+                    </se:Description>
+                    <!--<ogc:Filter>
+                        <ogc:PropertyIsLessThanOrEqualTo>
+                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
+                            <ogc:Literal>20</ogc:Literal>
+                        </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:Filter>-->
+                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
+                        <se:Fill>
+                            <se:SvgParameter name="fill">#FF0000</se:SvgParameter>
+                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
+                        </se:Fill>
+                        <se:Stroke>
+                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
+                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
+                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
+                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
+                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
+                        </se:Stroke>
+                    </se:PolygonSymbolizer>
+                </se:Rule>
+            </se:FeatureTypeStyle>
+
+        </sld:UserStyle>
+    </sld:NamedLayer>
+</sld:StyledLayerDescriptor>           
