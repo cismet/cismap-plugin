@@ -73,11 +73,14 @@ import de.cismet.cismap.linearreferencing.TableStationEditor;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerFeature extends DefaultFeatureServiceFeature {
+public class CidsLayerFeature extends DefaultFeatureServiceFeature implements SLDStyledFeature {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static transient Logger LOG = Logger.getLogger(CidsLayerFeature.class);
+    private static final String OBJECT_ID = "object_id";
+    private static final String CLASS_ID = "class_id";
+    private static final String GEOMETRIE = "geo_field";
 
     //~ Instance fields --------------------------------------------------------
 
