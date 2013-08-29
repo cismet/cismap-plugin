@@ -21,6 +21,12 @@ import org.jdom.Element;
 import java.util.LinkedList;
 import java.util.Map;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -33,15 +39,21 @@ import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
+import de.cismet.cismap.commons.featureservice.SLDStyledLayer;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import java.io.IOException;
+import org.jdom.Document;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLayerSearchStatement> {
+public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLayerSearchStatement>
+        implements SLDStyledLayer {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,6 +62,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     public static final String CIDS_FEATURELAYER_TYPE = "cidsFeatureService";
 
     //~ Instance fields --------------------------------------------------------
+
+    final XMLInputFactory factory = XMLInputFactory.newInstance();
+    String sldDefinition;
 
     private CidsLayerSearchStatement cidsStatement;
     private String tableName;
@@ -156,6 +171,15 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
         final Element className = new Element("className");
         className.setText(tableName);
         parentElement.addContent(className);
+        
+            try {
+                final Document sldDoc = new org.jdom.input.SAXBuilder().build(getSLDDefiniton());
+                parentElement.addContent(sldDoc.detachRootElement());
+            } catch (JDOMException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         return parentElement;
     }
 
@@ -171,8 +195,49 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
             }
             // this.setName(clazz.getName());
             setQuery(new CidsLayerSearchStatement(metaClass));
+            final Element sldStyle = element.getChild("StyledLayerDescriptor", Namespace.getNamespace("http://www.opengis.net/sld"));
+            if(sldStyle != null) {
+                sldDefinition = new org.jdom.output.XMLOutputter().outputString(sldStyle);
+            }
         } catch (ConnectionException ex) {
             LOG.error("Configuration could not be loaded", ex);
         }
+    }
+
+    @Override
+    public void setSLDInputStream(final String inputStream) {
+        sldDefinition = inputStream;
+        final Map<String, LinkedList<Style>> styles = parseSLD(new StringReader(inputStream));
+        if (styles.isEmpty()) {
+            return;
+        }
+        ((CidsFeatureFactory)featureFactory).styles = styles;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   input  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Map<String, LinkedList<Style>> parseSLD(final Reader input) {
+        Map<String, LinkedList<org.deegree.style.se.unevaluated.Style>> styles = null;
+        try {
+            styles = org.deegree.style.persistence.sld.SLDParser.getStyles(factory.createXMLStreamReader(
+                        input));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (styles == null) {
+            LOG.info("SLD Parser funtkioniert nicht");
+        }
+        return styles;
+    }
+
+    @Override
+    public Reader getSLDDefiniton() {
+        return (sldDefinition == null) ? new InputStreamReader(
+getClass().getResourceAsStream("/testSLD.xml")) : new StringReader(sldDefinition);
     }
 }
