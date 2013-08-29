@@ -19,7 +19,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
