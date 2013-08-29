@@ -49,6 +49,16 @@
                 <updatePolicy>interval:60</updatePolicy>
             </snapshots>
         </repository>
+    <repository>
+      <id>deegree-repo</id>
+      <url>http://repo.deegree.org/content/groups/public</url>
+      <releases>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
     </repositories>
 
     <dependencies>
@@ -63,6 +73,11 @@
             <artifactId>swing-worker</artifactId>
             <version>1.1</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.deegree</groupId>
+            <artifactId>deegree-core-style</artifactId>
+            <version>3.2.2</version>
         </dependency>
     </dependencies>
     
