@@ -55,7 +55,6 @@ import org.deegree.style.styling.TextStyling;
 
 import org.jfree.util.Log;
 
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
