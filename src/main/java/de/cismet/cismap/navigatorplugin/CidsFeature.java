@@ -69,7 +69,7 @@ import de.cismet.commons.classloading.BlacklistClassloading;
  * @author   thorsten.hell@cismet.de
  * @version  $Revision$, $Date$
  */
-public class CidsFeature extends DefaultFeatureServiceFeature implements XStyledFeature,
+public class CidsFeature implements XStyledFeature,
     Highlightable,
     Bufferable,
     RasterLayerSupportedFeature,
