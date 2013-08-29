@@ -75,8 +75,13 @@ import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
+import de.cismet.cismap.commons.featureservice.SLDStyledLayer;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import java.io.IOException;
+import org.jdom.Document;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
 
 /**
  * DOCUMENT ME!
@@ -197,6 +202,15 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         final Element className = new Element("className");
         className.setText(tableName);
         parentElement.addContent(className);
+        
+            try {
+                final Document sldDoc = new org.jdom.input.SAXBuilder().build(getSLDDefiniton());
+                parentElement.addContent(sldDoc.detachRootElement());
+            } catch (JDOMException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         return parentElement;
     }
 
