@@ -26,31 +26,15 @@ import org.apache.log4j.Logger;
 import org.apache.xerces.xs.XSElementDeclaration;
 
 import org.deegree.commons.tom.TypedObjectNode;
-import org.deegree.commons.tom.gml.GMLObjectCategory;
-import org.deegree.commons.tom.gml.GMLObjectType;
 import org.deegree.commons.tom.gml.property.Property;
-import org.deegree.commons.tom.gml.property.PropertyType;
-import org.deegree.commons.tom.primitive.BaseType;
-import org.deegree.commons.tom.primitive.PrimitiveType;
-import org.deegree.commons.tom.primitive.PrimitiveValue;
-import org.deegree.commons.uom.Measure;
-import org.deegree.commons.uom.Unit;
-import org.deegree.cs.coordinatesystems.ICRS;
 import org.deegree.feature.Feature;
 import org.deegree.feature.property.ExtraProps;
 import org.deegree.feature.types.AppSchema;
-import org.deegree.feature.types.FeatureType;
 import org.deegree.feature.types.property.GeometryPropertyType;
 import org.deegree.filter.FilterEvaluationException;
+import org.deegree.filter.XPathEvaluator;
 import org.deegree.filter.expression.ValueReference;
 import org.deegree.geometry.Envelope;
-import org.deegree.geometry.precision.PrecisionModel;
-import org.deegree.geometry.primitive.Point;
-import org.deegree.style.se.unevaluated.Style;
-import org.deegree.style.styling.PointStyling;
-import org.deegree.style.styling.PolygonStyling;
-import org.deegree.style.styling.Styling;
-import org.deegree.style.styling.TextStyling;
 
 import org.jfree.util.Log;
 
@@ -89,14 +73,11 @@ import de.cismet.cismap.linearreferencing.TableStationEditor;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerFeature extends DefaultFeatureServiceFeature implements SLDStyledFeature {
+public class CidsLayerFeature extends DefaultFeatureServiceFeature {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static transient Logger LOG = Logger.getLogger(CidsLayerFeature.class);
-    private static final String OBJECT_ID = "object_id";
-    private static final String CLASS_ID = "class_id";
-    private static final String GEOMETRIE = "geo_field";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -553,5 +534,55 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements SL
          * else { deegreeProperties.add(new DeegreeProperty(qname, value)); } } catch (ConnectionException ex) {
          * CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex); deegreeProperties.add(null);
          * } return deegreeProperties; } else { return super.getProperties(qname); } }*/
+    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    protected class CidSLayerDeegreeFeature extends DeegreeFeature {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public org.deegree.feature.types.FeatureType getType() {
+            return new DeegreeFeatureType() {
+
+                    @Override
+                    public QName getName() {
+                        return new QName(metaClass.getTableName()); // To change body of generated methods, choose Tools
+                                                                    // | Templates.
+                    }
+                };
+        }
+
+        @Override
+        public List<Property> getProperties(final QName qname) {
+            if ("original".equalsIgnoreCase(qname.getPrefix())) {
+                final List<Property> deegreeProperties = new LinkedList();
+                final Object value;
+                try {
+                    if (metaObject == null) {
+                        metaObject = SessionManager.getConnection()
+                                    .getMetaObject(SessionManager.getSession().getUser(),
+                                            CidsLayerFeature.this.getId(),
+                                            (Integer)CidsLayerFeature.this.getProperty(CidsLayerFeature.CLASS_ID),
+                                            SessionManager.getSession().getUser().getDomain());
+                    }
+                    value = metaObject.getBean().getProperty(qname.getLocalPart());
+                    if (value == null) {
+                        deegreeProperties.add(null);
+                    } else {
+                        deegreeProperties.add(new DeegreeProperty(qname, value));
+                    }
+                } catch (ConnectionException ex) {
+                    CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex);
+                    deegreeProperties.add(null);
+                }
+                return deegreeProperties;
+            } else {
+                return super.getProperties(qname);
+            }
+        }
     }
 }
