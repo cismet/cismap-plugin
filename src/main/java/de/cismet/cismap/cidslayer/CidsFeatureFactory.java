@@ -54,10 +54,6 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
     //~ Instance fields --------------------------------------------------------
 
     GeomFromWktConverter converter = new GeomFromWktConverter();
-    // private BoundingBox lastBB = null;
-    // private BoundingBox diff = null;
-    // private final WKTReader reader;
-    Map<String, LinkedList<org.deegree.style.se.unevaluated.Style>> styles;
     MetaClass metaClass;
 
     //~ Constructors -----------------------------------------------------------
@@ -94,7 +90,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
             final LayerProperties layerProperties,
             final Map<String, LinkedList<org.deegree.style.se.unevaluated.Style>> styles) {
         this.layerProperties = layerProperties;
-        this.styles = styles;
+        this.setSLDStyle(styles);
         this.metaClass = metaClass;
     }
 
@@ -203,19 +199,11 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
             // obj = SessionManager.getConnection().getMetaObject(SessionManager.getSession().getUser(), oid, cid,
             // SessionManager.getSession().getUser().getDomain());
 
-            while (lastFeatureIt.hasNext()) {
-                lastFeature = lastFeatureIt.next();
-                if (lastFeature == null) {
-                    break;
-                }
-                if (lastFeature.getId() == (Integer)properties.get("object_id")) {
-                    lastFeature.setProperties(properties);
-                    break;
-                } else if (lastFeature.getId() > (Integer)properties.get("object_id")) {
-                    lastFeature = null;
-                    break;
-                }
-            }
+            /*
+             * while (lastFeatureIt.hasNext()) { lastFeature = lastFeatureIt.next(); if (lastFeature == null) { break; }
+             * if (lastFeature.getId() == (Integer)properties.get("object_id")) { lastFeature.setProperties(properties);
+             *     lastFeature.setStyle(featureStyle);     break; } else if
+             * (lastFeature.getId() > (Integer)properties.get("object_id")) {     lastFeature = null;     break; }}*/
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
                         properties /*oid, cid, geom,*/,
@@ -229,7 +217,8 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         if (checkCancelled(workerThread, "PreReturn()")) {
             return null;
         }
-        lastCreatedfeatureVector = features;
+        updateLastCreatedFeatures(features);
+        // lastCreatedfeatureVector = features;
         // lastBB = boundingBox;
 
         return features;
