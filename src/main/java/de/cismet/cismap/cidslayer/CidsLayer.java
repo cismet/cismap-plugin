@@ -16,7 +16,10 @@ import org.apache.log4j.Logger;
 
 import org.deegree.style.se.unevaluated.Style;
 
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
 
 import java.util.LinkedList;
 import java.util.Map;
