@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import org.deegree.style.se.unevaluated.Style;
 
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
@@ -54,6 +55,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -74,10 +76,6 @@ import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.SLDStyledLayer;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
-import java.io.IOException;
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
 
 /**
  * DOCUMENT ME!
@@ -198,15 +196,6 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         final Element className = new Element("className");
         className.setText(tableName);
         parentElement.addContent(className);
-        
-            try {
-                final Document sldDoc = new org.jdom.input.SAXBuilder().build(getSLDDefiniton());
-                parentElement.addContent(sldDoc.detachRootElement());
-            } catch (JDOMException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
         return parentElement;
     }
 
