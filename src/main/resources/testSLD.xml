@@ -1,427 +1,1142 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:wfs="http://www.opengis.net/wfs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fo="http://www.w3.org/1999/XSL/Format"
-  xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns="http://www.opengis.net/sld" version="1.1.0"
-  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd">
-  <sld:NamedLayer>
-    <!--  This styling file shows the use of SLD styling -->
-    <se:Name>StateBoundary</se:Name>
-
-
-    <!--<sld:LayerFeatureConstraints>
-      <sld:FeatureTypeConstraint>
-        <se:FeatureTypeName>app:SGID024_StateBoundary</se:FeatureTypeName>
-
-        <ogc:Filter>
-          <ogc:PropertyIsLessThanOrEqualTo>
-            <ogc:PropertyName>app:OBJECTID</ogc:PropertyName>
-            <ogc:Literal>322</ogc:Literal>
-          </ogc:PropertyIsLessThanOrEqualTo>
-        </ogc:Filter>
-        
-          </sld:FeatureTypeConstraint>
-        </sld:LayerFeatureConstraints>-->
-<sld:UserStyle>
-            <se:Name>default:SGID024_StateBoundary</se:Name>
-            <se:Description>
-                <se:Title>State of Utah</se:Title>
-            </se:Description>
-      
-            <se:FeatureTypeStyle>
-                <se:Name>SGID024_StateBoundary</se:Name>
-                <se:Description>
-                    <se:Title>State of Utah</se:Title>
-                </se:Description>
-                <se:Rule>
-                    <se:Name>SGID024_StateBoundary</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <!--<ogc:Filter>
-                        <ogc:PropertyIsLessThanOrEqualTo>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>20</ogc:Literal>
-                        </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:Filter>-->
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#CCCCCC</se:SvgParameter>
-                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-            </se:FeatureTypeStyle>
-
-        </sld:UserStyle>
+<?xml version="1.0" encoding="UTF-8"?><sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  
+    <sld:NamedLayer>
+        <sld:Name>default</sld:Name>
         <sld:UserStyle>
-            <se:Name>default:SGID024_StateBoundary</se:Name>
-            <se:Description>
-                <se:Title>State of Utah</se:Title>
-            </se:Description>
-      
-            <se:FeatureTypeStyle>
-                <se:Name>SGID024_StateBoundary</se:Name>
-                <se:Description>
-                    <se:Title>State of Utah</se:Title>
-                </se:Description>
-                <se:FeatureTypeName>VERMESSUNG_RISS<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
-                <se:Rule>
-                    <se:Name>SGID024_StateBoundary</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <!--<ogc:Filter>
-                        <ogc:PropertyIsLessThanOrEqualTo>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>20</ogc:Literal>
-                        </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:Filter>-->
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#00FF00</se:SvgParameter>
-                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-            </se:FeatureTypeStyle>
-
-        </sld:UserStyle>
-        <sld:UserStyle>
-            <se:Name>default:SGID024_StateBoundary</se:Name>
-            <se:Description>
-                <se:Title>State of Utah</se:Title>
-            </se:Description>
-      
-            <se:FeatureTypeStyle>
-                <se:Name>SGID024_StateBoundary</se:Name>
-                <se:Description>
-                    <se:Title>State of Utah</se:Title>
-                </se:Description>
-                <se:FeatureTypeName>ALKIS_LANDPARCEL<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
-                <se:Rule>
-                    <se:Name>SGID024_StateBoundary</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <!--<ogc:Filter>
-                        <ogc:PropertyIsLessThanOrEqualTo>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>20</ogc:Literal>
-                        </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:Filter>-->
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#0000FF</se:SvgParameter>
-                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-            </se:FeatureTypeStyle>
-        </sld:UserStyle>
-        <sld:UserStyle>
-            <se:Name>default:wk_sg</se:Name>
-            <se:Description>
-                    <se:Title>wk_sg</se:Title>
-                </se:Description>
-            <se:FeatureTypeStyle>
-                <se:Name>default</se:Name>
-                <se:Description>
-                    <se:Title>wk_sg</se:Title>
-                </se:Description>
-                <se:FeatureTypeName>WK_SG</se:FeatureTypeName>
-                <se:Rule>
-                    <se:Name>wk_sg</se:Name>
-                    <se:Description>
-                        <se:Title>wk_sg</se:Title>
-                    </se:Description>
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
-                        <se:Geometry>
-                            <ogc:PropertyName>geo_field</ogc:PropertyName>
-                        </se:Geometry>
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#FF0000</se:SvgParameter>
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:GraphicFill>
-                                 <se:Graphic>
-                            <se:ExternalGraphic>
-                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/schwarz"/>
-                                <se:Format>image/gif</se:Format>
-                            </se:ExternalGraphic>
-                            <!--<se:Mark>
-                                <se:WellKnownName>star</se:WellKnownName>
-                                <se:Fill>
-                                    <se:SvgParameter name="fill">#ff0000</se:SvgParameter>
-                                </se:Fill>
-                            </se:Mark>-->
-                            <se:Opacity>1</se:Opacity>
-                            <se:Size>0.1</se:Size>
-                            <se:AnchorPoint>
-                                <se:AnchorPointX>0.5</se:AnchorPointX>
-                                <se:AnchorPointY>0.5</se:AnchorPointY>
-                            </se:AnchorPoint>
-                        </se:Graphic>
-                            </se:GraphicFill>
-                            <se:SvgParameter name="stroke">#00FFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">2</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                    <se:PointSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
-                        <se:Graphic>
-                            <se:ExternalGraphic>
-                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/schwarz"/>
-                                <se:Format>image/gif</se:Format>
-                            </se:ExternalGraphic>
-                            <!--<se:Mark>
-                                <se:WellKnownName>star</se:WellKnownName>
-                                <se:Fill>
-                                    <se:SvgParameter name="fill">#ff0000</se:SvgParameter>
-                                </se:Fill>
-                            </se:Mark>-->
-                            <se:Opacity>1</se:Opacity>
-                            <se:Size>1</se:Size>
-                            <se:AnchorPoint>
-                                <se:AnchorPointX>0.5</se:AnchorPointX>
-                                <se:AnchorPointY>0.5</se:AnchorPointY>
-                            </se:AnchorPoint>
-                        </se:Graphic>
-                    </se:PointSymbolizer>
-                    <se:PointSymbolizer uom="http://www.opengeospatial.org/se/unity/pixel">
-                        <se:Graphic>
-                            <se:ExternalGraphic>
-                                <se:OnlineResource xlink:type="simple" xlink:href="http://tu-dresden.de/die_tu_dresden/fakultaeten/fakultaet_forst_geo_und_hydrowissenschaften/fachrichtung_geowissenschaften/ig/lehrstuehle/meuropa/bilder/Symbole/blau"/>
-                                <se:Format>image/gif</se:Format>
-                            </se:ExternalGraphic>
-                            <se:Opacity>1</se:Opacity>
-                            <se:Size>18</se:Size>
-                            <se:AnchorPoint>
-                                <se:AnchorPointX>0.5</se:AnchorPointX>
-                                <se:AnchorPointY>0.5</se:AnchorPointY>
-                            </se:AnchorPoint>
-                            <se:Displacement>
-                                <se:DisplacementX>1</se:DisplacementX>
-                                <se:DisplacementY>9</se:DisplacementY>
-                            </se:Displacement>
-                        </se:Graphic>
-                    </se:PointSymbolizer>
-                    <!--<se:TextSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
-						<se:Geometry>
-							<ogc:PropertyName>geo_field</ogc:PropertyName>
-						</se:Geometry>
-						<se:Label>
-							<ogc:PropertyName>lw_name</ogc:PropertyName>
-						</se:Label>
-						<se:Font>
-							<se:SvgParameter name="font-family">Arial</se:SvgParameter>
-							<se:SvgParameter name="font-family">Sans-Serif</se:SvgParameter>
-							<se:SvgParameter name="font-style">normal</se:SvgParameter>
-							<se:SvgParameter name="font-size">12</se:SvgParameter>
-							<se:SvgParameter name="font-color">#000000</se:SvgParameter>
-							<se:SvgParameter name="font-weight">bold</se:SvgParameter>
-						</se:Font>
-						<se:LabelPlacement>
-                                                    <se:PointPlacement auto="true">
-                                                        <se:AnchorPoint>
-                                <se:AnchorPointX>1.0</se:AnchorPointX>
-                                <se:AnchorPointY>0.0</se:AnchorPointY>
-                            </se:AnchorPoint>
-                                                        <se:Displacement>
-                                                            <se:DisplacementX>10</se:DisplacementX>
-                                                            <se:DisplacementY>10</se:DisplacementY>
-                                                        </se:Displacement>
-                                                    </se:PointPlacement>
-						</se:LabelPlacement>
-						<se:Halo>
-							<se:Fill>
-								<se:SvgParameter name="fill">#FFFFFF</se:SvgParameter>
-								<se:SvgParameter name="fill-opacity">0.5</se:SvgParameter>
-							</se:Fill>
-						</se:Halo>
-					</se:TextSymbolizer>
-                                        <se:TextSymbolizer uom="http://www.opengeospatial.org/se/unity/metre">
-						<se:Geometry>
-							<ogc:PropertyName>geo_field</ogc:PropertyName>
-						</se:Geometry>
-						<se:Label>
-							<ogc:PropertyName>lw_name</ogc:PropertyName>
-						</se:Label>
-						<se:Font>
-							<se:SvgParameter name="font-family">Arial</se:SvgParameter>
-							<se:SvgParameter name="font-family">Sans-Serif</se:SvgParameter>
-							<se:SvgParameter name="font-style">normal</se:SvgParameter>
-							<se:SvgParameter name="font-size">12</se:SvgParameter>
-							<se:SvgParameter name="font-color">#FFFFFF</se:SvgParameter>
-							<se:SvgParameter name="font-weight">bold</se:SvgParameter>
-						</se:Font>
-						<se:LabelPlacement>
-                                                    <se:PointPlacement auto="true">
-                                                        <se:AnchorPoint>
-                                <se:AnchorPointX>0.0</se:AnchorPointX>
-                                <se:AnchorPointY>0.0</se:AnchorPointY>
-                            </se:AnchorPoint>
-                                                        <se:Displacement>
-                                                            <se:DisplacementX>10</se:DisplacementX>
-                                                            <se:DisplacementY>10</se:DisplacementY>
-                                                        </se:Displacement>
-                                                    </se:PointPlacement>
-						</se:LabelPlacement>
-						<se:Halo>
-							<se:Fill>
-								<se:SvgParameter name="fill">#FFFFFF</se:SvgParameter>
-								<se:SvgParameter name="fill-opacity">0.5</se:SvgParameter>
-							</se:Fill>
-						</se:Halo>
-					</se:TextSymbolizer>-->
-                </se:Rule>
-            </se:FeatureTypeStyle>
-        </sld:UserStyle>
-        <!--<sld:UserStyle>
-            <se:Name>default:SGID024_StateBoundary</se:Name>
-            <se:Description>
-                <se:Title>State of Utah</se:Title>
-            </se:Description>
-      
-            <se:FeatureTypeStyle>
-                <se:Name>SGID024_StateBoundary</se:Name>
-                <se:Description>
-                    <se:Title>State of Utah</se:Title>
-                </se:Description>
-                <se:FeatureTypeName>WK_SG</se:FeatureTypeName>
-                <se:Rule>
-                    <se:Name>SGID024_StateBoundary</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <ogc:Filter>
-                        <ogc:PropertyIsLessThanOrEqualTo>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>5.2</ogc:Literal>
-                        </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:Filter>
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#05dede</se:SvgParameter>
-                            <se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-                <se:Rule>
-                    <se:Name>SGID014_StateBoundary2</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <ogc:Filter>
-                        <ogc:PropertyIsGreaterThan>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>5.2</ogc:Literal>
-                        </ogc:PropertyIsGreaterThan>
-                    </ogc:Filter>
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#0500de</se:SvgParameter>
-                            <se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#000000</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                        </se:Stroke>
-                        <se:PerpendicularOffset>-1.5</se:PerpendicularOffset>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-                <se:Rule>
-                    <se:Name>SGID014_StateBoundary2</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <ogc:Filter>
-                        <ogc:PropertyIsNull>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                        </ogc:PropertyIsNull>
-                    </ogc:Filter>
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#33FF33</se:SvgParameter>
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#CCCCCC</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">400</se:SvgParameter>
-                            <se:SvgParameter name="stroke-dasharray">10000,10000</se:SvgParameter>
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                        <se:PerpendicularOffset>-1.5</se:PerpendicularOffset>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-            </se:FeatureTypeStyle>
-
-        </sld:UserStyle>-->
-        <sld:UserStyle>
-            <se:Name>default:SGID024_StateBoundary</se:Name>
-            <se:Description>
-                <se:Title>State of Utah</se:Title>
-            </se:Description>
-      
-            <se:FeatureTypeStyle>
-                <se:Name>SGID024_StateBoundary</se:Name>
-                <se:Description>
-                    <se:Title>State of Utah</se:Title>
-                </se:Description>
-                <se:FeatureTypeName>WK_KG<!--app:SGID024_StateBoundary--></se:FeatureTypeName>
-                <se:Rule>
-                    <se:Name>SGID024_StateBoundary</se:Name>
-                    <se:Description>
-                        <se:Title>State of Utah</se:Title>
-                    </se:Description>
-                    <!--<ogc:Filter>
-                        <ogc:PropertyIsLessThanOrEqualTo>
-                            <ogc:PropertyName>tiefe_max</ogc:PropertyName>
-                            <ogc:Literal>20</ogc:Literal>
-                        </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:Filter>-->
-                    <se:PolygonSymbolizer uom="http://www.opengeospatial/se/units/mm">
-                        <se:Fill>
-                            <se:SvgParameter name="fill">#FF0000</se:SvgParameter>
-                            <!--<se:SvgParameter name="fill-opacity">0.2</se:SvgParameter>-->
-                        </se:Fill>
-                        <se:Stroke>
-                            <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
-                            <se:SvgParameter name="stroke-opacity">1.0</se:SvgParameter>
-                            <se:SvgParameter name="stroke-width">200</se:SvgParameter>
-                            <!--<se:SvgParameter name="stroke-dasharray">5,7.5,10,2.5</se:SvgParameter>-->
-                            <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-                        </se:Stroke>
-                    </se:PolygonSymbolizer>
-                </se:Rule>
-            </se:FeatureTypeStyle>
-
+            <sld:Name>AtlasStyler 1.9</sld:Name>
+            <sld:FeatureTypeStyle>
+                <sld:Rule>
+                    <sld:Stroke/>
+                </sld:Rule>
+            </sld:FeatureTypeStyle>
         </sld:UserStyle>
     </sld:NamedLayer>
-</sld:StyledLayerDescriptor>           
+    <sld:NamedLayer>
+    <sld:Name>wsg</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>AtlasStyler 1.9</sld:Name>
+      <sld:Title/>
+     <sld:FeatureTypeStyle>
+        <sld:Name>UNIQUE_VALUE_POLYGON</sld:Name>
+        <sld:Title>UniqueValuesPolygonRuleList</sld:Title>
+        <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+        <sld:Rule>
+          <sld:Title>andere</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:Not>
+                <ogc:Or>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2o</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2v</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3a</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3b</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3o</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3v</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>4</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Or>
+              </ogc:Not>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#616161</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke/>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F18D05</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2o</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2o</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#E54028</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2v</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2v</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#D70060</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#32742C</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3a</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3a</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#D0D102</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3b</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3b</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#61AE24</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3o</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3o</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#00A1CB</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3v</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3v</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#01A4A4</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>4</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>4</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#113f8c</sld:CssParameter>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+  <sld:NamedLayer>
+    <sld:Name>wsg_2</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>AtlasStyler 1.9</sld:Name>
+      <sld:Title/>
+     <sld:FeatureTypeStyle>
+        <sld:Name>UNIQUE_VALUE_POLYGON</sld:Name>
+        <sld:Title>UniqueValuesPolygonRuleList</sld:Title>
+        <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+        <sld:Rule>
+          <sld:Title>andere</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:Not>
+                <ogc:Or>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2o</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>2v</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3a</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3b</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3o</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>3v</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    <ogc:Literal>4</ogc:Literal>
+                  </ogc:PropertyIsEqualTo>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Or>
+              </ogc:Not>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FFFFFF</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke/>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/45_1px.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2o</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2o</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/0_1px.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>2v</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>2v</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/90_1px.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/45_1px_grob.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3a</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3a</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/45_1px_grob.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3b</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3b</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/135_1px_grob.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3o</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3o</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/0_1px_grob.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>3v</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>3v</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/90_1px_grob.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Title>4</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:And>
+                <ogc:Not>
+                  <ogc:Or>
+                    <ogc:PropertyIsNull>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                    </ogc:PropertyIsNull>
+                    <ogc:PropertyIsEqualTo>
+                      <ogc:PropertyName>ZONE</ogc:PropertyName>
+                      <ogc:Literal/>
+                    </ogc:PropertyIsEqualTo>
+                  </ogc:Or>
+                </ogc:Not>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ZONE</ogc:PropertyName>
+                  <ogc:Literal>4</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:And>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+          <sld:PolygonSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>the_geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:Fill>
+              <sld:GraphicFill>
+                <sld:Graphic>
+                  <sld:ExternalGraphic>
+                    <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="file:///C:/Users/mroncoroni/Pictures/45_1px_max.png"/>
+                    <sld:Format>image/png</sld:Format>
+                  </sld:ExternalGraphic>
+                  <sld:Size>
+                    <ogc:Literal>50</ogc:Literal>
+                  </sld:Size>
+                </sld:Graphic>
+              </sld:GraphicFill>
+            </sld:Fill>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+  <sld:NamedLayer>
+    <!--  This styling file shows the use of SLD styling -->
+    <sld:Name>dlm25w_mv_land</sld:Name>
+<sld:UserStyle>
+            <sld:Name>AtlasStyler 1.9</sld:Name>
+  <sld:Title/>
+  <sld:FeatureTypeStyle>
+    <sld:Name>SINGLE_SYMBOL_POLYGON</sld:Name>
+    <sld:Title>SinglePolygonSymbolRuleList</sld:Title>
+    <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+    <sld:Rule>
+      <sld:Title>default{dlm25w_ezg_mv_3.shp}</sld:Title>
+      <ogc:Filter>
+        <ogc:And>
+          <ogc:PropertyIsEqualTo>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+          </ogc:PropertyIsEqualTo>
+          <ogc:PropertyIsEqualTo>
+            <ogc:Literal>1</ogc:Literal>
+            <ogc:Literal>1</ogc:Literal>
+          </ogc:PropertyIsEqualTo>
+        </ogc:And>
+      </ogc:Filter>
+      <sld:MaxScaleDenominator>1.7976931348623157E308</sld:MaxScaleDenominator>
+      <sld:PolygonSymbolizer>
+        <sld:Geometry>
+          <ogc:PropertyName>the_geom</ogc:PropertyName>
+        </sld:Geometry>
+<sld:Fill>
+<sld:CssParameter name="fill">#C0C0C0</sld:CssParameter>
+</sld:Fill>
+        <sld:Stroke>
+          <sld:CssParameter name="stroke-fill">#808080</sld:CssParameter>
+        </sld:Stroke>
+        <sld:Stroke/>
+      </sld:PolygonSymbolizer>
+    </sld:Rule>
+  </sld:FeatureTypeStyle>
+        </sld:UserStyle>
+    </sld:NamedLayer>
+  <sld:NamedLayer>
+              <!--  This styling file shows the use of SLD styling -->
+            <sld:Name>dlm25w_ezg_mv_3</sld:Name>
+            <sld:UserStyle>
+  <sld:Name>AtlasStyler 1.9</sld:Name>
+  <sld:Title/>
+  <sld:FeatureTypeStyle>
+    <sld:Name>SINGLE_SYMBOL_POLYGON</sld:Name>
+    <sld:Title>SinglePolygonSymbolRuleList</sld:Title>
+    <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+    <sld:Rule>
+      <sld:Title>default{dlm25w_ezg_mv_3.shp}</sld:Title>
+      <ogc:Filter>
+        <ogc:And>
+          <ogc:PropertyIsEqualTo>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+          </ogc:PropertyIsEqualTo>
+          <ogc:PropertyIsEqualTo>
+            <ogc:Literal>1</ogc:Literal>
+            <ogc:Literal>1</ogc:Literal>
+          </ogc:PropertyIsEqualTo>
+        </ogc:And>
+      </ogc:Filter>
+      <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+      <sld:PolygonSymbolizer>
+        <sld:Geometry>
+          <ogc:PropertyName>the_geom</ogc:PropertyName>
+        </sld:Geometry>
+        <sld:Fill>
+          <sld:CssParameter name="fill-opacity">0.0</sld:CssParameter>
+        </sld:Fill>
+        <sld:Stroke/>
+      </sld:PolygonSymbolizer>
+    </sld:Rule>
+  </sld:FeatureTypeStyle>
+  <sld:FeatureTypeStyle>
+    <sld:Name>TEXT_LABEL</sld:Name>
+    <sld:Title>TextRuleList</sld:Title>
+    <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+    <sld:Rule>
+      <sld:Name>DEFAULT</sld:Name>
+      <ogc:Filter>
+        <ogc:And>
+          <ogc:PropertyIsEqualTo>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+            <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+          </ogc:PropertyIsEqualTo>
+          <ogc:And>
+            <ogc:PropertyIsEqualTo>
+              <ogc:Literal>LABEL_CLASS_ENABLED</ogc:Literal>
+              <ogc:Literal>LABEL_CLASS_ENABLED</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:Literal>1</ogc:Literal>
+              <ogc:Literal>1</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+          </ogc:And>
+        </ogc:And>
+      </ogc:Filter>
+      <sld:MaxScaleDenominator>250000.0</sld:MaxScaleDenominator>
+      <sld:TextSymbolizer>
+        <sld:Geometry>
+          <ogc:PropertyName>the_geom</ogc:PropertyName>
+        </sld:Geometry>
+        <sld:Label>
+          <ogc:PropertyName>app:GBK_LAWA_K</ogc:PropertyName>
+        </sld:Label>
+        <sld:Font>
+          <sld:CssParameter name="font-family">Arial</sld:CssParameter>
+          <sld:CssParameter name="font-size">12.0</sld:CssParameter>
+          <sld:CssParameter name="font-style">normal</sld:CssParameter>
+          <sld:CssParameter name="font-weight">normal</sld:CssParameter>
+        </sld:Font>
+        <sld:LabelPlacement>
+          <sld:PointPlacement>
+            <sld:AnchorPoint>
+              <sld:AnchorPointX>
+                <ogc:Literal>0.5</ogc:Literal>
+              </sld:AnchorPointX>
+              <sld:AnchorPointY>
+                <ogc:Literal>0.5</ogc:Literal>
+              </sld:AnchorPointY>
+            </sld:AnchorPoint>
+            <sld:Displacement>
+              <sld:DisplacementX>
+                <ogc:Literal>0.0</ogc:Literal>
+              </sld:DisplacementX>
+              <sld:DisplacementY>
+                <ogc:Literal>0.0</ogc:Literal>
+              </sld:DisplacementY>
+            </sld:Displacement>
+            <sld:Rotation>
+              <ogc:Literal>0</ogc:Literal>
+            </sld:Rotation>
+          </sld:PointPlacement>
+        </sld:LabelPlacement>
+        <sld:Halo>
+          <sld:Radius>
+            <ogc:Literal>1.0</ogc:Literal>
+          </sld:Radius>
+          <sld:Fill>
+            <sld:CssParameter name="fill">#FFFFFF</sld:CssParameter>
+            <sld:CssParameter name="fill-opacity">0.5</sld:CssParameter>
+          </sld:Fill>
+        </sld:Halo>
+        <sld:Fill>
+          <sld:CssParameter name="fill">#000000</sld:CssParameter>
+        </sld:Fill>
+      </sld:TextSymbolizer>
+    </sld:Rule>
+  </sld:FeatureTypeStyle>
+</sld:UserStyle>
+          </sld:NamedLayer>
+		  <sld:NamedLayer>
+            <!--  This styling file shows the use of SLD styling -->
+            <sld:Name>wbu_aus</sld:Name>
+            <sld:UserStyle>
+              <sld:Name>AtlasStyler 1.9</sld:Name>
+              <sld:Title />
+              <sld:FeatureTypeStyle>
+                <sld:Name>SINGLE_SYMBOL_POINT</sld:Name>
+                <sld:Title>SinglePointSymbolRuleList</sld:Title>
+                <sld:FeatureTypeName>Feature</sld:FeatureTypeName>
+                <sld:Rule>
+                  <sld:Title />
+                  <ogc:Filter>
+                    <ogc:And>
+                      <ogc:PropertyIsEqualTo>
+                        <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                        <ogc:Literal>ALL_LABEL_CLASSES_ENABLED</ogc:Literal>
+                      </ogc:PropertyIsEqualTo>
+                      <ogc:PropertyIsEqualTo>
+                        <ogc:Literal>1</ogc:Literal>
+                        <ogc:Literal>1</ogc:Literal>
+                      </ogc:PropertyIsEqualTo>
+                    </ogc:And>
+                  </ogc:Filter>
+                  <sld:MaxScaleDenominator>1.0E20</sld:MaxScaleDenominator>
+                  <sld:PointSymbolizer>
+                    <sld:Geometry>
+                      <ogc:PropertyName>the_geom</ogc:PropertyName>
+                    </sld:Geometry>
+                    <sld:Graphic>
+                      <sld:Mark>
+                        <sld:WellKnownName>triangle</sld:WellKnownName>
+                        <sld:Fill>
+                          <sld:CssParameter name="fill">#3399FF</sld:CssParameter>
+                        </sld:Fill>
+                        <sld:Stroke>
+                          <sld:CssParameter name="stroke">#3300cc</sld:CssParameter>
+                          <sld:CssParameter name="stroke-width">1.5</sld:CssParameter>
+                        </sld:Stroke>
+                      </sld:Mark>
+                      <sld:Size>
+                        <ogc:Literal>13.0</ogc:Literal>
+                      </sld:Size>
+                      <!--<sld:Rotation>
+                        <ogc:Literal>180.0</ogc:Literal>
+                      </sld:Rotation>-->
+                    </sld:Graphic>
+                  </sld:PointSymbolizer>
+                </sld:Rule>
+              </sld:FeatureTypeStyle>
+            </sld:UserStyle>
+          </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+
