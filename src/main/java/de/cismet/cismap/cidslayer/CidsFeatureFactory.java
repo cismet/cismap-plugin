@@ -37,6 +37,7 @@ import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.AbstractFeatureFactory;
+import de.cismet.cismap.commons.featureservice.factory.CachingFeatureFactory;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
@@ -49,7 +50,7 @@ import de.cismet.commons.converter.ConversionException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement> {
+class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement>{
 
     //~ Instance fields --------------------------------------------------------
 
