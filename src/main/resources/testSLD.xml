@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?><sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
   
     <sld:NamedLayer>
+        <sld:Name>WK_SG</sld:Name>
+        <sld:UserStyle>
+            <sld:Name>AtlasStyler 1.9</sld:Name>
+            <sld:FeatureTypeStyle>
+                <sld:Rule>
+                    <sld:PolygonSymbolizer>
+                        <sld:Fill>
+                            <CssParameter name="fill">#635435</CssParameter>
+                        </sld:Fill>
+                        <sld:Stroke/>
+                    </sld:PolygonSymbolizer>
+                </sld:Rule>
+            </sld:FeatureTypeStyle>
+        </sld:UserStyle>
+    </sld:NamedLayer>
+    <sld:NamedLayer>
         <sld:Name>default</sld:Name>
         <sld:UserStyle>
             <sld:Name>AtlasStyler 1.9</sld:Name>
             <sld:FeatureTypeStyle>
                 <sld:Rule>
-                    <sld:Stroke/>
+                    <sld:PolygonSymbolizer>
+                        <sld:Stroke/>
+                    </sld:PolygonSymbolizer>
                 </sld:Rule>
             </sld:FeatureTypeStyle>
         </sld:UserStyle>
