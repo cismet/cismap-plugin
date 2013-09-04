@@ -44,7 +44,6 @@ import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
-import de.cismet.cismap.commons.featureservice.SLDStyledLayer;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 
