@@ -37,6 +37,7 @@ import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.AbstractFeatureFactory;
+import de.cismet.cismap.commons.featureservice.factory.CachingFeatureFactory;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
@@ -49,7 +50,7 @@ import de.cismet.commons.converter.ConversionException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement> {
+class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement>{
 
     //~ Instance fields --------------------------------------------------------
 
@@ -92,6 +93,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         this.layerProperties = layerProperties;
         this.setSLDStyle(styles);
         this.metaClass = metaClass;
+        layerName = metaClass.getTableName();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -166,13 +168,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         for (final Object name : resultArray.get(0)) {
             columnNames.add((String)name);
         }
-        org.deegree.style.se.unevaluated.Style featureStyle = styles.get("StateBoundary").getFirst();
-        for (final org.deegree.style.se.unevaluated.Style style : styles.get("StateBoundary")) {
-            if ((style.getFeatureType() != null)
-                        && metaClass.getTableName().equals(style.getFeatureType().getLocalPart())) {
-                featureStyle = style;
-            }
-        }
+        /*org.deegree.style.se.unevaluated.Style featureStyle = styles.get("StateBoundary").getFirst();
+         * for (final org.deegree.style.se.unevaluated.Style style : styles.get("StateBoundary")) { if
+         * ((style.getFeatureType() != null)             &&
+         * metaClass.getTableName().equals(style.getFeatureType().getLocalPart())) {     featureStyle = style; }}*/
         final Iterator<CidsLayerFeature> lastFeatureIt = lastCreatedfeatureVector.iterator();
         CidsLayerFeature lastFeature = null;
 
@@ -202,14 +201,14 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
             /*
              * while (lastFeatureIt.hasNext()) { lastFeature = lastFeatureIt.next(); if (lastFeature == null) { break; }
              * if (lastFeature.getId() == (Integer)properties.get("object_id")) { lastFeature.setProperties(properties);
-             *     lastFeature.setStyle(featureStyle);     break; } else if
+             *    lastFeature.setStyle(featureStyle);     break; } else if
              * (lastFeature.getId() > (Integer)properties.get("object_id")) {     lastFeature = null;     break; }}*/
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
                         properties /*oid, cid, geom,*/,
                         metaClass,
                         layerProperties,
-                        featureStyle);
+                        getStyle(metaClass.getTableName()));
             }
             features.add(lastFeature);
             lastFeature = null;
