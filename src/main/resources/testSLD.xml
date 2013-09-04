@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?><sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" xmlns:xslutil="de.latlon.deejump.plugin.style.XSLUtility" xmlns:java="java" xmlns:deegreewfs="http://www.deegree.org/wfs" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:oj="http://cismet.de" oj:dummy="">
     <sld:NamedLayer>
+        <sld:Name>WK_SG</sld:Name>
+        <sld:UserStyle>
+            <sld:Name>AtlasStyler 1.9</sld:Name>
+            <sld:FeatureTypeStyle>
+                <sld:Rule>
+                    <sld:PolygonSymbolizer>
+                        <sld:Fill>
+                            <CssParameter name="fill">#635435</CssParameter>
+                        </sld:Fill>
+                        <sld:Stroke/>
+                    </sld:PolygonSymbolizer>
+                </sld:Rule>
+            </sld:FeatureTypeStyle>
+        </sld:UserStyle>
+    </sld:NamedLayer>
+    <sld:NamedLayer>
         <sld:Name>default</sld:Name>
         <sld:UserStyle>
             <sld:Name>AtlasStyler 1.9</sld:Name>
             <sld:FeatureTypeStyle>
                 <sld:Rule>
-                    <sld:Stroke/>
+                    <sld:PolygonSymbolizer>
+                        <sld:Stroke/>
+                    </sld:PolygonSymbolizer>
                 </sld:Rule>
             </sld:FeatureTypeStyle>
         </sld:UserStyle>
