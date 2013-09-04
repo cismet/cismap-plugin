@@ -106,13 +106,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
      * @param  properties       oid DOCUMENT ME!
      * @param  metaClass        cid DOCUMENT ME!
      * @param  layerProperties  DOCUMENT ME!
-     * @param  style            DOCUMENT ME!
+     * @param  styles           DOCUMENT ME!
      */
     public CidsLayerFeature(final Map<String, Object> properties,
             final MetaClass metaClass,
             final LayerProperties layerProperties,
-            final org.deegree.style.se.unevaluated.Style style) {
-        super((Integer)properties.get(OBJECT_ID), (Geometry)properties.get(GEOMETRIE), layerProperties, style);
+            final List<org.deegree.style.se.unevaluated.Style> styles) {
+        super((Integer)properties.get(OBJECT_ID), (Geometry)properties.get(GEOMETRIE), layerProperties, styles);
         this.metaClass = metaClass;
         this.addProperties(properties);
         // this.properties = new HashMap<String, Object>(properties);
