@@ -152,6 +152,8 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
         setPopupMenu(popMenSearch);
         new CidsBeanDropTarget(this);
 
+        setTargetIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchTarget.png"))); // NOI18N
+
         this.interactionMode = interactionMode;
         this.mappingComponent = mappingComponent;
         this.searchName = searchName;
@@ -651,9 +653,9 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
         searchMenuSelectedAction.actionPerformed(new ActionEvent(popMenSearch, ActionEvent.ACTION_PERFORMED, null));
-    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {

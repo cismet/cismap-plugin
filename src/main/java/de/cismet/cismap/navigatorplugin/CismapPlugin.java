@@ -557,10 +557,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             try {
                 initComponents();
-                ((CidsBeanDropJPopupMenuButton)cmdPluginSearch).setTargetIcon(new javax.swing.ImageIcon(
-                        getClass().getResource("/images/pluginSearchTarget.png"))); // NOI18N
             } catch (final Exception e) {
-                log.fatal("Error in initComponents.", e);                           // NOI18N
+                log.fatal("Error in initComponents.", e); // NOI18N
             }
 
             mapC.setInteractionButtonGroup(cmdGroupPrimaryInteractionMode);
