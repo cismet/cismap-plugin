@@ -50,7 +50,7 @@ import de.cismet.commons.converter.ConversionException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement>{
+class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement> {
 
     //~ Instance fields --------------------------------------------------------
 
