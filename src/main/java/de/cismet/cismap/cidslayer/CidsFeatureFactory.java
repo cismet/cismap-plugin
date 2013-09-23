@@ -50,7 +50,7 @@ import de.cismet.commons.converter.ConversionException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement>{
+class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement> {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -201,7 +201,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
             /*
              * while (lastFeatureIt.hasNext()) { lastFeature = lastFeatureIt.next(); if (lastFeature == null) { break; }
              * if (lastFeature.getId() == (Integer)properties.get("object_id")) { lastFeature.setProperties(properties);
-             *    lastFeature.setStyle(featureStyle);     break; } else if
+             *   lastFeature.setStyle(featureStyle);     break; } else if
              * (lastFeature.getId() > (Integer)properties.get("object_id")) {     lastFeature = null;     break; }}*/
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
