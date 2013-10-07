@@ -6,8 +6,12 @@
             <goal>process-classes</goal>
             <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
+        <activatedProfiles>
+            <activatedProfile>cismet-dev-exec</activatedProfile>
+        </activatedProfiles>
         <properties>
-            <exec.args>-classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <jalopy.skip>true</jalopy.skip>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8899 -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
             <exec.executable>java</exec.executable>
         </properties>
     </action>
@@ -40,11 +44,21 @@
             <activatedProfile>cismet-dev-exec</activatedProfile>
         </activatedProfiles>
         <properties>
+            <jalopy.skip>true</jalopy.skip>
             <exec.classpathScope>runtime</exec.classpathScope>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
             <jpda.listen>true</jpda.listen>
             <exec.executable>java</exec.executable>
         </properties>
     </action>
- 
+    <action>
+        <actionName>build</actionName>
+        <goals>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <maven.test.skip>true</maven.test.skip>
+            <jalopy.skip>true</jalopy.skip>
+        </properties>
+    </action>
 </actions>
