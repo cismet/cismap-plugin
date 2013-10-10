@@ -37,7 +37,6 @@ import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.AbstractFeatureFactory;
-import de.cismet.cismap.commons.featureservice.factory.CachingFeatureFactory;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
@@ -201,7 +200,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
             /*
              * while (lastFeatureIt.hasNext()) { lastFeature = lastFeatureIt.next(); if (lastFeature == null) { break; }
              * if (lastFeature.getId() == (Integer)properties.get("object_id")) { lastFeature.setProperties(properties);
-             *   lastFeature.setStyle(featureStyle);     break; } else if
+             * lastFeature.setStyle(featureStyle);     break; } else if
              * (lastFeature.getId() > (Integer)properties.get("object_id")) {     lastFeature = null;     break; }}*/
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
