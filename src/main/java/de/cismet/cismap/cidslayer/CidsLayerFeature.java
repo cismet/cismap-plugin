@@ -535,6 +535,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
          * CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex); deegreeProperties.add(null);
          * } return deegreeProperties; } else { return super.getProperties(qname); } }*/
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -551,38 +552,20 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                     @Override
                     public QName getName() {
                         return new QName(metaClass.getTableName()); // To change body of generated methods, choose Tools
-                                                                    // | Templates.
+                        // | Templates.
                     }
                 };
         }
 
-        @Override
-        public List<Property> getProperties(final QName qname) {
-            if ("original".equalsIgnoreCase(qname.getPrefix())) {
-                final List<Property> deegreeProperties = new LinkedList();
-                final Object value;
-                try {
-                    if (metaObject == null) {
-                        metaObject = SessionManager.getConnection()
-                                    .getMetaObject(SessionManager.getSession().getUser(),
-                                            CidsLayerFeature.this.getId(),
-                                            (Integer)CidsLayerFeature.this.getProperty(CidsLayerFeature.CLASS_ID),
-                                            SessionManager.getSession().getUser().getDomain());
-                    }
-                    value = metaObject.getBean().getProperty(qname.getLocalPart());
-                    if (value == null) {
-                        deegreeProperties.add(null);
-                    } else {
-                        deegreeProperties.add(new DeegreeProperty(qname, value));
-                    }
-                } catch (ConnectionException ex) {
-                    CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex);
-                    deegreeProperties.add(null);
-                }
-                return deegreeProperties;
-            } else {
-                return super.getProperties(qname);
-            }
-        }
+        /*@Override
+         * public List<Property> getProperties(final QName qname) { if ("original".equalsIgnoreCase(qname.getPrefix()))
+         * { final List<Property> deegreeProperties = new LinkedList(); final Object value; try { if (metaObject ==
+         * null) { metaObject = SessionManager.getConnection() .getMetaObject(SessionManager.getSession().getUser(),
+         * CidsLayerFeature.this.getId(), (Integer) CidsLayerFeature.this.getProperty(CidsLayerFeature.CLASS_ID),
+         * SessionManager.getSession().getUser().getDomain()); } value =
+         * metaObject.getBean().getProperty(qname.getLocalPart()); if (value == null) { deegreeProperties.add(null); }
+         * else { deegreeProperties.add(new DeegreeProperty(qname, value)); } } catch (ConnectionException ex) {
+         * CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex); deegreeProperties.add(null);
+         * } return deegreeProperties; } else { return super.getProperties(qname); } }*/
     }
 }
