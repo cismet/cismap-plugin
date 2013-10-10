@@ -16,26 +16,12 @@ import org.apache.log4j.Logger;
 
 import org.deegree.style.se.unevaluated.Style;
 
-import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-
-import org.openide.util.Exceptions;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 
 import java.util.LinkedList;
 import java.util.Map;
 
 import javax.swing.Icon;
-
-import javax.xml.stream.XMLInputFactory;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
