@@ -60,6 +60,7 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.openide.util.Lookup;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -127,6 +128,7 @@ import javax.swing.KeyStroke;
 import javax.swing.RepaintManager;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -172,8 +174,6 @@ import de.cismet.cismap.commons.interaction.memento.MementoInterface;
 import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
-
-import de.cismet.cismap.tools.gui.CidsBeanDropJPopupMenuButton;
 
 import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
 
@@ -433,6 +433,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  context  DOCUMENT ME!
      */
     public CismapPlugin(final PluginContext context) {
+        UIManager.put("Table.selectionBackground", new Color(195, 212, 232));
+        UIManager.put("Tree.selectionBackground", new Color(195, 212, 232));
         this.extensionWindows = new HashMap<BasicGuiComponentProvider, DockingWindow>(1);
 
         if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) { // NOI18N
