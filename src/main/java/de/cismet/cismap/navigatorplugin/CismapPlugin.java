@@ -311,7 +311,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private List<String> windows2skip;
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
     private MetaSearchHelper metaSearchComponentFactory;
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
@@ -433,8 +432,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  context  DOCUMENT ME!
      */
     public CismapPlugin(final PluginContext context) {
-        UIManager.put("Table.selectionBackground", new Color(195, 212, 232));
-        UIManager.put("Tree.selectionBackground", new Color(195, 212, 232));
         this.extensionWindows = new HashMap<BasicGuiComponentProvider, DockingWindow>(1);
 
         if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) { // NOI18N
@@ -470,6 +467,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         this.context = context;
         plugin = (context != null);
+
+        if (!plugin) {
+            StaticSwingTools.tweakUI();
+        }
 
         try {
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
