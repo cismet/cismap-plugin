@@ -141,7 +141,7 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
                     }
                 }
             });
-        
+
         if (isSelected()) {
             super.setSelectedIcon(defaultIcon);
         } else {
