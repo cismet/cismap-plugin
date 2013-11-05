@@ -229,4 +229,16 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
 
         return featureServiceAttributes;
     }
+
+    @Override
+    public List<CidsLayerFeature> createFeatures(CidsLayerSearchStatement query, BoundingBox boundingBox, SwingWorker workerThread, int offset, int limit, FeatureServiceAttribute[] orderBy) throws TooManyFeaturesException, Exception {
+        //todo: consider offset, limit and orderBy
+        return createFeatures(query, boundingBox, workerThread);
+    }
+
+    @Override
+    public int getFeatureCount(BoundingBox bb) {
+        //todo: implement
+        return 0;
+    }
 }
