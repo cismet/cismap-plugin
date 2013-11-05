@@ -215,6 +215,8 @@ public class GeoSearchMenu extends JMenu implements PropertyChangeListener {
      * @param  metaSearch  DOCUMENT ME!
      */
     public void initSearchTopicMenues(final MetaSearch metaSearch) {
+        removeAll();
+        initComponents();
         if ((metaSearch.getSearchTopics() != null) && !metaSearch.getSearchTopics().isEmpty()) {
             add(new JSeparator());
             for (final SearchTopic searchTopic : metaSearch.getSearchTopics()) {

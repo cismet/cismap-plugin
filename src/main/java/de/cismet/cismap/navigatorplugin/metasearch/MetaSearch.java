@@ -242,6 +242,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
     @Override
     public void masterConfigure(final Element parent) {
+        searchTopics = new LinkedList<SearchTopic>();
         if (metaClassCacheService == null) {
             LOG.info(
                 "There is no MetaClassCacheService available. It's not possible to check if the current user is allowed to search for the specified classes.");
