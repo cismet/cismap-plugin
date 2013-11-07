@@ -7,6 +7,7 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -24,6 +25,8 @@ import Sirius.navigator.ui.ComponentRegistry;
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -661,16 +664,27 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             String fallBackConfig = null;
 
             try {
+                final User user = SessionManager.getSession().getUser();
+                final UserGroup userGroup = user.getUserGroup();
+
                 final String prefix = "cismapconfig:"; // NOI18N
-                final String username = Sirius.navigator.connection.SessionManager.getSession().getUser().getName();
-                final String groupname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getName();
-                final String domainname = Sirius.navigator.connection.SessionManager.getSession()
-                            .getUser()
-                            .getUserGroup()
-                            .getDomain();
+                final String username = user.getName();
+                final String groupname;
+                final String domainname;
+                if (userGroup != null) {
+                    groupname = userGroup.getName();
+                    domainname = userGroup.getDomain();
+                } else {
+                    String tmpGroupname = null;
+                    String tmpDomainname = null;
+                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
+                        tmpGroupname = potentialUserGroup.getName();
+                        tmpDomainname = potentialUserGroup.getDomain();
+                        break;
+                    }
+                    groupname = tmpGroupname;
+                    domainname = tmpDomainname;
+                }
 
                 // First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
