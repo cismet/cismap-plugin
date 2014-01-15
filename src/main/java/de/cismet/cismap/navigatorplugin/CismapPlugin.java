@@ -63,7 +63,6 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.openide.util.Lookup;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -131,7 +130,6 @@ import javax.swing.KeyStroke;
 import javax.swing.RepaintManager;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -193,8 +191,6 @@ import de.cismet.tools.StaticDebuggingTools;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.ConfigurationManager;
-
-import de.cismet.tools.groovysupport.GroovierConsole;
 
 import de.cismet.tools.gui.BasicGuiComponentProvider;
 import de.cismet.tools.gui.CheckThreadViolationRepaintManager;
@@ -261,7 +257,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private FeatureInfoWidget featureInfo;
     private FeatureControl featureControl;
     private DebugPanel debugPanel;
-    private GroovierConsole groovyConsole;
     private ShapeExport shapeExport;
     private View vLayers;
     private View vCaps;
@@ -538,8 +533,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             featureControl = new FeatureControl(mapC);
             debugPanel = new DebugPanel();
             debugPanel.setPCanvas(mapC);
-            groovyConsole = new GroovierConsole();
-            groovyConsole.setVariable("map", mapC); // NOI18N
             shapeExport = new ShapeExport();
             wfsFormFactory = WFSFormFactory.getInstance(mapC);
             overviewComponent = new OverviewComponent();
