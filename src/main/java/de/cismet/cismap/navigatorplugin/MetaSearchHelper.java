@@ -56,6 +56,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     private String interactionMode;
     private final String searchName;
     private MetaSearch metaSearch;
+    private GeoSearch customGeoSearch;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cmdPluginSearch;
@@ -153,11 +154,35 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
         // Damits auch mit -1 funzt:
         transformed.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
-        // there is always the default implementation
-        final GeoSearch gs = Lookup.getDefault().lookup(GeoSearch.class);
-        gs.setGeometry(transformed);
-        gs.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
-        CidsSearchExecutor.searchAndDisplayResultsWithDialog(gs);
+        final GeoSearch geoSearch;
+        if (customGeoSearch == null) {
+            // there is always the default implementation
+            geoSearch = Lookup.getDefault().lookup(GeoSearch.class);
+        } else {
+            geoSearch = customGeoSearch;
+        }
+
+        geoSearch.setGeometry(transformed);
+        geoSearch.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
+        CidsSearchExecutor.searchAndDisplayResultsWithDialog(geoSearch);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public GeoSearch getCustomGeoSearch() {
+        return customGeoSearch;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  customGeoSearch  DOCUMENT ME!
+     */
+    public void setCustomGeoSearch(final GeoSearch customGeoSearch) {
+        this.customGeoSearch = customGeoSearch;
     }
 
     /**
