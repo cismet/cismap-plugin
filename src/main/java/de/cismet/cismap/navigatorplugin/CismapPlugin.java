@@ -662,42 +662,49 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 final String prefix = "cismapconfig:"; // NOI18N
                 final String username = user.getName();
-                final String groupname;
-                final String domainname;
+                Collection<UserGroup> groups;
                 if (userGroup != null) {
-                    groupname = userGroup.getName();
-                    domainname = userGroup.getDomain();
+                    final ArrayList<UserGroup> onlyOne = new ArrayList<UserGroup>();
+                    onlyOne.add(userGroup);
+                    groups = onlyOne;
                 } else {
-                    String tmpGroupname = null;
-                    String tmpDomainname = null;
-                    for (final UserGroup potentialUserGroup : user.getPotentialUserGroups()) {
-                        tmpGroupname = potentialUserGroup.getName();
-                        tmpDomainname = potentialUserGroup.getDomain();
-                        break;
-                    }
-                    groupname = tmpGroupname;
-                    domainname = tmpDomainname;
+                    groups = user.getPotentialUserGroups();
                 }
 
                 // First try: cismapconfig:username@usergroup@domainserver
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment()
-                                .getParameter(prefix + username + "@" + groupname + "@" // NOI18N
-                                        + domainname);
+                    for (final UserGroup group : groups) {
+                        cismapconfig = context.getEnvironment()
+                                    .getParameter(prefix + username + "@" + group.getName() + "@" // NOI18N
+                                            + group.getDomain());
+                        if (cismapconfig != null) {
+                            break;
+                        }
+                    }
                 }
 
                 // Second try: cismapconfig:*@usergroup@domainserver
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment()
-                                .getParameter(prefix + "*" + "@" + groupname + "@" // NOI18N
-                                        + domainname);
+                    for (final UserGroup group : groups) {
+                        cismapconfig = context.getEnvironment()
+                                    .getParameter(prefix + "*" + "@" + group.getName() + "@" // NOI18N
+                                            + group.getDomain());
+                        if (cismapconfig != null) {
+                            break;
+                        }
+                    }
                 }
 
                 // Third try: cismapconfig:*@*@domainserver//NOI18N
                 if (cismapconfig == null) {
-                    cismapconfig = context.getEnvironment().getParameter(prefix + "*" + "@" + "*" + "@" + domainname); // NOI18N
+                    for (final UserGroup group : groups) {
+                        cismapconfig = context.getEnvironment()
+                                    .getParameter(prefix + "*" + "@" + "*" + "@" + group.getDomain()); // NOI18N
+                        if (cismapconfig != null) {
+                            break;
+                        }
+                    }
                 }
-
                 // Default from pluginXML
                 if (cismapconfig == null) {
                     cismapconfig = context.getEnvironment().getParameter(prefix + "default"); // NOI18N
@@ -1373,7 +1380,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.warn("Error while opening: " + url + ". Try again", e); // NOI18N
 
             // Nochmal zur Sicherheit mit dem BrowserLauncher probieren
-
             try {
                 de.cismet.tools.BrowserLauncher.openURL(url);
             } catch (final Exception e2) {
