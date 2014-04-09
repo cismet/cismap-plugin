@@ -14,13 +14,15 @@ package de.cismet.cismap.cidslayer;
 import Sirius.navigator.connection.SessionManager;
 
 import Sirius.server.middleware.types.MetaClass;
-import com.vividsolutions.jts.geom.Envelope;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
 import org.deegree.datatypes.Types;
+
+import org.postgresql.util.PGobject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +47,6 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
-import org.postgresql.util.PGobject;
 
 /**
  * DOCUMENT ME!
@@ -78,10 +79,11 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
     /**
      * Creates a new CidsFeatureFactory object.
-     * @deprecated 
-     * 
-     * @param  metaClass        DOCUMENT ME!
-     * @param  layerProperties  DOCUMENT ME!
+     *
+     * @param       metaClass        DOCUMENT ME!
+     * @param       layerProperties  DOCUMENT ME!
+     *
+     * @deprecated  DOCUMENT ME!
      */
     public CidsFeatureFactory(final MetaClass metaClass, final LayerProperties layerProperties) {
         this.layerProperties = layerProperties;
@@ -125,6 +127,9 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         return createFeaturesInternal(query, boundingBox, workerThread, 0, 0, null, true);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initLayer() {
         try {
             final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(metaClass);
@@ -142,10 +147,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                 }
             }
         } catch (Exception e) {
-                logger.error("Error while initialiseing the cids layer.", e);
+            logger.error("Error while initialiseing the cids layer.", e);
         }
     }
-    
+
     @Override
     public List<FeatureServiceAttribute> createAttributes(final SwingWorker workerThread)
             throws TooManyFeaturesException, UnsupportedOperationException, Exception {
@@ -334,18 +339,20 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
-            if (resultArray != null && resultArray.size() > 0 && resultArray.get(0).size() > 0) {
+            if ((resultArray != null) && (resultArray.size() > 0) && (resultArray.get(0).size() > 0)) {
                 return (Integer)resultArray.get(0).get(0);
             }
         } catch (Exception e) {
             logger.error("Cannot determine the feature count", e);
-        } 
-        
+        }
+
         return 0;
     }
 
     /**
-     * @return the envelope
+     * DOCUMENT ME!
+     *
+     * @return  the envelope
      */
     public Geometry getEnvelope() {
         return envelope;
