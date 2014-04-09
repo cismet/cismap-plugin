@@ -15,7 +15,6 @@ import Sirius.navigator.connection.SessionManager;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
-import com.vividsolutions.jts.geom.Envelope;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -52,7 +51,6 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
-import org.postgresql.util.PGobject;
 
 /**
  * DOCUMENT ME!
@@ -410,18 +408,20 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
-            if (resultArray != null && resultArray.size() > 0 && resultArray.get(0).size() > 0) {
+            if ((resultArray != null) && (resultArray.size() > 0) && (resultArray.get(0).size() > 0)) {
                 return (Integer)resultArray.get(0).get(0);
             }
         } catch (Exception e) {
             logger.error("Cannot determine the feature count", e);
-        } 
-        
+        }
+
         return 0;
     }
 
     /**
-     * @return the envelope
+     * DOCUMENT ME!
+     *
+     * @return  the envelope
      */
     public Geometry getEnvelope() {
         return envelope;
