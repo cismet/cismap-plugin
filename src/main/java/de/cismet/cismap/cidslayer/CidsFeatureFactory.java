@@ -15,6 +15,7 @@ import Sirius.navigator.connection.SessionManager;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
+import com.vividsolutions.jts.geom.Envelope;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -51,6 +52,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
+import org.postgresql.util.PGobject;
 
 /**
  * DOCUMENT ME!
@@ -398,15 +400,30 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         return envelope;
     }
 
-    @Override
-    public List<CidsLayerFeature> createFeatures(CidsLayerSearchStatement query, BoundingBox boundingBox, SwingWorker workerThread, int offset, int limit, FeatureServiceAttribute[] orderBy) throws TooManyFeaturesException, Exception {
-        //todo: consider offset, limit and orderBy
-        return createFeatures(query, boundingBox, workerThread);
+            serverSearch.setX1(boundingBox2.getX1());
+            serverSearch.setY1(boundingBox2.getY1());
+            serverSearch.setX2(boundingBox2.getX2());
+            serverSearch.setCountOnly(true);
+
+            final Collection resultCollection = SessionManager.getProxy()
+                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+
+            final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
+
+            if (resultArray != null && resultArray.size() > 0 && resultArray.get(0).size() > 0) {
+                return (Integer)resultArray.get(0).get(0);
+            }
+        } catch (Exception e) {
+            logger.error("Cannot determine the feature count", e);
+        } 
+        
+        return 0;
     }
 
-    @Override
-    public int getFeatureCount(BoundingBox bb) {
-        //todo: implement
-        return 0;
+    /**
+     * @return the envelope
+     */
+    public Geometry getEnvelope() {
+        return envelope;
     }
 }
