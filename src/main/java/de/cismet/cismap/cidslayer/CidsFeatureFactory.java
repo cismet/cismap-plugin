@@ -14,15 +14,17 @@ package de.cismet.cismap.cidslayer;
 import Sirius.navigator.connection.SessionManager;
 
 import Sirius.server.middleware.types.MetaClass;
+import com.vividsolutions.jts.geom.Envelope;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
+import org.deegree.datatypes.Types;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import java.util.Vector;
 
 import javax.swing.SwingWorker;
 
+import de.cismet.cids.server.search.builtin.CidsLayerInitStatement;
 import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
 import de.cismet.cismap.commons.BoundingBox;
@@ -42,6 +45,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
+import org.postgresql.util.PGobject;
 
 /**
  * DOCUMENT ME!
@@ -49,12 +53,15 @@ import de.cismet.commons.converter.ConversionException;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLayerSearchStatement> {
+class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String> {
 
     //~ Instance fields --------------------------------------------------------
 
+    protected List<FeatureServiceAttribute> featureServiceAttributes;
+
     GeomFromWktConverter converter = new GeomFromWktConverter();
     MetaClass metaClass;
+    private Geometry envelope;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,17 +73,20 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
     public CidsFeatureFactory(final CidsFeatureFactory cff) {
         super(cff);
         metaClass = cff.metaClass;
+        this.envelope = cff.envelope;
     }
 
     /**
      * Creates a new CidsFeatureFactory object.
-     *
+     * @deprecated 
+     * 
      * @param  metaClass        DOCUMENT ME!
      * @param  layerProperties  DOCUMENT ME!
      */
     public CidsFeatureFactory(final MetaClass metaClass, final LayerProperties layerProperties) {
         this.layerProperties = layerProperties;
         this.metaClass = metaClass;
+        initLayer();
     }
 
     /**
@@ -93,6 +103,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         this.setSLDStyle(styles);
         this.metaClass = metaClass;
         layerName = metaClass.getTableName();
+        initLayer();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -108,53 +119,143 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
     }
 
     @Override
-    public List<CidsLayerFeature> createFeatures(final CidsLayerSearchStatement query,
+    public List<CidsLayerFeature> createFeatures(final String query,
             final BoundingBox boundingBox,
             final SwingWorker workerThread) throws TooManyFeaturesException, Exception {
+        return createFeaturesInternal(query, boundingBox, workerThread, 0, 0, null, true);
+    }
+
+    private void initLayer() {
+        try {
+            final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(metaClass);
+            final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager.getProxy()
+                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+            featureServiceAttributes = new ArrayList<FeatureServiceAttribute>();
+            final String crs = CismapBroker.getInstance().getDefaultCrs();
+
+            for (final ArrayList row : resultArray) {
+                if (row.size() == 1) {
+                    envelope = converter.convertForward((String)row.get(0), crs);
+                } else {
+                    final String type = String.valueOf(getTypeByTypeName((String)row.get(1)));
+                    featureServiceAttributes.add(new FeatureServiceAttribute((String)row.get(0), type, true));
+                }
+            }
+        } catch (Exception e) {
+                logger.error("Error while initialiseing the cids layer.", e);
+        }
+    }
+    
+    @Override
+    public List<FeatureServiceAttribute> createAttributes(final SwingWorker workerThread)
+            throws TooManyFeaturesException, UnsupportedOperationException, Exception {
+        if (featureServiceAttributes == null) {
+            initLayer();
+        }
+
+        if (featureServiceAttributes == null) {
+            logger.warn("FeatureServiceAttributes for cids feature factory not found");
+        }
+
+        return featureServiceAttributes;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   type  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private int getTypeByTypeName(final String type) {
+        if (type.equalsIgnoreCase("text") || type.equalsIgnoreCase("varchar")) {
+            return Types.VARCHAR;
+        } else if (type.equalsIgnoreCase("double precision") || type.equalsIgnoreCase("float8")) {
+            return Types.DOUBLE;
+        } else if (type.equalsIgnoreCase("integer") || type.equalsIgnoreCase("int")) {
+            return Types.INTEGER;
+        } else if (type.toLowerCase().contains("timestamp")) {
+            return Types.TIMESTAMP;
+        } else if (type.toLowerCase().contains("time")) {
+            return Types.TIME;
+        } else if (type.toLowerCase().contains("date")) {
+            return Types.DATE;
+        } else {
+            return Types.VARCHAR;
+        }
+    }
+
+    @Override
+    public List<CidsLayerFeature> createFeatures(final String query,
+            final BoundingBox boundingBox,
+            final SwingWorker workerThread,
+            final int offset,
+            final int limit,
+            final FeatureServiceAttribute[] orderBy) throws TooManyFeaturesException, Exception {
+        return createFeaturesInternal(query, boundingBox, workerThread, offset, limit, orderBy, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   query              DOCUMENT ME!
+     * @param   boundingBox        DOCUMENT ME!
+     * @param   workerThread       DOCUMENT ME!
+     * @param   offset             DOCUMENT ME!
+     * @param   limit              DOCUMENT ME!
+     * @param   orderBy            DOCUMENT ME!
+     * @param   saveAsLastCreated  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  TooManyFeaturesException  DOCUMENT ME!
+     * @throws  Exception                 DOCUMENT ME!
+     */
+    private List<CidsLayerFeature> createFeaturesInternal(final String query,
+            final BoundingBox boundingBox,
+            final SwingWorker workerThread,
+            final int offset,
+            final int limit,
+            final FeatureServiceAttribute[] orderBy,
+            final boolean saveAsLastCreated) throws TooManyFeaturesException, Exception {
         if (checkCancelled(workerThread, "creatureFeatures()")) {
             return null;
         }
-        final String crs = CismapBroker.getInstance().getDefaultCrs().toString();
+        final String crs = CismapBroker.getInstance().getDefaultCrs();
 
-        final CrsTransformer transformer = new CrsTransformer(CismapBroker.getInstance().getDefaultCrs());
+        final CrsTransformer transformer = new CrsTransformer(crs);
         final BoundingBox boundingBox2 = transformer.transformBoundingBox(
                 boundingBox,
                 CismapBroker.getInstance().getSrs().getCode());
-        // boundingBox.getGeometry(-1);
-        query.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
+        final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(metaClass);
+        serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
+        String[] orderByStrings = new String[0];
 
-        query.setX1(boundingBox2.getX1());
-        query.setY1(boundingBox2.getY1());
-        query.setX2(boundingBox2.getX2());
-        query.setY2(boundingBox2.getY2());
+        if (orderBy != null) {
+            orderByStrings = new String[orderBy.length];
 
-        /*if (lastBB != null) {
-         *  query.setOldX1(lastBB.getX1()); query.setOldY1(lastBB.getY1()); query.setOldX2(lastBB.getX2());
-         * query.setOldY2(lastBB.getY2());}*/
+            for (int i = 0; i < orderBy.length; ++i) {
+                orderByStrings[i] = orderBy[i].getName();
+            }
+        }
 
-        /*query.setCountOnly(true);
-         *
-         * long count = 0; Collection resultCollection = SessionManager.getProxy()
-         * .customServerSearch(SessionManager.getSession().getUser(), query);
-         *
-         *
-         * ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>) resultCollection;
-         *
-         * if (resultArray.size() != 1) { count= -1; } else { if (resultArray.get(0).size() != 1) { count= -1; } else {
-         * count= (Long) resultArray.get(0).get(0); } }
-         *
-         *
-         * if(this.logger.isDebugEnabled()) { this.logger.debug("CidsFeatureFactory["+workerThread+"]: "+ count + "
-         * matching features in selected bounding box"); }*/
-
-        // query.setCountOnly(false);
-        // query.setClassId("wk_sg");
+        serverSearch.setX1(boundingBox2.getX1());
+        serverSearch.setY1(boundingBox2.getY1());
+        serverSearch.setX2(boundingBox2.getX2());
+        serverSearch.setY2(boundingBox2.getY2());
+        serverSearch.setQuery(query);
+        serverSearch.setLimit(limit);
+        serverSearch.setOffset(offset);
+        serverSearch.setOrderBy(orderByStrings);
+        if (!saveAsLastCreated) {
+            serverSearch.setExactSearch(true);
+        }
 
         if (checkCancelled(workerThread, "PreQuery")) {
             return null;
         }
         final Collection resultCollection = SessionManager.getProxy()
-                    .customServerSearch(SessionManager.getSession().getUser(), query);
+                    .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
         if (checkCancelled(workerThread, "PostQuery")) {
             return null;
         }
@@ -167,14 +268,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         for (final Object name : resultArray.get(0)) {
             columnNames.add((String)name);
         }
-        /*org.deegree.style.se.unevaluated.Style featureStyle = styles.get("StateBoundary").getFirst();
-         * for (final org.deegree.style.se.unevaluated.Style style : styles.get("StateBoundary")) { if
-         * ((style.getFeatureType() != null)             &&
-         * metaClass.getTableName().equals(style.getFeatureType().getLocalPart())) {     featureStyle = style; }}*/
-        final Iterator<CidsLayerFeature> lastFeatureIt = lastCreatedfeatureVector.iterator();
+
         CidsLayerFeature lastFeature = null;
 
-        for (int i = 1; i < resultArray.size(); i++) { // final ArrayList row : resultArray) {
+        for (int i = 1; i < resultArray.size(); i++) {
             final HashMap<String, Object> properties = new HashMap<String, Object>(columnNames.size());
             for (int j = resultArray.get(i).size() - 1; j >= 0; j--) {
                 if (resultArray.get(i).get(j) instanceof String) {
@@ -191,17 +288,6 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
                 }
             }
 
-            /*oid = (Integer)resultArray.get(i).get(2);
-             * cid = (Integer)resultArray.get(i).get(0);geom =
-             * converter.convertForward((String)resultArray.get(i).get(1), crs);*/
-            // obj = SessionManager.getConnection().getMetaObject(SessionManager.getSession().getUser(), oid, cid,
-            // SessionManager.getSession().getUser().getDomain());
-
-            /*
-             * while (lastFeatureIt.hasNext()) { lastFeature = lastFeatureIt.next(); if (lastFeature == null) { break; }
-             * if (lastFeature.getId() == (Integer)properties.get("object_id")) { lastFeature.setProperties(properties);
-             * lastFeature.setStyle(featureStyle);     break; } else if
-             * (lastFeature.getId() > (Integer)properties.get("object_id")) {     lastFeature = null;     break; }}*/
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
                         properties /*oid, cid, geom,*/,
@@ -215,30 +301,53 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, CidsLa
         if (checkCancelled(workerThread, "PreReturn()")) {
             return null;
         }
-        updateLastCreatedFeatures(features);
-        // lastCreatedfeatureVector = features;
-        // lastBB = boundingBox;
+
+        if (saveAsLastCreated) {
+            updateLastCreatedFeatures(
+                features,
+                boundingBox2.getGeometry(CrsTransformer.extractSridFromCrs(crs)),
+                query);
+        }
 
         return features;
     }
 
     @Override
-    public List<FeatureServiceAttribute> createAttributes(final SwingWorker workerThread)
-            throws TooManyFeaturesException, UnsupportedOperationException, Exception {
-        final List<FeatureServiceAttribute> featureServiceAttributes = new LinkedList<FeatureServiceAttribute>();
+    public int getFeatureCount(final BoundingBox bb) {
+        try {
+            final String crs = CismapBroker.getInstance().getDefaultCrs();
 
-        return featureServiceAttributes;
-    }
+            final CrsTransformer transformer = new CrsTransformer(crs);
+            final BoundingBox boundingBox2 = transformer.transformBoundingBox(
+                    bb,
+                    CismapBroker.getInstance().getSrs().getCode());
+            final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(metaClass);
+            serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
 
-    @Override
-    public List<CidsLayerFeature> createFeatures(CidsLayerSearchStatement query, BoundingBox boundingBox, SwingWorker workerThread, int offset, int limit, FeatureServiceAttribute[] orderBy) throws TooManyFeaturesException, Exception {
-        //todo: consider offset, limit and orderBy
-        return createFeatures(query, boundingBox, workerThread);
-    }
+            serverSearch.setX1(boundingBox2.getX1());
+            serverSearch.setY1(boundingBox2.getY1());
+            serverSearch.setX2(boundingBox2.getX2());
+            serverSearch.setCountOnly(true);
 
-    @Override
-    public int getFeatureCount(BoundingBox bb) {
-        //todo: implement
+            final Collection resultCollection = SessionManager.getProxy()
+                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+
+            final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
+
+            if (resultArray != null && resultArray.size() > 0 && resultArray.get(0).size() > 0) {
+                return (Integer)resultArray.get(0).get(0);
+            }
+        } catch (Exception e) {
+            logger.error("Cannot determine the feature count", e);
+        } 
+        
         return 0;
+    }
+
+    /**
+     * @return the envelope
+     */
+    public Geometry getEnvelope() {
+        return envelope;
     }
 }
