@@ -23,21 +23,6 @@ import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.nodes.PImage;
 
 import org.apache.log4j.Logger;
-import org.apache.xerces.xs.XSElementDeclaration;
-
-import org.deegree.commons.tom.TypedObjectNode;
-import org.deegree.commons.tom.gml.property.Property;
-import org.deegree.feature.Feature;
-import org.deegree.feature.property.ExtraProps;
-import org.deegree.feature.types.AppSchema;
-import org.deegree.feature.types.property.GeometryPropertyType;
-import org.deegree.filter.FilterEvaluationException;
-import org.deegree.filter.XPathEvaluator;
-import org.deegree.filter.expression.ValueReference;
-import org.deegree.geometry.Envelope;
-
-import org.jfree.util.Log;
-
 
 import java.util.List;
 import java.util.Map;
@@ -287,6 +272,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                 offset(scaledDisplacementX - oldScaledDisplacementX, scaledDisplacementY - oldScaledDisplacementY);
                 // }
             }
+        }
+
+        @Override
+        public int compareTo(final Object o) {
+            return toString().compareTo(o.toString());
         }
     }
 

@@ -43,9 +43,6 @@ import java.util.Map;
 import java.util.LinkedList;
 import java.util.Map;
 
-import java.util.LinkedList;
-import java.util.Map;
-
 import javax.swing.Icon;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
@@ -63,7 +60,7 @@ import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
  *
  * @version  $Revision$, $Date$
  */
-public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLayerSearchStatement> {
+public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -73,7 +70,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
 
     //~ Instance fields --------------------------------------------------------
 
-    private CidsLayerSearchStatement cidsStatement;
+    private String query;
     private String tableName;
     private MetaClass metaClass;
 
@@ -87,7 +84,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     public CidsLayer(final CidsLayer cl) {
         super(cl);
         tableName = cl.tableName;
-        cidsStatement = cl.getQuery();
+        query = cl.getQuery();
         metaClass = cl.metaClass;
         // sldDefinition = cl.sldDefinition;
     }
@@ -114,7 +111,6 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
         super();
         name = clazz.getName();
         tableName = clazz.getTableName();
-        cidsStatement = new CidsLayerSearchStatement(clazz);
         metaClass = clazz;
         // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml"));
     }
@@ -140,13 +136,13 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
     }
 
     @Override
-    public CidsLayerSearchStatement getQuery() {
-        return cidsStatement;
+    public String getQuery() {
+        return this.query;
     }
 
     @Override
-    public void setQuery(final CidsLayerSearchStatement query) {
-        cidsStatement = query;
+    public void setQuery(final String query) {
+        this.query = query;
     }
 
     @Override
@@ -192,7 +188,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, CidsLaye
                 return;
             }
             // this.setName(clazz.getName());
-            setQuery(new CidsLayerSearchStatement(metaClass));
+// setQuery(new CidsLayerSearchStatement(metaClass));
         } catch (ConnectionException ex) {
             LOG.error("Configuration could not be loaded", ex);
         }
