@@ -409,7 +409,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
             if ((resultArray != null) && (resultArray.size() > 0) && (resultArray.get(0).size() > 0)) {
-                return (Integer)resultArray.get(0).get(0);
+                return ((Number)resultArray.get(0).get(0)).intValue();
             }
         } catch (Exception e) {
             logger.error("Cannot determine the feature count", e);

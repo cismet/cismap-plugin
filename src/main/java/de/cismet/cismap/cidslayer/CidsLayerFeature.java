@@ -386,6 +386,29 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
         return backgroundColor;
     }
 
+    @Override
+    public void saveChanges() throws Exception {
+        if (metaObject == null) {
+            metaObject = SessionManager.getConnection()
+                        .getMetaObject(SessionManager.getSession().getUser(),
+                                CidsLayerFeature.this.getId(),
+                                metaClass.getID(),
+                                SessionManager.getSession().getUser().getDomain());
+        }
+
+        final Map<String, Object> map = super.getProperties();
+        final CidsBean bean = metaObject.getBean();
+
+        for (final String key : map.keySet()) {
+            if (key.equals(OBJECT_ID) || key.equals(GEOMETRIE)) {
+                continue;
+            }
+            bean.setProperty(key, map.get(key));
+        }
+
+        bean.persist();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     /**
