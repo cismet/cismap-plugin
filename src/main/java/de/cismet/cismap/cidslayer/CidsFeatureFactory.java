@@ -332,6 +332,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             serverSearch.setX1(boundingBox2.getX1());
             serverSearch.setY1(boundingBox2.getY1());
             serverSearch.setX2(boundingBox2.getX2());
+            serverSearch.setY2(boundingBox2.getY2());
             serverSearch.setCountOnly(true);
 
             final Collection resultCollection = SessionManager.getProxy()
@@ -340,7 +341,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
             if ((resultArray != null) && (resultArray.size() > 0) && (resultArray.get(0).size() > 0)) {
-                return (Integer)resultArray.get(0).get(0);
+                return ((Number)resultArray.get(0).get(0)).intValue();
             }
         } catch (Exception e) {
             logger.error("Cannot determine the feature count", e);
