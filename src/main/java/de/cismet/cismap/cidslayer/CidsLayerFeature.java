@@ -134,7 +134,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                     metaObject = SessionManager.getConnection()
                                 .getMetaObject(SessionManager.getSession().getUser(),
                                         CidsLayerFeature.this.getId(),
-                                        (Integer)CidsLayerFeature.this.getProperty(CidsLayerFeature.CLASS_ID),
+                                        (Integer)metaClass.getID(),
                                         SessionManager.getSession().getUser().getDomain());
                 }
             } catch (ConnectionException ex) {
@@ -171,7 +171,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                         metaObject = SessionManager.getConnection()
                                     .getMetaObject(SessionManager.getSession().getUser(),
                                             CidsLayerFeature.this.getId(),
-                                            (Integer)CidsLayerFeature.this.getProperty(CidsLayerFeature.CLASS_ID),
+                                            metaClass.getID(),
                                             SessionManager.getSession().getUser().getDomain());
                     }
                     return metaObject.getBean().getProperty(propertyName);
@@ -182,6 +182,29 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
             }
         }
         return super.getProperty(propertyName);
+    }
+
+    @Override
+    public void saveChanges() throws Exception {
+        if (metaObject == null) {
+            metaObject = SessionManager.getConnection()
+                        .getMetaObject(SessionManager.getSession().getUser(),
+                                CidsLayerFeature.this.getId(),
+                                metaClass.getID(),
+                                SessionManager.getSession().getUser().getDomain());
+        }
+
+        final Map<String, Object> map = super.getProperties();
+        final CidsBean bean = metaObject.getBean();
+
+        for (final String key : map.keySet()) {
+            if (key.equals(OBJECT_ID) || key.equals(GEOMETRIE)) {
+                continue;
+            }
+            bean.setProperty(key, map.get(key));
+        }
+
+        bean.persist();
     }
 
     //~ Inner Classes ----------------------------------------------------------
