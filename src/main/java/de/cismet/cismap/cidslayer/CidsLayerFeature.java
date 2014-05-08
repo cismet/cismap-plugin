@@ -297,7 +297,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
             }
         }
 
-        @Override
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   o  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
         public int compareTo(final Object o) {
             return toString().compareTo(o.toString());
         }
