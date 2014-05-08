@@ -281,8 +281,12 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             for (int j = resultArray.get(i).size() - 1; j >= 0; j--) {
                 if (resultArray.get(i).get(j) instanceof String) {
                     try {
+                        final String value = (String)resultArray.get(i).get(j);
+                        if ((value == null) || value.isEmpty()) {
+                            throw new ConversionException("An empty string is no geomety");
+                        }
                         properties.put(columnNames.get(j),
-                            converter.convertForward((String)resultArray.get(i).get(j), crs));
+                            converter.convertForward(value, crs));
                     } catch (ConversionException ex) {
                         Logger.getLogger(this.getClass())
                                 .info("Tried to parse field " + columnNames.get(j) + " to geom");
