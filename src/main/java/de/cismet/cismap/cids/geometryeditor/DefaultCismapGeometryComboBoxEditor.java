@@ -217,6 +217,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                             if (((oldValue == null) && (geom != null))
                                                         || ((oldValue != null) && !oldValue.equalsExact(geom))) {
                                                 geometryBean.setProperty(GEOM_FIELD, geom);
+                                                geometryBean.getMetaObject().setChanged(true);
                                                 if (geom != null) {
                                                     lastGeom = (Geometry)geom.clone();
                                                 } else {
