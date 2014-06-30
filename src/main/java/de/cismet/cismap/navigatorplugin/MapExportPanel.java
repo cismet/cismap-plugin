@@ -9,10 +9,13 @@ package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.ui.ComponentRegistry;
 
+import javafx.util.Pair;
+
 import org.apache.commons.io.FilenameUtils;
 
 import org.jdom.Element;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
@@ -24,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.swing.AbstractAction;
@@ -303,6 +307,30 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         return mapC;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private Object[] getFutureImageFromMapViaHeadlessMapProvider() {
+        final PixelDPICalculator pixelDPICalculator = new PixelDPICalculator(getMapC().getHeight(),
+                getMapC().getWidth(),
+                72);
+        final HeadlessMapProvider headlessMapProvider = HeadlessMapProvider.createHeadlessMapProviderAndAddLayers(
+                getMapC());
+        headlessMapProvider.setDominatingDimension(HeadlessMapProvider.DominatingDimension.BOUNDINGBOX);
+        headlessMapProvider.setBoundingBox((XBoundingBox)getMapC().getCurrentBoundingBoxFromCamera());
+
+        final int newDpi = Integer.parseInt(btngDpi.getSelection().getActionCommand());
+        if (newDpi != 72) {
+            pixelDPICalculator.setDPI(newDpi);
+        }
+
+        final Future<Image> futureImage = headlessMapProvider.getImage(pixelDPICalculator.getWidthPixel(),
+                pixelDPICalculator.getHeightPixel());
+        return new Object[] { futureImage, headlessMapProvider };
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     /**
@@ -350,8 +378,24 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                                     }
                                 });
 
-                            final ImageSelection imgSel = new ImageSelection(getMapC().getImage());
+                            Image image;
+                            if ("72".equals(btngDpi.getSelection().getActionCommand())) {
+                                // for the default DPI 72 get the image from the map directly as it is much faster
+                                image = getMapC().getImage();
+                            } else {
+                                try {
+                                    image = ((Future<Image>)getFutureImageFromMapViaHeadlessMapProvider()[0]).get();
+                                } catch (InterruptedException ex) {
+                                    LOG.error(ex);
+                                    image = getMapC().getImage();
+                                } catch (ExecutionException ex) {
+                                    LOG.error(ex);
+                                    image = getMapC().getImage();
+                                }
+                            }
+                            final ImageSelection imgSel = new ImageSelection(image);
                             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
+
                             EventQueue.invokeLater(new Runnable() {
 
                                     @Override
@@ -393,21 +437,10 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         @Override
         public void actionPerformed(final ActionEvent e) {
             btnClipboard.setAction(this);
-            final PixelDPICalculator pixelDPICalculator = new PixelDPICalculator(getMapC().getHeight(),
-                    getMapC().getWidth(),
-                    72);
-            final HeadlessMapProvider headlessMapProvider = HeadlessMapProvider.createHeadlessMapProviderAndAddLayers(
-                    getMapC());
-            headlessMapProvider.setDominatingDimension(HeadlessMapProvider.DominatingDimension.BOUNDINGBOX);
-            headlessMapProvider.setBoundingBox((XBoundingBox)getMapC().getCurrentBoundingBoxFromCamera());
+            final Object[] o = getFutureImageFromMapViaHeadlessMapProvider();
+            final Future<Image> futureImage = (Future<Image>)o[0];
+            final HeadlessMapProvider headlessMapProvider = (HeadlessMapProvider)o[1];
 
-            final int newDpi = Integer.parseInt(btngDpi.getSelection().getActionCommand());
-            if (newDpi != 72) {
-                pixelDPICalculator.setDPI(newDpi);
-            }
-
-            final Future<Image> futureImage = headlessMapProvider.getImage(pixelDPICalculator.getWidthPixel(),
-                    pixelDPICalculator.getHeightPixel());
             final File file = chooseFile();
 
             if (file != null) {
