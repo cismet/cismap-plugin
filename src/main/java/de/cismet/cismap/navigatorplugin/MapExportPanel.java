@@ -255,6 +255,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
             int addAtIndex = 3;
             for (final Element dpi : dpis) {
                 final String name = dpi.getAttributeValue("name");
+                final String value = dpi.getAttributeValue("value");
                 final boolean restricted = "true".equals(dpi.getAttributeValue("restricted"));
 
                 final boolean add = !restricted || (restricted && checkActionTag());
@@ -265,7 +266,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                             javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
                             Color.WHITE);
                     item.setText(name);
-                    item.setSelected(name.equals("72 dpi"));
+                    item.setSelected(value.equals("72"));
+                    item.setActionCommand(value);
                     btngDpi.add(item);
                     jPopupMenu1.add(item, addAtIndex);
                     addAtIndex++;
@@ -396,8 +398,13 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                     72);
             final HeadlessMapProvider headlessMapProvider = HeadlessMapProvider.createHeadlessMapProviderAndAddLayers(
                     getMapC());
-            headlessMapProvider.setDominatingDimension(HeadlessMapProvider.DominatingDimension.SIZE);
+            headlessMapProvider.setDominatingDimension(HeadlessMapProvider.DominatingDimension.BOUNDINGBOX);
             headlessMapProvider.setBoundingBox((XBoundingBox)getMapC().getCurrentBoundingBoxFromCamera());
+
+            final int newDpi = Integer.parseInt(btngDpi.getSelection().getActionCommand());
+            if (newDpi != 72) {
+                pixelDPICalculator.setDPI(newDpi);
+            }
 
             final Future<Image> futureImage = headlessMapProvider.getImage(pixelDPICalculator.getWidthPixel(),
                     pixelDPICalculator.getHeightPixel());
@@ -408,6 +415,9 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 final ImageDownload imageDownload = new ImageDownload(
                         FilenameUtils.getBaseName(imageFilePath),
                         FilenameUtils.getExtension(imageFilePath),
+                        NbBundle.getMessage(
+                            ExportMapToFileAction.class,
+                            "MapExportPanel.ExportMapToFileAction.downloadTitle.map"),
                         file,
                         futureImage);
                 DownloadManager.instance().add(imageDownload);
@@ -416,6 +426,9 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                                 + FilenameUtils.getBaseName(imageFilePath)
                                 + ".jgw";
                     final WorldFileDownload worldFileDownload = new WorldFileDownload(
+                            NbBundle.getMessage(
+                                ExportMapToFileAction.class,
+                                "MapExportPanel.ExportMapToFileAction.downloadTitle.worldFile"),
                             futureImage,
                             headlessMapProvider.getCurrentBoundingBoxFromMap(),
                             worldFileName);
