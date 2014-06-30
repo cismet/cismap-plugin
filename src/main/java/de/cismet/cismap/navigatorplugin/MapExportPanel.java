@@ -13,6 +13,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.jdom.Element;
 
+import org.openide.util.NbBundle;
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Image;
@@ -21,6 +23,9 @@ import java.awt.event.ActionEvent;
 
 import java.io.File;
 
+import java.util.List;
+import java.util.concurrent.Future;
+
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -28,11 +33,15 @@ import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
 import de.cismet.cismap.commons.BoundingBox;
+import de.cismet.cismap.commons.HeadlessMapProvider;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
+import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.interaction.CismapBroker;
-import de.cismet.cismap.commons.tools.MapImageDownload;
+import de.cismet.cismap.commons.tools.ImageDownload;
+import de.cismet.cismap.commons.tools.PixelDPICalculator;
+import de.cismet.cismap.commons.tools.WorldFileDownload;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
@@ -77,10 +86,12 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
     private javax.swing.ButtonGroup btngDpi;
     private javax.swing.ButtonGroup btngExportMap;
     private javax.swing.ButtonGroup btngFileFormat;
+    private javax.swing.JCheckBoxMenuItem cmniWorldFile;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JRadioButtonMenuItem rmniExportMapClipboard;
     private javax.swing.JRadioButtonMenuItem rmniExportMapFile;
     private javax.swing.JMenuItem rmniExportPointToClipboard;
@@ -108,6 +119,15 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean checkActionTag() {
+        return false;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
@@ -142,6 +162,11 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
                 Color.WHITE);
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        cmniWorldFile = new StayOpenCheckBoxMenuItem(
+                null,
+                javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                Color.WHITE);
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         rmniExportPointToClipboard = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
                     "ProgressBar.foreground"),
                 Color.WHITE);
@@ -193,6 +218,13 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         jPopupMenu1.add(rmniJpeg);
         jPopupMenu1.add(jSeparator3);
 
+        cmniWorldFile.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(
+            cmniWorldFile,
+            org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.cmniWorldFile.text")); // NOI18N
+        jPopupMenu1.add(cmniWorldFile);
+        jPopupMenu1.add(jSeparator4);
+
         rmniExportPointToClipboard.setAction(exportGeoPointToClipboardAction);
         btngExportMap.add(rmniExportPointToClipboard);
         jPopupMenu1.add(rmniExportPointToClipboard);
@@ -217,8 +249,6 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
 
     @Override
     public void configure(final Element parent) {
-//        LOG.fatal("MapExportPanel.configure: Not supported yet.", new Exception()); //NOI18N
-//        return null;
     }
 
     @Override
@@ -226,6 +256,28 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         final Element prefs = parent.getChild("cismapPluginUIPreferences");               // NOI18N
         try {
             final Element httpInterfacePortElement = prefs.getChild("httpInterfacePort"); // NOI18N
+
+            final List<Element> dpis = prefs.getChildren("DPI");
+            int addAtIndex = 3;
+            for (final Element dpi : dpis) {
+                final String name = dpi.getAttributeValue("name");
+                final boolean restricted = "true".equals(dpi.getAttributeValue("restricted"));
+
+                final boolean add = !restricted || (restricted && checkActionTag());
+
+                if (add) {
+                    final StayOpenCheckBoxMenuItem item = new StayOpenCheckBoxMenuItem(
+                            null,
+                            javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                            Color.WHITE);
+                    item.setText(name);
+                    item.setSelected(name.equals("72 dpi"));
+                    btngDpi.add(item);
+                    jPopupMenu1.add(item, addAtIndex);
+                    addAtIndex++;
+                }
+                jPopupMenu1.revalidate();
+            }
 
             try {
                 httpInterfacePort = new Integer(httpInterfacePortElement.getText());
@@ -331,26 +383,42 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         @Override
         public void actionPerformed(final ActionEvent e) {
             btnClipboard.setAction(this);
-            final MappingComponent mappingComponent = CismapBroker.getInstance().getMappingComponent();
+            final PixelDPICalculator pixelDPICalculator = new PixelDPICalculator(getMapC().getHeight(),
+                    getMapC().getWidth(),
+                    72);
+            final HeadlessMapProvider headlessMapProvider = HeadlessMapProvider.createHeadlessMapProviderAndAddLayers(
+                    getMapC());
+            headlessMapProvider.setDominatingDimension(HeadlessMapProvider.DominatingDimension.SIZE);
+            headlessMapProvider.setBoundingBox((XBoundingBox)getMapC().getCurrentBoundingBoxFromCamera());
 
-            final Image image = mappingComponent.getImage();
+            final Future<Image> futureImage = headlessMapProvider.getImage(pixelDPICalculator.getWidthPixel(),
+                    pixelDPICalculator.getHeightPixel());
             final File file = chooseFile();
 
             if (file != null) {
                 final String imageFilePath = file.getAbsolutePath();
-                final MapImageDownload imageDownload = new MapImageDownload(
+                final ImageDownload imageDownload = new ImageDownload(
                         FilenameUtils.getBaseName(imageFilePath),
                         FilenameUtils.getExtension(imageFilePath),
                         file,
-                        mappingComponent);
+                        futureImage);
                 DownloadManager.instance().add(imageDownload);
+                if (cmniWorldFile.isSelected()) {
+                    final String worldFileName = FilenameUtils.getFullPath(imageFilePath)
+                                + FilenameUtils.getBaseName(imageFilePath)
+                                + ".jgw";
+                    final WorldFileDownload worldFileDownload = new WorldFileDownload(
+                            futureImage,
+                            headlessMapProvider.getCurrentBoundingBoxFromMap(),
+                            worldFileName);
+                    DownloadManager.instance().add(worldFileDownload);
+                }
             }
         }
 
         /**
-         * Opens a JFileChooser with a filter for jpegs and checks if the chosen file has the right extension. If not
-         * the right extension is added, therefor the extension of a file returned by this method is always .jpg or
-         * .jpeg
+         * Opens a JFileChooser with a filter for the selected file format and checks if the chosen file has the right
+         * extension. If not the right extension is added.
          *
          * @return  DOCUMENT ME!
          */
@@ -364,21 +432,21 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                         new RestrictedFileSystemView());
             }
 
+            final String[] allowedExtensions = getAllowedFileExtensions();
+            final String mainFileExtension = allowedExtensions[0];
+
             fc.setAcceptAllFileFilterUsed(false);
             fc.setFileFilter(new FileFilter() {
 
                     @Override
                     public boolean accept(final File f) {
                         return f.isDirectory()
-                                    || f.getName().toLowerCase().endsWith(".jpg")
-                                    || f.getName().toLowerCase().endsWith(".jpeg"); // NOI18N
+                                    || stringEndsWithArray(f.getName().toLowerCase(), allowedExtensions);
                     }
 
                     @Override
                     public String getDescription() {
-                        return org.openide.util.NbBundle.getMessage(
-                                CismapPlugin.class,
-                                "CismapPlugin.save.FileFilter.getDescription.return"); // NOI18N
+                        return getFileDescription();
                     }
                 });
 
@@ -391,13 +459,75 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 File file = fc.getSelectedFile();
                 final String name = file.getAbsolutePath();
 
-                if (!(name.endsWith(".jpg") || name.endsWith(".jpeg"))) { // NOI18N
-                    file = new File(file.getAbsolutePath() + ".jpg");
+                if (!stringEndsWithArray(name.toLowerCase(), allowedExtensions)) { // NOI18N
+                    file = new File(file.getAbsolutePath() + mainFileExtension);
                 }
                 return file;
             } else {
                 return null;
             }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param   s    DOCUMENT ME!
+         * @param   arr  DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private boolean stringEndsWithArray(final String s, final String[] arr) {
+            for (final String arrElement : arr) {
+                final boolean endsWith = s.endsWith(arrElement);
+                if (endsWith) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private String[] getAllowedFileExtensions() {
+            if (rmniGif.isSelected()) {
+                return new String[] { ".gif" };
+            } else if (rmniJpeg.isSelected()) {
+                return new String[] { ".jpg", ".jpeg" };
+            } else if (rmniPng.isSelected()) {
+                return new String[] { ".png" };
+            } else if (rmniTif.isSelected()) {
+                return new String[] { ".tif", ".tiff" };
+            }
+            return new String[] { "" };
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        private String getFileDescription() {
+            if (rmniGif.isSelected()) {
+                return NbBundle.getMessage(
+                        ExportMapToFileAction.class,
+                        "MapExportPanel.ExportMapToFileAction.getFileDescription.gif");
+            } else if (rmniJpeg.isSelected()) {
+                return NbBundle.getMessage(
+                        ExportMapToFileAction.class,
+                        "MapExportPanel.ExportMapToFileAction.getFileDescription.jpg");
+            } else if (rmniPng.isSelected()) {
+                return NbBundle.getMessage(
+                        ExportMapToFileAction.class,
+                        "MapExportPanel.ExportMapToFileAction.getFileDescription.png");
+            } else if (rmniTif.isSelected()) {
+                return NbBundle.getMessage(
+                        ExportMapToFileAction.class,
+                        "MapExportPanel.ExportMapToFileAction.getFileDescription.tif");
+            }
+            return "";
         }
     }
 

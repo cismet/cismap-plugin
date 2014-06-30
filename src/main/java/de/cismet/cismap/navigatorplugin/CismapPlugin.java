@@ -753,6 +753,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.addConfigurable(overviewComponent);
             configurationManager.addConfigurable(shapeExport);
             configurationManager.addConfigurable((Configurable)btnAddGeometryWizard.getAction());
+            configurationManager.addConfigurable(mapExportPanel1);
             if (!plugin) {
                 configurationManager.addConfigurable(OptionsClient.getInstance());
             }
