@@ -178,16 +178,10 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         rmniExportMapClipboard.setAction(exportMapToClipboardAction);
         btngExportMap.add(rmniExportMapClipboard);
         rmniExportMapClipboard.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(
-            rmniExportMapClipboard,
-            org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniExportMapClipboard.text")); // NOI18N
         jPopupMenu1.add(rmniExportMapClipboard);
 
         rmniExportMapFile.setAction(exportMapToFileAction);
         btngExportMap.add(rmniExportMapFile);
-        org.openide.awt.Mnemonics.setLocalizedText(
-            rmniExportMapFile,
-            org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniExportMapFile.text")); // NOI18N
         jPopupMenu1.add(rmniExportMapFile);
         jPopupMenu1.add(jSeparator1);
         jPopupMenu1.add(jSeparator2);
@@ -322,7 +316,16 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
          * Creates a new ExportMapToClipboardAction object.
          */
         public ExportMapToClipboardAction() {
-            putValue(NAME, "Aktuelles Kartenbild in Zwischenablage kopieren (Bitmap)");
+            putValue(
+                NAME,
+                NbBundle.getMessage(
+                    ExportMapToClipboardAction.class,
+                    "MapExportPanel.ExportMapToClipboardAction.name"));
+            putValue(
+                SHORT_DESCRIPTION,
+                NbBundle.getMessage(
+                    ExportMapToClipboardAction.class,
+                    "MapExportPanel.ExportMapToClipboardAction.tooltip"));
             putValue(SMALL_ICON, clipboardIcon16);
             putValue(LARGE_ICON_KEY, clipboardIcon);
         }
@@ -373,7 +376,12 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
          * Creates a new ExportMapToFileAction object.
          */
         public ExportMapToFileAction() {
-            putValue(NAME, "Aktuelles Kartenbild in Datei kopieren");
+            putValue(
+                NAME,
+                NbBundle.getMessage(ExportMapToFileAction.class, "MapExportPanel.ExportMapToFileAction.name"));
+            putValue(
+                SHORT_DESCRIPTION,
+                NbBundle.getMessage(ExportMapToFileAction.class, "MapExportPanel.ExportMapToFileAction.tooltip"));
             putValue(SMALL_ICON, clipboardIcon16);
             putValue(LARGE_ICON_KEY, clipboardIcon);
         }
@@ -544,7 +552,16 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
          * Creates a new ExportGeoPointToClipboardAction object.
          */
         public ExportGeoPointToClipboardAction() {
-            putValue(NAME, "Aktueller Punkt in Zwischenablage kopieren");
+            putValue(
+                NAME,
+                NbBundle.getMessage(
+                    ExportGeoPointToClipboardAction.class,
+                    "MapExportPanel.ExportGeoPointToClipboardAction.name"));
+            putValue(
+                SHORT_DESCRIPTION,
+                NbBundle.getMessage(
+                    ExportGeoPointToClipboardAction.class,
+                    "MapExportPanel.ExportGeoPointToClipboardAction.tooltip"));
             putValue(SMALL_ICON, clipboardIcon16);
             putValue(LARGE_ICON_KEY, clipboardIcon);
         }
