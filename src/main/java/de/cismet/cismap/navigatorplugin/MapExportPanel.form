@@ -21,6 +21,9 @@
               <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniExportMapClipboard.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rmniExportMapFile">
           <Properties>
@@ -34,60 +37,81 @@
               <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniExportMapFile.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
         </Component>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
         </Component>
-        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rmniPng">
+        <MenuItem class="javax.swing.JMenuItem" name="rmniPng">
           <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniPng.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="btngFileFormat"/>
             </Property>
             <Property name="selected" type="boolean" value="true"/>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniPng.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StayOpenCheckBoxMenuItem(&#xa;                        null,&#xa;                        javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), // NOI18N&#xa;                        Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
-        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rmniTif">
+        <MenuItem class="javax.swing.JMenuItem" name="rmniTif">
           <Properties>
-            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-              <ComponentRef name="btngFileFormat"/>
-            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniTif.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-          </Properties>
-        </MenuItem>
-        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rmniGif">
-          <Properties>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="btngFileFormat"/>
             </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StayOpenCheckBoxMenuItem(&#xa;                        null,&#xa;                        javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), // NOI18N&#xa;                        Color.WHITE)"/>
+          </AuxValues>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="rmniGif">
+          <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniGif.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-          </Properties>
-        </MenuItem>
-        <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rmniJpeg">
-          <Properties>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="btngFileFormat"/>
             </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StayOpenCheckBoxMenuItem(&#xa;                        null,&#xa;                        javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), // NOI18N&#xa;                        Color.WHITE)"/>
+          </AuxValues>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="rmniJpeg">
+          <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MapExportPanel.rmniJpeg.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="btngFileFormat"/>
+            </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StayOpenCheckBoxMenuItem(&#xa;                        null,&#xa;                        javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), // NOI18N&#xa;                        Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
         </Component>
-        <MenuItem class="javax.swing.JMenuItem" name="jMenuItem3">
+        <MenuItem class="javax.swing.JMenuItem" name="rmniExportPointToClipboard">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="exportGeoPointToClipboardAction" type="code"/>
             </Property>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="btngExportMap"/>
+            </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(&quot;ProgressBar.foreground&quot;), Color.WHITE)"/>
+          </AuxValues>
         </MenuItem>
       </SubComponents>
     </Container>
@@ -132,6 +156,10 @@
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="contentAreaFilled" type="boolean" value="false"/>
+        <Property name="hideActionText" type="boolean" value="true"/>
+        <Property name="popupMenu" type="javax.swing.JPopupMenu" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="jPopupMenu1"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">

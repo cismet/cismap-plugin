@@ -13,6 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.jdom.Element;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -37,7 +38,9 @@ import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
 import de.cismet.tools.gui.ConfirmationJFileChooser;
+import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
 import de.cismet.tools.gui.downloadmanager.DownloadManager;
 
 import static javax.swing.Action.NAME;
@@ -74,17 +77,17 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
     private javax.swing.ButtonGroup btngDpi;
     private javax.swing.ButtonGroup btngExportMap;
     private javax.swing.ButtonGroup btngFileFormat;
-    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JRadioButtonMenuItem rmniExportMapClipboard;
     private javax.swing.JRadioButtonMenuItem rmniExportMapFile;
-    private javax.swing.JRadioButtonMenuItem rmniGif;
-    private javax.swing.JRadioButtonMenuItem rmniJpeg;
-    private javax.swing.JRadioButtonMenuItem rmniPng;
-    private javax.swing.JRadioButtonMenuItem rmniTif;
+    private javax.swing.JMenuItem rmniExportPointToClipboard;
+    private javax.swing.JMenuItem rmniGif;
+    private javax.swing.JMenuItem rmniJpeg;
+    private javax.swing.JMenuItem rmniPng;
+    private javax.swing.JMenuItem rmniTif;
     // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
@@ -94,13 +97,14 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
      */
     public MapExportPanel() {
         initComponents();
+        JFrame mainWindow;
         try {
-            final JFrame mainWindow = ComponentRegistry.getRegistry().getMainWindow();
-            clipboarder = new ClipboardWaitDialog(mainWindow, true);
-            mapC = CismapBroker.getInstance().getMappingComponent();
+            mainWindow = ComponentRegistry.getRegistry().getMainWindow();
         } catch (Exception ex) {
             LOG.error("An exception occured in the constructor of MapExportPanel", ex);
+            mainWindow = null;
         }
+        clipboarder = new ClipboardWaitDialog(mainWindow, true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -113,16 +117,34 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         jPopupMenu1 = new javax.swing.JPopupMenu();
-        rmniExportMapClipboard = new javax.swing.JRadioButtonMenuItem();
-        rmniExportMapFile = new javax.swing.JRadioButtonMenuItem();
+        rmniExportMapClipboard = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
+        rmniExportMapFile = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        rmniPng = new javax.swing.JRadioButtonMenuItem();
-        rmniTif = new javax.swing.JRadioButtonMenuItem();
-        rmniGif = new javax.swing.JRadioButtonMenuItem();
-        rmniJpeg = new javax.swing.JRadioButtonMenuItem();
+        rmniPng = new StayOpenCheckBoxMenuItem(
+                null,
+                javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                Color.WHITE);
+        rmniTif = new StayOpenCheckBoxMenuItem(
+                null,
+                javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                Color.WHITE);
+        rmniGif = new StayOpenCheckBoxMenuItem(
+                null,
+                javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                Color.WHITE);
+        rmniJpeg = new StayOpenCheckBoxMenuItem(
+                null,
+                javax.swing.UIManager.getDefaults().getColor("ProgressBar.foreground"), // NOI18N
+                Color.WHITE);
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem3 = new javax.swing.JMenuItem();
+        rmniExportPointToClipboard = new HighlightingRadioButtonMenuItem(javax.swing.UIManager.getDefaults().getColor(
+                    "ProgressBar.foreground"),
+                Color.WHITE);
         btngExportMap = new javax.swing.ButtonGroup();
         btngFileFormat = new javax.swing.ButtonGroup();
         btngDpi = new javax.swing.ButtonGroup();
@@ -145,34 +167,35 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         jPopupMenu1.add(jSeparator1);
         jPopupMenu1.add(jSeparator2);
 
-        btngFileFormat.add(rmniPng);
-        rmniPng.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(
             rmniPng,
             org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniPng.text")); // NOI18N
+        btngFileFormat.add(rmniPng);
+        rmniPng.setSelected(true);
         jPopupMenu1.add(rmniPng);
 
-        btngFileFormat.add(rmniTif);
         org.openide.awt.Mnemonics.setLocalizedText(
             rmniTif,
             org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniTif.text")); // NOI18N
+        btngFileFormat.add(rmniTif);
         jPopupMenu1.add(rmniTif);
 
-        btngFileFormat.add(rmniGif);
         org.openide.awt.Mnemonics.setLocalizedText(
             rmniGif,
             org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniGif.text")); // NOI18N
+        btngFileFormat.add(rmniGif);
         jPopupMenu1.add(rmniGif);
 
-        btngFileFormat.add(rmniJpeg);
         org.openide.awt.Mnemonics.setLocalizedText(
             rmniJpeg,
             org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.rmniJpeg.text")); // NOI18N
+        btngFileFormat.add(rmniJpeg);
         jPopupMenu1.add(rmniJpeg);
         jPopupMenu1.add(jSeparator3);
 
-        jMenuItem3.setAction(exportGeoPointToClipboardAction);
-        jPopupMenu1.add(jMenuItem3);
+        rmniExportPointToClipboard.setAction(exportGeoPointToClipboardAction);
+        btngExportMap.add(rmniExportPointToClipboard);
+        jPopupMenu1.add(rmniExportPointToClipboard);
 
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
@@ -187,6 +210,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 "MapExportPanel.btnClipboard.toolTipText"));                                                 // NOI18N
         btnClipboard.setBorderPainted(false);
         btnClipboard.setContentAreaFilled(false);
+        btnClipboard.setHideActionText(true);
+        btnClipboard.setPopupMenu(jPopupMenu1);
         add(btnClipboard, java.awt.BorderLayout.CENTER);
     }                                                                                                        // </editor-fold>//GEN-END:initComponents
 
@@ -218,6 +243,18 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public MappingComponent getMapC() {
+        if (mapC == null) {
+            mapC = CismapBroker.getInstance().getMappingComponent();
+        }
+        return mapC;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     /**
@@ -235,6 +272,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         public ExportMapToClipboardAction() {
             putValue(NAME, "Aktuelles Kartenbild in Zwischenablage kopieren (Bitmap)");
             putValue(SMALL_ICON, clipboardIcon16);
+            putValue(LARGE_ICON_KEY, clipboardIcon);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -255,7 +293,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                                     }
                                 });
 
-                            final ImageSelection imgSel = new ImageSelection(mapC.getImage());
+                            final ImageSelection imgSel = new ImageSelection(getMapC().getImage());
                             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
                             EventQueue.invokeLater(new Runnable() {
 
@@ -285,6 +323,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         public ExportMapToFileAction() {
             putValue(NAME, "Aktuelles Kartenbild in Datei kopieren");
             putValue(SMALL_ICON, clipboardIcon16);
+            putValue(LARGE_ICON_KEY, clipboardIcon);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -343,7 +382,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                     }
                 });
 
-            final int state = fc.showSaveDialog(MapExportPanel.this);
+            final int state = fc.showSaveDialog(StaticSwingTools.getParentFrameIfNotNull(MapExportPanel.this));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("state:" + state); // NOI18N
             }
@@ -377,6 +416,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
         public ExportGeoPointToClipboardAction() {
             putValue(NAME, "Aktueller Punkt in Zwischenablage kopieren");
             putValue(SMALL_ICON, clipboardIcon16);
+            putValue(LARGE_ICON_KEY, clipboardIcon);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -388,7 +428,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
 
                         @Override
                         public void run() {
-                            final BoundingBox bb = mapC.getCurrentBoundingBoxFromCamera();
+                            final BoundingBox bb = getMapC().getCurrentBoundingBoxFromCamera();
                             final String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1="
                                         + bb.getX1()                                                       // NOI18N
                                         + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2(); // NOI18N
