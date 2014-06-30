@@ -317,7 +317,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
-    private javax.swing.JButton cmdClipboard;
     private javax.swing.JButton cmdDownloads;
     private javax.swing.JToggleButton cmdFeatureInfo;
     private javax.swing.JButton cmdForward;
@@ -359,6 +358,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator9;
+    private de.cismet.cismap.navigatorplugin.MapExportPanel mapExportPanel1;
     private javax.swing.JMenu menBookmarks;
     private javax.swing.JMenu menEdit;
     private javax.swing.JMenu menExtras;
@@ -1445,7 +1445,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdRefresh = new javax.swing.JButton();
         jSeparator6 = new javax.swing.JSeparator();
         cmdPrint = new javax.swing.JButton();
-        cmdClipboard = new javax.swing.JButton();
+        mapExportPanel1 = new de.cismet.cismap.navigatorplugin.MapExportPanel();
         cmdDownloads = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         togInvisible = new javax.swing.JToggleButton();
@@ -1720,24 +1720,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         tlbMain.add(cmdPrint);
 
-        cmdClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard.png"))); // NOI18N
-        cmdClipboard.setText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.cmdClipboard.text"));                                                       // NOI18N
-        cmdClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.cmdClipboard.toolTipText"));                                                // NOI18N
-        cmdClipboard.setBorderPainted(false);
-        cmdClipboard.setFocusPainted(false);
-        cmdClipboard.setName("cmdClipboard");                                                             // NOI18N
-        cmdClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    cmdClipboardActionPerformed(evt);
-                }
-            });
-        tlbMain.add(cmdClipboard);
+        mapExportPanel1.setMaximumSize(new java.awt.Dimension(34, 34));
+        mapExportPanel1.setMinimumSize(new java.awt.Dimension(34, 34));
+        mapExportPanel1.setPreferredSize(new java.awt.Dimension(34, 34));
+        tlbMain.add(mapExportPanel1);
 
         cmdDownloads.setAction(new DownloadManagerAction(this));
         cmdDownloads.setBorderPainted(false);
