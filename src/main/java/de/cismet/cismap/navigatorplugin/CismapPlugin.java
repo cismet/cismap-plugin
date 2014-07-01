@@ -71,8 +71,6 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
@@ -4150,6 +4148,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public java.util.Collection getButtons() {
         // return Arrays.asList(this.tobVerdis.getComponents());
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int getHttpInterfacePort() {
+        return httpInterfacePort;
     }
 
     /**
