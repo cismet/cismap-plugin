@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.connection.SessionManager;
+import Sirius.navigator.exception.ConnectionException;
 import Sirius.navigator.plugin.PluginRegistry;
 
 import org.jdom.Element;
@@ -41,6 +43,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(GeoSearchButton.class);
+    private static final String ACTION_TAG = "cismap.export_map.restricted_dpi";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -88,7 +91,15 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
      * @return  DOCUMENT ME!
      */
     private boolean checkActionTag() {
-        return false;
+        boolean result;
+        try {
+            result = SessionManager.getConnection().getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG)
+                        != null;
+        } catch (ConnectionException ex) {
+            LOG.error("Can not check ActionTag!", ex);
+            result = false;
+        }
+        return result;
     }
 
     /**
