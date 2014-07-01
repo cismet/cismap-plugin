@@ -9,13 +9,10 @@ package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.ui.ComponentRegistry;
 
-import javafx.util.Pair;
-
 import org.apache.commons.io.FilenameUtils;
 
 import org.jdom.Element;
 
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
@@ -26,6 +23,7 @@ import java.awt.event.ActionEvent;
 
 import java.io.File;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -54,7 +52,9 @@ import de.cismet.tools.gui.ConfirmationJFileChooser;
 import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
+import de.cismet.tools.gui.downloadmanager.Download;
 import de.cismet.tools.gui.downloadmanager.DownloadManager;
+import de.cismet.tools.gui.downloadmanager.MultipleDownload;
 
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SMALL_ICON;
@@ -444,6 +444,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
             final File file = chooseFile();
 
             if (file != null) {
+                final ArrayList<Download> downloads = new ArrayList<Download>();
                 final String imageFilePath = file.getAbsolutePath();
                 final ImageDownload imageDownload = new ImageDownload(
                         FilenameUtils.getBaseName(imageFilePath),
@@ -453,7 +454,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                             "MapExportPanel.ExportMapToFileAction.downloadTitle.map"),
                         file,
                         futureImage);
-                DownloadManager.instance().add(imageDownload);
+                downloads.add(imageDownload);
                 if (cmniWorldFile.isSelected()) {
                     final String worldFileName = FilenameUtils.getFullPath(imageFilePath)
                                 + FilenameUtils.getBaseName(imageFilePath)
@@ -465,7 +466,17 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                             futureImage,
                             headlessMapProvider.getCurrentBoundingBoxFromMap(),
                             worldFileName);
-                    DownloadManager.instance().add(worldFileDownload);
+                    downloads.add(worldFileDownload);
+                }
+                if (downloads.size() > 1) {
+                    final MultipleDownload multipleDownload = new MultipleDownload(
+                            downloads,
+                            NbBundle.getMessage(
+                                ExportMapToFileAction.class,
+                                "MapExportPanel.ExportMapToFileAction.downloadTitle.multipleDownload"));
+                    DownloadManager.instance().add(multipleDownload);
+                } else {
+                    DownloadManager.instance().add(downloads.get(0));
                 }
             }
         }
@@ -557,7 +568,12 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
             }
             return new String[] { "" };
         }
-        
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
         private String getWorldFileExtension() {
             if (rmniGif.isSelected()) {
                 return ".gfw";
