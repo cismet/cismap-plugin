@@ -119,7 +119,6 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             fc = new JFileChooser(DownloadManager.instance().getDestinationDirectory(), new RestrictedFileSystemView());
         }
         final String[] allowedExtensions = exportMapDataProvider.getFileType().getFilterExtensions();
-        final String mainFileExtension = allowedExtensions[0];
         fc.setAcceptAllFileFilterUsed(false);
         fc.setFileFilter(new FileFilter() {
 
@@ -144,7 +143,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             final String name = file.getAbsolutePath();
             if (!stringEndsWithArray(name.toLowerCase(), allowedExtensions)) {
                 // NOI18N
-                file = new File(file.getAbsolutePath() + mainFileExtension);
+                file = new File(file.getAbsolutePath() + exportMapDataProvider.getFileType().getImageFileExtension());
             }
             return file;
         } else {
