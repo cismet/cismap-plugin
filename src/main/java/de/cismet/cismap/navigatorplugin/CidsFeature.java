@@ -46,6 +46,7 @@ import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
 
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
+import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
@@ -133,6 +134,18 @@ public class CidsFeature implements XStyledFeature,
      */
     public CidsFeature(final MetaObject mo) throws IllegalArgumentException {
         this(mo, null, null);
+    }
+
+    /**
+     * Creates a new CidsFeature object.
+     *
+     * @param   mo     DOCUMENT ME!
+     * @param   oAttr  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    public CidsFeature(final MetaObject mo, final ObjectAttribute oAttr) throws IllegalArgumentException {
+        this(mo, ((oAttr != null) ? oAttr.getMai().getFieldName() : null), null);
     }
 
     /**

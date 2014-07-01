@@ -15,6 +15,7 @@ import Sirius.navigator.plugin.PluginRegistry;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
 
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaClassStore;
 import Sirius.server.middleware.types.MetaObject;
@@ -67,6 +68,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
     private CidsFeature cidsFeature = null;
     private CismapGeometryComboModel comboModel = null;
     private MetaObject cidsMetaObject = null;
+    private String localRenderFeatureString;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -202,7 +204,13 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                 cidsFeatureMetaObject = metaObjectNode.getObject();
                             }
 
-                            cidsFeature = new CidsFeature(cidsFeatureMetaObject) {
+                            ObjectAttribute oAttr = null;
+
+                            if (localRenderFeatureString != null) {
+                                oAttr = cidsFeatureMetaObject.getAttributeByFieldName(localRenderFeatureString);
+                            }
+
+                            cidsFeature = new CidsFeature(cidsFeatureMetaObject, oAttr) {
 
                                     private Geometry lastGeom;
 
@@ -217,7 +225,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                                             if (((oldValue == null) && (geom != null))
                                                         || ((oldValue != null) && !oldValue.equalsExact(geom))) {
                                                 geometryBean.setProperty(GEOM_FIELD, geom);
-                                                geometryBean.getMetaObject().setChanged(true);
                                                 if (geom != null) {
                                                     lastGeom = (Geometry)geom.clone();
                                                 } else {
@@ -379,6 +386,27 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      */
     public void setCidsMetaObject(final MetaObject cidsMetaObject) {
         this.cidsMetaObject = cidsMetaObject;
+    }
+
+    /**
+     * Set the name of the field, that references the geometry. This method is only required, if a editor has more than
+     * one {@link DefaultCismapGeometryComboBoxEditor} object that references the same meta object.
+     *
+     * @param  localRenderFeatureString  fieldName attr
+     */
+    public void setLocalRenderFeatureString(final String localRenderFeatureString) {
+        // Without the field name, the equals method of the referenced feature will return true for
+        // the features of all geometry combo boxes of the same object.
+        this.localRenderFeatureString = localRenderFeatureString;
+    }
+
+    /**
+     * See also {@link #setLocalRenderFeatureString(java.lang.String) }.
+     *
+     * @return  the localRenderFeatureString
+     */
+    public String getLocalRenderFeatureString() {
+        return this.localRenderFeatureString;
     }
 
     /**
