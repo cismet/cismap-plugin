@@ -20,6 +20,7 @@ import javax.swing.Action;
 
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapDataProvider;
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapFileTypes;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
 
@@ -274,53 +275,19 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     }
 
     @Override
-    public String[] getAllowedFileExtensions() {
+    public ExportMapFileTypes getFileType() {
         if (rmniGif.isSelected()) {
-            return new String[] { ".gif" };
+            return ExportMapFileTypes.GIF;
         } else if (rmniJpeg.isSelected()) {
-            return new String[] { ".jpg", ".jpeg" };
+            return ExportMapFileTypes.JPEG;
         } else if (rmniPng.isSelected()) {
-            return new String[] { ".png" };
+            return ExportMapFileTypes.PNG;
         } else if (rmniTif.isSelected()) {
-            return new String[] { ".tif", ".tiff" };
+            return ExportMapFileTypes.TIF;
+        } else {
+            LOG.error("No file type selected. This should not happen.");
+            return null;
         }
-        return new String[] { "" };
-    }
-
-    @Override
-    public String getWorldFileExtension() {
-        if (rmniGif.isSelected()) {
-            return ".gfw";
-        } else if (rmniJpeg.isSelected()) {
-            return ".jgw";
-        } else if (rmniPng.isSelected()) {
-            return "pgw";
-        } else if (rmniTif.isSelected()) {
-            return "tfw";
-        }
-        return "";
-    }
-
-    @Override
-    public String getFileDescription() {
-        if (rmniGif.isSelected()) {
-            return NbBundle.getMessage(
-                    ExportMapToFileAction.class,
-                    "MapExportPanel.ExportMapToFileAction.getFileDescription.gif");
-        } else if (rmniJpeg.isSelected()) {
-            return NbBundle.getMessage(
-                    ExportMapToFileAction.class,
-                    "MapExportPanel.ExportMapToFileAction.getFileDescription.jpg");
-        } else if (rmniPng.isSelected()) {
-            return NbBundle.getMessage(
-                    ExportMapToFileAction.class,
-                    "MapExportPanel.ExportMapToFileAction.getFileDescription.png");
-        } else if (rmniTif.isSelected()) {
-            return NbBundle.getMessage(
-                    ExportMapToFileAction.class,
-                    "MapExportPanel.ExportMapToFileAction.getFileDescription.tif");
-        }
-        return "";
     }
 
     @Override

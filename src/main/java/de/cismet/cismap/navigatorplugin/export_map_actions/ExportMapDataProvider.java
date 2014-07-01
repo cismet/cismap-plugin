@@ -54,21 +54,7 @@ public interface ExportMapDataProvider {
      *
      * @return  DOCUMENT ME!
      */
-    String[] getAllowedFileExtensions();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getWorldFileExtension();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    String getFileDescription();
+    ExportMapFileTypes getFileType();
 
     /**
      * DOCUMENT ME!

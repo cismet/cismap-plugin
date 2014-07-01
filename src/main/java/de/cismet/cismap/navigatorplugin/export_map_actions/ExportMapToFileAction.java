@@ -81,7 +81,8 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             downloads.add(imageDownload);
             if (exportMapDataProvider.isGenerateWorldFile()) {
                 final String worldFileName = FilenameUtils.getFullPath(imageFilePath)
-                            + FilenameUtils.getBaseName(imageFilePath) + exportMapDataProvider.getWorldFileExtension();
+                            + FilenameUtils.getBaseName(imageFilePath)
+                            + exportMapDataProvider.getFileType().getWorldFileExtension();
                 final WorldFileDownload worldFileDownload = new WorldFileDownload(NbBundle.getMessage(
                             ExportMapToFileAction.class,
                             "ExportMapToFileAction.downloadTitle.worldFile"),
@@ -117,7 +118,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
             fc = new JFileChooser(DownloadManager.instance().getDestinationDirectory(), new RestrictedFileSystemView());
         }
-        final String[] allowedExtensions = exportMapDataProvider.getAllowedFileExtensions();
+        final String[] allowedExtensions = exportMapDataProvider.getFileType().getFilterExtensions();
         final String mainFileExtension = allowedExtensions[0];
         fc.setAcceptAllFileFilterUsed(false);
         fc.setFileFilter(new FileFilter() {
@@ -129,7 +130,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
 
                 @Override
                 public String getDescription() {
-                    return exportMapDataProvider.getFileDescription();
+                    return exportMapDataProvider.getFileType().getDescription();
                 }
             });
 
