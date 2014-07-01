@@ -457,7 +457,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 if (cmniWorldFile.isSelected()) {
                     final String worldFileName = FilenameUtils.getFullPath(imageFilePath)
                                 + FilenameUtils.getBaseName(imageFilePath)
-                                + ".jgw";
+                                + getWorldFileExtension();
                     final WorldFileDownload worldFileDownload = new WorldFileDownload(
                             NbBundle.getMessage(
                                 ExportMapToFileAction.class,
@@ -556,6 +556,19 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable {
                 return new String[] { ".tif", ".tiff" };
             }
             return new String[] { "" };
+        }
+        
+        private String getWorldFileExtension() {
+            if (rmniGif.isSelected()) {
+                return ".gfw";
+            } else if (rmniJpeg.isSelected()) {
+                return ".jgw";
+            } else if (rmniPng.isSelected()) {
+                return "pgw";
+            } else if (rmniTif.isSelected()) {
+                return "tfw";
+            }
+            return "";
         }
 
         /**
