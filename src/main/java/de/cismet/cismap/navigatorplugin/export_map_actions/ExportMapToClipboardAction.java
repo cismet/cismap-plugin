@@ -37,6 +37,13 @@ public class ExportMapToClipboardAction extends AbstractExportMapAction {
 
     /**
      * Creates a new ExportMapToClipboardAction object.
+     */
+    public ExportMapToClipboardAction() {
+        this(null);
+    }
+
+    /**
+     * Creates a new ExportMapToClipboardAction object.
      *
      * @param  exportMapDataProvider  DOCUMENT ME!
      */

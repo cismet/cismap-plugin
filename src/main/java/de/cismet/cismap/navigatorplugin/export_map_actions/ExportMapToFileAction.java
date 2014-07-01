@@ -48,6 +48,13 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
 
     /**
      * Creates a new ExportMapToFileAction object.
+     */
+    public ExportMapToFileAction() {
+        this(null);
+    }
+
+    /**
+     * Creates a new ExportMapToFileAction object.
      *
      * @param  exportMapDataProvider  DOCUMENT ME!
      */

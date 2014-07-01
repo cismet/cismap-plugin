@@ -28,6 +28,13 @@ public class ExportGeoPointToClipboardAction extends AbstractExportMapAction {
 
     /**
      * Creates a new ExportGeoPointToClipboardAction object.
+     */
+    public ExportGeoPointToClipboardAction() {
+        this(null);
+    }
+
+    /**
+     * Creates a new ExportGeoPointToClipboardAction object.
      *
      * @param  exportMapDataProvider  DOCUMENT ME!
      */

@@ -58,7 +58,11 @@ public abstract class AbstractExportMapAction extends AbstractAction {
      * @param  exportMapDataProvider  DOCUMENT ME!
      */
     public AbstractExportMapAction(final ExportMapDataProvider exportMapDataProvider) {
-        this.exportMapDataProvider = exportMapDataProvider;
+        if (exportMapDataProvider == null) {
+            this.exportMapDataProvider = new DefaultExportMapDataProvider();
+        } else {
+            this.exportMapDataProvider = exportMapDataProvider;
+        }
         putValue(SMALL_ICON, clipboardIcon16);
         putValue(LARGE_ICON_KEY, clipboardIcon);
         JFrame mainWindow;
