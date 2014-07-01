@@ -217,7 +217,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     @Override
     public void masterConfigure(final Element parent) {
-        final Element prefs = parent.getChild("cismapPluginUIPreferences"); // NOI18N
+        Element prefs = parent.getChild("cismapMappingPreferences"); // NOI18N
+        prefs = prefs.getChild("exportMap");
         try {
             // load the DPIs from the config file
             final List<Element> dpis = prefs.getChildren("DPI");
@@ -250,7 +251,6 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     @Override
     public Element getConfiguration() throws NoWriteError {
-        LOG.fatal("MapExportPanel.getConfiguration: Not supported yet.", new Exception()); // NOI18N
         return null;
     }
 
