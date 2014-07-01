@@ -24,7 +24,7 @@ import javax.swing.filechooser.FileFilter;
 
 import de.cismet.cismap.commons.HeadlessMapProvider;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
-import de.cismet.cismap.commons.tools.ImageDownload;
+import de.cismet.cismap.commons.tools.FutureImageDownload;
 import de.cismet.cismap.commons.tools.WorldFileDownload;
 
 import de.cismet.tools.gui.ConfirmationJFileChooser;
@@ -78,7 +78,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
         if (file != null) {
             final ArrayList<Download> downloads = new ArrayList<Download>();
             final String imageFilePath = file.getAbsolutePath();
-            final ImageDownload imageDownload = new ImageDownload(FilenameUtils.getBaseName(imageFilePath),
+            final FutureImageDownload imageDownload = new FutureImageDownload(FilenameUtils.getBaseName(imageFilePath),
                     FilenameUtils.getExtension(imageFilePath),
                     NbBundle.getMessage(
                         ExportMapToFileAction.class,
