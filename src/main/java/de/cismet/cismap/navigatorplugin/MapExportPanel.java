@@ -7,9 +7,9 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
-import org.jdom.Element;
+import Sirius.navigator.plugin.PluginRegistry;
 
-import org.openide.util.NbBundle;
+import org.jdom.Element;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -44,7 +44,6 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     //~ Instance fields --------------------------------------------------------
 
-    int httpInterfacePort = 9098;
     private final ExportMapToClipboardAction exportMapToClipboardAction;
     private final ExportGeoPointToClipboardAction exportGeoPointToClipboardAction;
     private final ExportMapToFileAction exportMapToFileAction;
@@ -210,10 +209,9 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     @Override
     public void masterConfigure(final Element parent) {
-        final Element prefs = parent.getChild("cismapPluginUIPreferences");               // NOI18N
+        final Element prefs = parent.getChild("cismapPluginUIPreferences"); // NOI18N
         try {
-            final Element httpInterfacePortElement = prefs.getChild("httpInterfacePort"); // NOI18N
-
+            // load the DPIs from the config file
             final List<Element> dpis = prefs.getChildren("DPI");
             int addAtIndex = 3;
             for (final Element dpi : dpis) {
@@ -237,14 +235,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
                 }
                 jPopupMenu1.revalidate();
             }
-
-            try {
-                httpInterfacePort = new Integer(httpInterfacePortElement.getText());
-            } catch (Throwable t) {
-                LOG.warn("httpInterface was not configured. Set default value: " + httpInterfacePort, t); // NOI18N
-            }
         } catch (Throwable t) {
-            LOG.error("Error while loading the help urls (" + prefs.getChildren() + ")", t);              // NOI18N
+            LOG.error("Error while loading the help urls (" + prefs.getChildren() + ")", t); // NOI18N
         }
     }
 
@@ -292,6 +284,11 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     @Override
     public int getHttpInterfacePort() {
-        return httpInterfacePort;
+        final CismapPlugin cismapPlugin = (CismapPlugin)PluginRegistry.getRegistry().getPlugin("cismap");
+        if (cismapPlugin == null) {
+            return 9098;
+        } else {
+            return cismapPlugin.getHttpInterfacePort();
+        }
     }
 }

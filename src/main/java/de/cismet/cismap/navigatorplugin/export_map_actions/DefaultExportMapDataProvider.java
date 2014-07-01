@@ -55,6 +55,10 @@ public class DefaultExportMapDataProvider implements ExportMapDataProvider {
     @Override
     public int getHttpInterfacePort() {
         final CismapPlugin cismapPlugin = (CismapPlugin)PluginRegistry.getRegistry().getPlugin("cismap");
-        return cismapPlugin.getHttpInterfacePort();
+        if (cismapPlugin == null) {
+            return 9098;
+        } else {
+            return cismapPlugin.getHttpInterfacePort();
+        }
     }
 }
