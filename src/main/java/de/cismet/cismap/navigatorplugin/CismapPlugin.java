@@ -177,6 +177,10 @@ import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
 
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardAction;
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
+
 import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
 
 import de.cismet.ext.CExtContext;
@@ -2180,6 +2184,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menFile.add(mniLoadLayout);
         menFile.add(jSeparator9);
 
+        mniClipboard.setAction(new ExportMapToClipboardAction());
         mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
                 java.awt.event.InputEvent.CTRL_MASK));
@@ -2187,18 +2192,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniClipboard.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniClipboard.text"));                                                         // NOI18N
-        mniClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.mniClipboard.tooltip"));                                                      // NOI18N
-        mniClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniClipboardActionPerformed(evt);
-                }
-            });
         menFile.add(mniClipboard);
 
+        mniMapToFile.setAction(new ExportMapToFileAction());
         mniMapToFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_F,
                 java.awt.event.InputEvent.CTRL_MASK));
@@ -2218,6 +2214,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         menFile.add(mniMapToFile);
 
+        mniGeoLinkClipboard.setAction(new ExportGeoPointToClipboardAction());
         mniGeoLinkClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
                 java.awt.event.InputEvent.ALT_MASK
