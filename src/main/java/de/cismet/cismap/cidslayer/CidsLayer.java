@@ -173,4 +173,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             LOG.error("Configuration could not be loaded", ex);
         }
     }
+
+    @Override
+    public boolean isEditable() {
+        return true;
+    }
 }
