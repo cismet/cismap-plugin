@@ -259,7 +259,11 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     @Override
     public int getDpi() {
-        return Integer.parseInt(btngDpi.getSelection().getActionCommand());
+        if ((btngDpi == null) || (btngDpi.getSelection() == null)) {
+            return 72;
+        } else {
+            return Integer.parseInt(btngDpi.getSelection().getActionCommand());
+        }
     }
 
     @Override
