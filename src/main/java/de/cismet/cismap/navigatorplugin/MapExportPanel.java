@@ -204,9 +204,6 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
         org.openide.awt.Mnemonics.setLocalizedText(
             btnClipboard,
             org.openide.util.NbBundle.getMessage(MapExportPanel.class, "MapExportPanel.btnClipboard.text")); // NOI18N
-        btnClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
-                MapExportPanel.class,
-                "MapExportPanel.btnClipboard.toolTipText"));                                                 // NOI18N
         btnClipboard.setBorderPainted(false);
         btnClipboard.setContentAreaFilled(false);
         btnClipboard.setHideActionText(true);
