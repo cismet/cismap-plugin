@@ -24,18 +24,33 @@ import edu.umd.cs.piccolo.nodes.PImage;
 
 import org.apache.log4j.Logger;
 
+import java.awt.Color;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.DisposableCidsBeanStore;
+
+import de.cismet.cids.server.cidslayer.CidsLayerInfo;
+import de.cismet.cids.server.cidslayer.StationInfo;
 
 import de.cismet.cismap.commons.WorldToScreenTransform;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.SLDStyledFeature;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.PSticky;
+import de.cismet.cismap.commons.interaction.CismapBroker;
+
+import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
+import de.cismet.cismap.linearreferencing.TableStationEditor;
 
 /**
  * DOCUMENT ME!
@@ -55,6 +70,19 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
     private MetaObject metaObject;
     private MetaClass metaClass;
     // protected Map<String, Object> properties;
+    private CidsLayerInfo layerInfo;
+    private Map<String, DisposableCidsBeanStore> stations = null;
+    private Color backgroundColor;
+    private PropertyChangeListener propListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(final PropertyChangeEvent evt) {
+                firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        };
+
+    private HashMap backupProperties;
+    private Geometry backupGeometry;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,6 +96,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
         // properties = new HashMap<String, Object>(feature.properties);
         // classId = feature.classId;
         metaClass = feature.metaClass;
+        this.layerInfo = feature.layerInfo;
         if (feature.metaObject != null) {
             metaObject = feature.metaObject;
         } else {
@@ -86,15 +115,21 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
      *
      * @param  properties       oid DOCUMENT ME!
      * @param  metaClass        cid DOCUMENT ME!
+     * @param  layerInfo        DOCUMENT ME!
      * @param  layerProperties  DOCUMENT ME!
      * @param  styles           DOCUMENT ME!
      */
     public CidsLayerFeature(final Map<String, Object> properties,
             final MetaClass metaClass,
+            final CidsLayerInfo layerInfo,
             final LayerProperties layerProperties,
             final List<org.deegree.style.se.unevaluated.Style> styles) {
-        super((Integer)properties.get(OBJECT_ID), (Geometry)properties.get(GEOMETRIE), layerProperties, styles);
+        super((Integer)properties.get(layerInfo.getIdField()),
+            (Geometry)properties.get(layerInfo.getGeoField()),
+            layerProperties,
+            styles);
         this.metaClass = metaClass;
+        this.layerInfo = layerInfo;
         this.addProperties(properties);
         // this.properties = new HashMap<String, Object>(properties);
         // this.style = style;
@@ -112,15 +147,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static String getCLASS_ID() {
-        return CLASS_ID;
-    }
 
     /**
      * DOCUMENT ME!
@@ -181,7 +207,104 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                 }
             }
         }
-        return super.getProperty(propertyName);
+
+        if (layerInfo.isStation(propertyName) && (stations != null) && (stations.get(propertyName) != null)) {
+            final TableStationEditor se = (TableStationEditor)stations.get(propertyName);
+            return se.getValue();
+        } else {
+            return super.getProperty(propertyName);
+        }
+    }
+
+    @Override
+    public void setEditable(final boolean editable) {
+        final boolean oldEditableStatus = isEditable();
+        super.setEditable(editable);
+
+        if (oldEditableStatus != editable) {
+            if (!editable && (stations != null)) {
+                for (final String key : stations.keySet()) {
+                    final DisposableCidsBeanStore editor = stations.get(key);
+
+                    if (editor instanceof TableLinearReferencedLineEditor) {
+                        ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
+                    }
+                    stations.get(key).dispose();
+                }
+                stations.clear();
+            } else {
+                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unholdFeature(this);
+                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(this);
+            }
+
+            if (editable && hasStations()) {
+                backupProperties = (HashMap)super.getProperties().clone();
+                try {
+                    if (metaObject == null) {
+                        metaObject = SessionManager.getConnection()
+                                    .getMetaObject(SessionManager.getSession().getUser(),
+                                            CidsLayerFeature.this.getId(),
+                                            metaClass.getID(),
+                                            SessionManager.getSession().getUser().getDomain());
+                    }
+
+                    for (int i = 0; i < layerInfo.getColumnNames().length; ++i) {
+                        final String col = layerInfo.getColumnNames()[i];
+                        if (layerInfo.isStation(col)) {
+                            final StationInfo statInfo = layerInfo.getStationInfo(col);
+
+                            if (statInfo.isStationLine()) {
+                                if (stations == null) {
+                                    stations = new HashMap<String, DisposableCidsBeanStore>();
+                                }
+                                TableLinearReferencedLineEditor st = (TableLinearReferencedLineEditor)stations.get(
+                                        String.valueOf(statInfo.getLineId()));
+
+                                if (st == null) {
+                                    final CidsBean bean = (CidsBean)metaObject.getBean()
+                                                .getProperty(layerInfo.getColumnPropertyNames()[i]);
+                                    st = new TableLinearReferencedLineEditor();
+                                    st.setCidsBean(bean);
+                                    st.addPropertyChangeListener(propListener);
+                                    backgroundColor = st.getLineColor();
+
+                                    stations.put(String.valueOf(statInfo.getLineId()), st);
+                                }
+
+                                if (statInfo.isFromStation()) {
+                                    stations.put(col, st.getFromStation());
+                                } else {
+                                    stations.put(col, st.getToStation());
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOG.error("Error while retrieving meta object", e);
+                }
+            } else if (editable) {
+                backupGeometry = (Geometry)getGeometry().clone();
+                backupProperties = (HashMap)super.getProperties().clone();
+                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
+                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
+                backgroundColor = new Color(255, 91, 0);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean hasStations() {
+        for (final String col : layerInfo.getColumnNames()) {
+            if (layerInfo.isStation(col)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -194,17 +317,73 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                                 SessionManager.getSession().getUser().getDomain());
         }
 
-        final Map<String, Object> map = super.getProperties();
+        final Map<String, Object> propertyMap = super.getProperties();
         final CidsBean bean = metaObject.getBean();
+        final String[] cols = layerInfo.getColumnNames();
+        final String[] props = layerInfo.getColumnPropertyNames();
+        final HashMap<String, String> colMap = new HashMap<String, String>();
 
-        for (final String key : map.keySet()) {
-            if (key.equals(OBJECT_ID) || key.equals(GEOMETRIE)) {
-                continue;
+        for (int i = 0; i < cols.length; ++i) {
+            colMap.put(cols[i], props[i]);
+        }
+
+        for (final String key : propertyMap.keySet()) {
+            if (layerInfo.isPrimitive(key)) {
+                bean.setProperty(colMap.get(key), propertyMap.get(key));
+            } else if (layerInfo.getGeoField().equals(key) && (colMap.get(key) != null)) {
+                bean.setProperty(colMap.get(key), getGeometry());
             }
-            bean.setProperty(key, map.get(key));
         }
 
         bean.persist();
+    }
+
+    @Override
+    public void undoAll() {
+        super.setProperties((HashMap)backupProperties.clone());
+        if (backupGeometry != null) {
+            setGeometry((Geometry)backupGeometry.clone());
+        }
+        final PFeature feature = CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(this);
+        if (feature != null) {
+            feature.visualize();
+        }
+
+        for (final String key : stations.keySet()) {
+            final DisposableCidsBeanStore editor = stations.get(key);
+
+            if (editor instanceof TableLinearReferencedLineEditor) {
+                ((TableLinearReferencedLineEditor)editor).undoChanges();
+            } else if (editor instanceof TableStationEditor) {
+                ((TableStationEditor)editor).undoChanges();
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   columnName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public TableStationEditor getStationEditor(final String columnName) {
+        final DisposableCidsBeanStore store = stations.get(columnName);
+
+        if (store instanceof TableStationEditor) {
+            return (TableStationEditor)store;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Color getBackgroundColor() {
+        return backgroundColor;
     }
 
     //~ Inner Classes ----------------------------------------------------------
