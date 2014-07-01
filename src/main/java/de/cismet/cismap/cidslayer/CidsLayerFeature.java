@@ -396,17 +396,73 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature {
                                 SessionManager.getSession().getUser().getDomain());
         }
 
-        final Map<String, Object> map = super.getProperties();
+        final Map<String, Object> propertyMap = super.getProperties();
         final CidsBean bean = metaObject.getBean();
+        final String[] cols = layerInfo.getColumnNames();
+        final String[] props = layerInfo.getColumnPropertyNames();
+        final HashMap<String, String> colMap = new HashMap<String, String>();
 
-        for (final String key : map.keySet()) {
-            if (key.equals(OBJECT_ID) || key.equals(GEOMETRIE)) {
-                continue;
+        for (int i = 0; i < cols.length; ++i) {
+            colMap.put(cols[i], props[i]);
+        }
+
+        for (final String key : propertyMap.keySet()) {
+            if (layerInfo.isPrimitive(key)) {
+                bean.setProperty(colMap.get(key), propertyMap.get(key));
+            } else if (layerInfo.getGeoField().equals(key) && (colMap.get(key) != null)) {
+                bean.setProperty(colMap.get(key), getGeometry());
             }
-            bean.setProperty(key, map.get(key));
         }
 
         bean.persist();
+    }
+
+    @Override
+    public void undoAll() {
+        super.setProperties((HashMap)backupProperties.clone());
+        if (backupGeometry != null) {
+            setGeometry((Geometry)backupGeometry.clone());
+        }
+        final PFeature feature = CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(this);
+        if (feature != null) {
+            feature.visualize();
+        }
+
+        for (final String key : stations.keySet()) {
+            final DisposableCidsBeanStore editor = stations.get(key);
+
+            if (editor instanceof TableLinearReferencedLineEditor) {
+                ((TableLinearReferencedLineEditor)editor).undoChanges();
+            } else if (editor instanceof TableStationEditor) {
+                ((TableStationEditor)editor).undoChanges();
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   columnName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public TableStationEditor getStationEditor(final String columnName) {
+        final DisposableCidsBeanStore store = stations.get(columnName);
+
+        if (store instanceof TableStationEditor) {
+            return (TableStationEditor)store;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Color getBackgroundColor() {
+        return backgroundColor;
     }
 
     //~ Inner Classes ----------------------------------------------------------
