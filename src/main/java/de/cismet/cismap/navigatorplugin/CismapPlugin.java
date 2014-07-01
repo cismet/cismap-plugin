@@ -289,7 +289,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final List<View> wfs = new ArrayList<View>();
     private DockingWindow[] wfsViews;
     private DockingWindow[] legendTab = new DockingWindow[3];
-    private ClipboardWaitDialog clipboarder;
     private PluginContext context;
     private boolean plugin = false;
     private String home = System.getProperty("user.home");                                                               // NOI18N
@@ -512,7 +511,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
-            clipboarder = new ClipboardWaitDialog(this, true);
             showObjectsWaitDialog = new ShowObjectsWaitDialog(this, false);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
@@ -2205,13 +2203,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniMapToFile.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniMapToFile.toolTipText"));                                                  // NOI18N
-        mniMapToFile.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniMapToFileActionPerformed(evt);
-                }
-            });
         menFile.add(mniMapToFile);
 
         mniGeoLinkClipboard.setAction(new ExportGeoPointToClipboardAction());
@@ -2226,13 +2217,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniGeoLinkClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniGeoLinkClipboard.tooltip"));                                                      // NOI18N
-        mniGeoLinkClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniGeoLinkClipboardActionPerformed(evt);
-                }
-            });
         menFile.add(mniGeoLinkClipboard);
 
         mniPrint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
@@ -2864,79 +2848,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniMapToFileActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniMapToFileActionPerformed
-        final MappingComponent mappingComponent = CismapBroker.getInstance().getMappingComponent();
-
-        final Image image = mappingComponent.getImage();
-        final File file = chooseFile();
-
-        if (file != null) {
-            final String imageFilePath = file.getAbsolutePath();
-            final MapImageDownload imageDownload = new MapImageDownload(
-                    FilenameUtils.getBaseName(imageFilePath),
-                    FilenameUtils.getExtension(imageFilePath),
-                    file,
-                    mappingComponent);
-            DownloadManager.instance().add(imageDownload);
-        }
-    } //GEN-LAST:event_mniMapToFileActionPerformed
-
-    /**
-     * Opens a JFileChooser with a filter for jpegs and checks if the chosen file has the right extension. If not the
-     * right extension is added, therefor the extension of a file returned by this method is always .jpg or .jpeg
-     *
-     * @return  DOCUMENT ME!
-     */
-    private File chooseFile() {
-        JFileChooser fc;
-        try {
-            fc = new ConfirmationJFileChooser(DownloadManager.instance().getDestinationDirectory());
-        } catch (Exception bug) {
-            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
-            fc = new JFileChooser(DownloadManager.instance().getDestinationDirectory(), new RestrictedFileSystemView());
-        }
-
-        fc.setAcceptAllFileFilterUsed(false);
-        fc.setFileFilter(new FileFilter() {
-
-                @Override
-                public boolean accept(final File f) {
-                    return f.isDirectory()
-                                || f.getName().toLowerCase().endsWith(".jpg")
-                                || f.getName().toLowerCase().endsWith(".jpeg"); // NOI18N
-                }
-
-                @Override
-                public String getDescription() {
-                    return org.openide.util.NbBundle.getMessage(
-                            CismapPlugin.class,
-                            "CismapPlugin.save.FileFilter.getDescription.return"); // NOI18N
-                }
-            });
-
-        final int state = fc.showSaveDialog(this);
-        if (log.isDebugEnabled()) {
-            log.debug("state:" + state); // NOI18N
-        }
-
-        if (state == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-            final String name = file.getAbsolutePath();
-
-            if (!(name.endsWith(".jpg") || name.endsWith(".jpeg"))) { // NOI18N
-                file = new File(file.getAbsolutePath() + ".jpg");
-            }
-            return file;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
     private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {
         log.info("REDO"); // NOI18N
 
@@ -2984,34 +2895,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.debug("... new action on REDO stack: " + inverse); // NOI18N
             log.debug("... completed");                            // NOI18N
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void mniGeoLinkClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        final Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        final BoundingBox bb = mapC.getCurrentBoundingBoxFromCamera();
-                        final String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1="
-                                    + bb.getX1()                                                       // NOI18N
-                                    + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2(); // NOI18N
-                        final GeoLinkUrl url = new GeoLinkUrl(u);
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(url, null);
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    clipboarder.dispose();
-                                }
-                            });
-                    }
-                });
-        t.start();
     }
 
     /**
@@ -3405,15 +3288,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        cmdClipboardActionPerformed(null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
     private void mniCloseActionPerformed(final java.awt.event.ActionEvent evt) {
         this.dispose();
         System.exit(0);
@@ -3459,38 +3333,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
         togInvisible.setSelected(true);
         mapC.showPrintingSettingsDialog(oldMode);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void cmdClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        final Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    StaticSwingTools.showDialog(clipboarder);
-                                }
-                            });
-
-                        final ImageSelection imgSel = new ImageSelection(mapC.getImage());
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    clipboarder.dispose();
-                                }
-                            });
-                    }
-                });
-        t.start();
     }
 
     /**
@@ -4179,7 +4021,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public void setVisible(final boolean b) {
         if (plugin) {
             final JFrame mainWindow = ComponentRegistry.getRegistry().getMainWindow();
-            clipboarder = new ClipboardWaitDialog(mainWindow, true);
             showObjectsWaitDialog = new ShowObjectsWaitDialog(mainWindow, false);
         } else {
             super.setVisible(b);
