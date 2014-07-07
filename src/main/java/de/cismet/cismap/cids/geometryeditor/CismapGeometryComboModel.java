@@ -23,6 +23,7 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.tools.CurrentStackTrace;
@@ -206,7 +207,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
                         .getAllFeatures();
 
             for (final Feature f : allFeatures) {
-                if (f instanceof PureNewFeature) {                                     // ||f instanceof CidsFeature) {
+                if ((f instanceof PureNewFeature) || (f instanceof SearchFeature)) {
                     allNewFeatures.add(f);
                 }
             }
