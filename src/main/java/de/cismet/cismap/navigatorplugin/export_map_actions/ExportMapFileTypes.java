@@ -22,27 +22,27 @@ public enum ExportMapFileTypes {
     GIF(NbBundle.getMessage(
             ExportMapToFileAction.class,
             "ExportMapFileTypes.getFileDescription.gif"),
-        ".gif",
-        ".gfw",
-        new String[] { ".gif" }),
+        "gif",
+        "gfw",
+        new String[] { "gif" }),
     JPEG(NbBundle.getMessage(
             ExportMapToFileAction.class,
             "ExportMapFileTypes.getFileDescription.jpg"),
-        ".jpg",
-        ".jgw",
-        new String[] { ".jpg", ".jpeg" }),
+        "jpg",
+        "jgw",
+        new String[] { "jpg", "jpeg" }),
     PNG(NbBundle.getMessage(
             ExportMapToFileAction.class,
             "ExportMapFileTypes.getFileDescription.png"),
-        ".png",
-        ".pgw",
-        new String[] { ".png" }),
+        "png",
+        "pgw",
+        new String[] { "png" }),
     TIF(NbBundle.getMessage(
             ExportMapToFileAction.class,
             "ExportMapFileTypes.getFileDescription.tif"),
-        ".tif",
-        ".tfw",
-        new String[] { ".tif", ".tiff" });
+        "tif",
+        "tfw",
+        new String[] { "tif", "tiff" });
 
     //~ Instance fields --------------------------------------------------------
 

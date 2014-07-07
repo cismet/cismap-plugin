@@ -88,7 +88,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             downloads.add(imageDownload);
             if (exportMapDataProvider.isGenerateWorldFile()) {
                 final String worldFileName = FilenameUtils.getFullPath(imageFilePath)
-                            + FilenameUtils.getBaseName(imageFilePath)
+                            + FilenameUtils.getBaseName(imageFilePath) + "."
                             + exportMapDataProvider.getFileType().getWorldFileExtension();
                 final WorldFileDownload worldFileDownload = new WorldFileDownload(NbBundle.getMessage(
                             ExportMapToFileAction.class,
@@ -150,7 +150,8 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
             final String name = file.getAbsolutePath();
             if (!stringEndsWithArray(name.toLowerCase(), allowedExtensions)) {
                 // NOI18N
-                file = new File(file.getAbsolutePath() + exportMapDataProvider.getFileType().getImageFileExtension());
+                file = new File(file.getAbsolutePath()
+                                + "." + exportMapDataProvider.getFileType().getImageFileExtension());
             }
             return file;
         } else {
@@ -159,7 +160,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
     }
 
     /**
-     * DOCUMENT ME!
+     * Checks if the end of the String s is an element of the array arr.
      *
      * @param   s    DOCUMENT ME!
      * @param   arr  DOCUMENT ME!
