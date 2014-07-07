@@ -49,8 +49,6 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
-import org.apache.commons.io.FilenameUtils;
-
 import org.jdom.Element;
 
 import org.mortbay.jetty.Connector;
@@ -68,11 +66,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
@@ -146,7 +140,6 @@ import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.commons.gui.ClipboardWaitDialog;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
 import de.cismet.cismap.commons.gui.ToolbarComponentsProvider;
@@ -174,10 +167,13 @@ import de.cismet.cismap.commons.interaction.StatusListener;
 import de.cismet.cismap.commons.interaction.events.MapDnDEvent;
 import de.cismet.cismap.commons.interaction.events.StatusEvent;
 import de.cismet.cismap.commons.interaction.memento.MementoInterface;
-import de.cismet.cismap.commons.tools.MapImageDownload;
 import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
+
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardAction;
+import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
 
 import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
 
@@ -197,13 +193,11 @@ import de.cismet.tools.configuration.ConfigurationManager;
 
 import de.cismet.tools.gui.BasicGuiComponentProvider;
 import de.cismet.tools.gui.CheckThreadViolationRepaintManager;
-import de.cismet.tools.gui.ConfirmationJFileChooser;
 import de.cismet.tools.gui.CustomButtonProvider;
 import de.cismet.tools.gui.EventDispatchThreadHangMonitor;
 import de.cismet.tools.gui.JPopupMenuButton;
 import de.cismet.tools.gui.Static2DTools;
 import de.cismet.tools.gui.StaticSwingTools;
-import de.cismet.tools.gui.downloadmanager.DownloadManager;
 import de.cismet.tools.gui.downloadmanager.DownloadManagerAction;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
@@ -287,7 +281,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final List<View> wfs = new ArrayList<View>();
     private DockingWindow[] wfsViews;
     private DockingWindow[] legendTab = new DockingWindow[3];
-    private ClipboardWaitDialog clipboarder;
     private PluginContext context;
     private boolean plugin = false;
     private String home = System.getProperty("user.home");                                                               // NOI18N
@@ -317,7 +310,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
-    private javax.swing.JButton cmdClipboard;
     private javax.swing.JButton cmdDownloads;
     private javax.swing.JToggleButton cmdFeatureInfo;
     private javax.swing.JButton cmdForward;
@@ -359,6 +351,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator9;
+    private de.cismet.cismap.navigatorplugin.MapExportPanel mapExportPanel1;
     private javax.swing.JMenu menBookmarks;
     private javax.swing.JMenu menEdit;
     private javax.swing.JMenu menExtras;
@@ -510,7 +503,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 log.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
-            clipboarder = new ClipboardWaitDialog(this, true);
             showObjectsWaitDialog = new ShowObjectsWaitDialog(this, false);
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
@@ -753,6 +745,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.addConfigurable(overviewComponent);
             configurationManager.addConfigurable(shapeExport);
             configurationManager.addConfigurable((Configurable)btnAddGeometryWizard.getAction());
+            configurationManager.addConfigurable(mapExportPanel1);
             if (!plugin) {
                 configurationManager.addConfigurable(OptionsClient.getInstance());
             }
@@ -1445,7 +1438,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdRefresh = new javax.swing.JButton();
         jSeparator6 = new javax.swing.JSeparator();
         cmdPrint = new javax.swing.JButton();
-        cmdClipboard = new javax.swing.JButton();
+        mapExportPanel1 = new de.cismet.cismap.navigatorplugin.MapExportPanel();
         cmdDownloads = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         togInvisible = new javax.swing.JToggleButton();
@@ -1720,24 +1713,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         tlbMain.add(cmdPrint);
 
-        cmdClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard.png"))); // NOI18N
-        cmdClipboard.setText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.cmdClipboard.text"));                                                       // NOI18N
-        cmdClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.cmdClipboard.toolTipText"));                                                // NOI18N
-        cmdClipboard.setBorderPainted(false);
-        cmdClipboard.setFocusPainted(false);
-        cmdClipboard.setName("cmdClipboard");                                                             // NOI18N
-        cmdClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    cmdClipboardActionPerformed(evt);
-                }
-            });
-        tlbMain.add(cmdClipboard);
+        mapExportPanel1.setMaximumSize(new java.awt.Dimension(34, 34));
+        mapExportPanel1.setMinimumSize(new java.awt.Dimension(34, 34));
+        mapExportPanel1.setPreferredSize(new java.awt.Dimension(34, 34));
+        tlbMain.add(mapExportPanel1);
 
         cmdDownloads.setAction(new DownloadManagerAction(this));
         cmdDownloads.setBorderPainted(false);
@@ -2195,6 +2174,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menFile.add(mniLoadLayout);
         menFile.add(jSeparator9);
 
+        mniClipboard.setAction(new ExportMapToClipboardAction());
         mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
                 java.awt.event.InputEvent.CTRL_MASK));
@@ -2202,18 +2182,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniClipboard.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniClipboard.text"));                                                         // NOI18N
-        mniClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.mniClipboard.tooltip"));                                                      // NOI18N
-        mniClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniClipboardActionPerformed(evt);
-                }
-            });
         menFile.add(mniClipboard);
 
+        mniMapToFile.setAction(new ExportMapToFileAction());
         mniMapToFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_F,
                 java.awt.event.InputEvent.CTRL_MASK));
@@ -2224,15 +2195,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniMapToFile.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniMapToFile.toolTipText"));                                                  // NOI18N
-        mniMapToFile.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniMapToFileActionPerformed(evt);
-                }
-            });
         menFile.add(mniMapToFile);
 
+        mniGeoLinkClipboard.setAction(new ExportGeoPointToClipboardAction());
         mniGeoLinkClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
                 java.awt.event.InputEvent.ALT_MASK
@@ -2244,13 +2209,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniGeoLinkClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniGeoLinkClipboard.tooltip"));                                                      // NOI18N
-        mniGeoLinkClipboard.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    mniGeoLinkClipboardActionPerformed(evt);
-                }
-            });
         menFile.add(mniGeoLinkClipboard);
 
         mniPrint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
@@ -2882,79 +2840,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniMapToFileActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniMapToFileActionPerformed
-        final MappingComponent mappingComponent = CismapBroker.getInstance().getMappingComponent();
-
-        final Image image = mappingComponent.getImage();
-        final File file = chooseFile();
-
-        if (file != null) {
-            final String imageFilePath = file.getAbsolutePath();
-            final MapImageDownload imageDownload = new MapImageDownload(
-                    FilenameUtils.getBaseName(imageFilePath),
-                    FilenameUtils.getExtension(imageFilePath),
-                    file,
-                    mappingComponent);
-            DownloadManager.instance().add(imageDownload);
-        }
-    } //GEN-LAST:event_mniMapToFileActionPerformed
-
-    /**
-     * Opens a JFileChooser with a filter for jpegs and checks if the chosen file has the right extension. If not the
-     * right extension is added, therefor the extension of a file returned by this method is always .jpg or .jpeg
-     *
-     * @return  DOCUMENT ME!
-     */
-    private File chooseFile() {
-        JFileChooser fc;
-        try {
-            fc = new ConfirmationJFileChooser(DownloadManager.instance().getDestinationDirectory());
-        } catch (Exception bug) {
-            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
-            fc = new JFileChooser(DownloadManager.instance().getDestinationDirectory(), new RestrictedFileSystemView());
-        }
-
-        fc.setAcceptAllFileFilterUsed(false);
-        fc.setFileFilter(new FileFilter() {
-
-                @Override
-                public boolean accept(final File f) {
-                    return f.isDirectory()
-                                || f.getName().toLowerCase().endsWith(".jpg")
-                                || f.getName().toLowerCase().endsWith(".jpeg"); // NOI18N
-                }
-
-                @Override
-                public String getDescription() {
-                    return org.openide.util.NbBundle.getMessage(
-                            CismapPlugin.class,
-                            "CismapPlugin.save.FileFilter.getDescription.return"); // NOI18N
-                }
-            });
-
-        final int state = fc.showSaveDialog(this);
-        if (log.isDebugEnabled()) {
-            log.debug("state:" + state); // NOI18N
-        }
-
-        if (state == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-            final String name = file.getAbsolutePath();
-
-            if (!(name.endsWith(".jpg") || name.endsWith(".jpeg"))) { // NOI18N
-                file = new File(file.getAbsolutePath() + ".jpg");
-            }
-            return file;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
     private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {
         log.info("REDO"); // NOI18N
 
@@ -3002,34 +2887,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.debug("... new action on REDO stack: " + inverse); // NOI18N
             log.debug("... completed");                            // NOI18N
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void mniGeoLinkClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        final Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        final BoundingBox bb = mapC.getCurrentBoundingBoxFromCamera();
-                        final String u = "http://localhost:" + httpInterfacePort + "/gotoBoundingBox?x1="
-                                    + bb.getX1()                                                       // NOI18N
-                                    + "&y1=" + bb.getY1() + "&x2=" + bb.getX2() + "&y2=" + bb.getY2(); // NOI18N
-                        final GeoLinkUrl url = new GeoLinkUrl(u);
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(url, null);
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    clipboarder.dispose();
-                                }
-                            });
-                    }
-                });
-        t.start();
     }
 
     /**
@@ -3423,15 +3280,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        cmdClipboardActionPerformed(null);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
     private void mniCloseActionPerformed(final java.awt.event.ActionEvent evt) {
         this.dispose();
         System.exit(0);
@@ -3477,38 +3325,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
         togInvisible.setSelected(true);
         mapC.showPrintingSettingsDialog(oldMode);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void cmdClipboardActionPerformed(final java.awt.event.ActionEvent evt) {
-        final Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    StaticSwingTools.showDialog(clipboarder);
-                                }
-                            });
-
-                        final ImageSelection imgSel = new ImageSelection(mapC.getImage());
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
-                        EventQueue.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    clipboarder.dispose();
-                                }
-                            });
-                    }
-                });
-        t.start();
     }
 
     /**
@@ -4167,6 +3983,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     /**
      * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public int getHttpInterfacePort() {
+        return httpInterfacePort;
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     @Override
     public void floatingStopped() {
@@ -4188,7 +4013,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public void setVisible(final boolean b) {
         if (plugin) {
             final JFrame mainWindow = ComponentRegistry.getRegistry().getMainWindow();
-            clipboarder = new ClipboardWaitDialog(mainWindow, true);
             showObjectsWaitDialog = new ShowObjectsWaitDialog(mainWindow, false);
         } else {
             super.setVisible(b);
@@ -5792,139 +5616,5 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 dtde.dropComplete(false);
             }
         }
-    }
-}
-
-/**
- * DOCUMENT ME!
- *
- * @author   $author$
- * @version  $Revision$, $Date$
- */
-class GeoLinkUrl implements Transferable {
-
-    //~ Instance fields --------------------------------------------------------
-
-    String url;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new GeoLinkUrl object.
-     *
-     * @param  url  DOCUMENT ME!
-     */
-    public GeoLinkUrl(final String url) {
-        this.url = url;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[] { DataFlavor.stringFlavor };
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   flavor  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
-        return DataFlavor.stringFlavor.equals(flavor);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   flavor  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  UnsupportedFlavorException  DOCUMENT ME!
-     * @throws  IOException                 DOCUMENT ME!
-     */
-    @Override
-    public Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        if (!DataFlavor.stringFlavor.equals(flavor)) {
-            throw (new UnsupportedFlavorException(flavor));
-        }
-
-        return url;
-    }
-}
-
-/**
- * DOCUMENT ME!
- *
- * @author   $author$
- * @version  $Revision$, $Date$
- */
-class ImageSelection implements Transferable {
-
-    //~ Instance fields --------------------------------------------------------
-
-    private Image image;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new ImageSelection object.
-     *
-     * @param  image  DOCUMENT ME!
-     */
-    public ImageSelection(final Image image) {
-        this.image = image;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    /**
-     * Returns supported flavors.
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[] { DataFlavor.imageFlavor };
-    }
-
-    /**
-     * Returns true if flavor is supported.
-     *
-     * @param   flavor  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
-        return DataFlavor.imageFlavor.equals(flavor);
-    }
-
-    /**
-     * Returns image.
-     *
-     * @param   flavor  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  UnsupportedFlavorException  DOCUMENT ME!
-     * @throws  IOException                 DOCUMENT ME!
-     */
-    @Override
-    public Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        if (!DataFlavor.imageFlavor.equals(flavor)) {
-            throw (new UnsupportedFlavorException(flavor));
-        }
-
-        return image;
     }
 }
