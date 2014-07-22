@@ -154,6 +154,7 @@ import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
+import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
@@ -361,6 +362,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenu menSearch;
     private javax.swing.JMenu menWindows;
     private javax.swing.JMenuItem mniAddBookmark;
+    private javax.swing.JMenuItem mniAngleMeasurement;
     private javax.swing.JMenuItem mniBack;
     private javax.swing.JMenuItem mniBookmarkManager;
     private javax.swing.JMenuItem mniBookmarkSidebar;
@@ -1503,6 +1505,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniOptions = new javax.swing.JMenuItem();
         jSeparator16 = new javax.swing.JSeparator();
         mniBufferSelectedGeom = new javax.swing.JMenuItem();
+        mniAngleMeasurement = new javax.swing.JMenuItem();
         jSeparator17 = new javax.swing.JPopupMenu.Separator();
         mniGotoPoint = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JSeparator();
@@ -2444,6 +2447,26 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
         menExtras.add(mniBufferSelectedGeom);
+
+        mniAngleMeasurement.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_L,
+                java.awt.event.InputEvent.CTRL_MASK));
+        mniAngleMeasurement.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/de/cismet/cismap/commons/gui/piccolo/Angle-Thingy-icon_16.png"))); // NOI18N
+        mniAngleMeasurement.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAngleMeasurement.text"));                                                  // NOI18N
+        mniAngleMeasurement.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAngleMeasurement.toolTipText"));                                           // NOI18N
+        mniAngleMeasurement.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniAngleMeasurementActionPerformed(evt);
+                }
+            });
+        menExtras.add(mniAngleMeasurement);
         menExtras.add(jSeparator17);
 
         mniGotoPoint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
@@ -2834,6 +2857,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
     } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
+        StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
+    }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
 
     /**
      * DOCUMENT ME!
