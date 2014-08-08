@@ -29,18 +29,22 @@ import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedLineFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.cismap.linearreferencing.tools.StationEditorInterface;
+
 /**
  * DOCUMENT ME!
  *
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore, PropertyChangeListener {
+public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
+    PropertyChangeListener,
+    StationEditorInterface {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(TableLinearReferencedLineEditor.class);
-    private static LinearReferencingHelper linearReferencedSolver = FeatureRegistry.getInstance()
+    private static LinearReferencingHelper linearReferencedHelper = FeatureRegistry.getInstance()
                 .getLinearReferencingSolver();
 
     //~ Instance fields --------------------------------------------------------
@@ -69,9 +73,9 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
         if (cidsBean != null) {
             fromStation = new TableStationEditor(true, cidsBean);
-            fromStation.setCidsBean(linearReferencedSolver.getStationBeanFromLineBean(cidsBean, true));
+            fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
             toStation = new TableStationEditor(true, cidsBean);
-            toStation.setCidsBean(linearReferencedSolver.getStationBeanFromLineBean(cidsBean, false));
+            toStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, false));
             lineFeature = FeatureRegistry.getInstance()
                         .addLinearReferencedLineFeature(
                                 cidsBean,
@@ -84,7 +88,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
             fromStation.addPropertyChangeListener(this);
             toStation.addPropertyChangeListener(this);
 
-            valueProperty = linearReferencedSolver.getValueProperty(linearReferencedSolver.getStationBeanFromLineBean(
+            valueProperty = linearReferencedHelper.getValueProperty(linearReferencedHelper.getStationBeanFromLineBean(
                         cidsBean,
                         false));
         }
@@ -110,26 +114,31 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
     @Override
     public void dispose() {
-        final double from = fromStation.getValue();
-        final double to = toStation.getValue();
         fromStation.removePropertyChangeListener(this);
         toStation.removePropertyChangeListener(this);
+
+        recreateGeometry();
+        
+        FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
+    }
+
+    private void recreateGeometry() {
+        final double from = (Double)fromStation.getValue();
+        final double to = (Double)toStation.getValue();
 
         final Geometry lineGeom = LinearReferencedLineFeature.createSubline(
                 from,
                 to,
-                linearReferencedSolver.getRouteGeometryFromStationBean(fromStation.getCidsBean()));
+                linearReferencedHelper.getRouteGeometryFromStationBean(fromStation.getCidsBean()));
         lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
         try {
-            linearReferencedSolver.setGeometryToLineBean(lineGeom, cidsBean);
+            linearReferencedHelper.setGeometryToLineBean(lineGeom, cidsBean);
         } catch (Exception e) {
             LOG.error("Cannot create line geometry", e);
         }
-
-        FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
     }
-
+    
     @Override
     public CidsBean getCidsBean() {
         return cidsBean;
@@ -138,6 +147,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     /**
      * DOCUMENT ME!
      */
+    @Override
     public void undoChanges() {
         fromStation.undoChanges();
         toStation.undoChanges();
@@ -158,6 +168,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         // If the change event will be fire for all property change events on the station bean,
         // an infinite loop will be begin
         if (evt.getPropertyName().equalsIgnoreCase(valueProperty)) {
+            recreateGeometry();
             firePropertyChange(evt);
         }
     }
@@ -189,5 +200,12 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         for (final PropertyChangeListener l : propListener) {
             l.propertyChange(e);
         }
+    }
+
+    @Override
+    public Object getValue() {
+        final CidsBean geomBean = linearReferencedHelper.getGeomBeanFromLineBean(cidsBean);
+
+        return geomBean.getProperty("geo_field");
     }
 }

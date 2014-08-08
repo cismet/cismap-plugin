@@ -9,8 +9,10 @@ package de.cismet.cismap.cidslayer;
 
 import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
+import Sirius.navigator.tools.MetaObjectCache;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
 
 import org.apache.log4j.Logger;
 
@@ -63,14 +65,16 @@ import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.Map;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
+import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
-import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
@@ -90,6 +94,23 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private static final transient Logger LOG = Logger.getLogger(CidsLayer.class);
 
     public static final String CIDS_FEATURELAYER_TYPE = "cidsFeatureService";
+    private static final Map<Integer, ImageIcon> ICON_MAP = new HashMap<Integer, ImageIcon>();
+
+    static {
+        // todo: add icons for every type
+        ICON_MAP.put(
+            LAYER_ENABLED_VISIBLE,
+            new ImageIcon(CidsLayer.class.getResource("/de/cismet/cismap/cidslayer/featureSupporter.png")));
+        ICON_MAP.put(
+            LAYER_ENABLED_INVISIBLE,
+            new ImageIcon(CidsLayer.class.getResource("/de/cismet/cismap/cidslayer/featureSupporter.png")));
+        ICON_MAP.put(
+            LAYER_DISABLED_VISIBLE,
+            new ImageIcon(CidsLayer.class.getResource("/de/cismet/cismap/cidslayer/featureSupporter.png")));
+        ICON_MAP.put(
+            LAYER_DISABLED_INVISIBLE,
+            new ImageIcon(CidsLayer.class.getResource("/de/cismet/cismap/cidslayer/featureSupporter.png")));
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -148,6 +169,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
                         new javax.swing.ImageIcon(
                             getClass().getResource(
                                 "/de/cismet/cismap/commons/gui/res/pushpin.png")).getImage()));
+        defaultLayerProperties.setFeatureService(this);
         return defaultLayerProperties;
     }
 
@@ -179,8 +201,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
     @Override
     public Icon getLayerIcon(final int type) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        return ICON_MAP.get(type);
     }
 
     @Override
@@ -221,4 +242,63 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public boolean isEditable() {
         return true;
     }
+
+    @Override
+    public String decoratePropertyName(String name) {
+        CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+        
+        return getSQLName(info, name);
+    }
+    
+    private String getSQLName(CidsLayerInfo info, String name) {
+        int i;
+        String[] colNames = info.getColumnNames();
+        
+        for (i = 0; i < colNames.length; ++i) {
+            if (colNames[i].equals(name)) {
+                return info.getSqlColumnNames()[i];
+            }
+        }
+        
+        return name;
+    }
+//
+//    @Override
+//    public String decoratePropertyValue(String columnName, String value) {
+//        CidsLayerInfo layerInfo = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+//        
+//        if (layerInfo.isCatalogue(columnName)) {
+//            int classId = layerInfo.getCatalogueClass(columnName);
+//            try {
+//                MetaClass mc = getMetaClass(classId);
+//                final String queryTemplate = "SELECT %s, %s FROM %s;";
+//                final String routeQuery = String.format(
+//                        queryTemplate,
+//                        mc.getID(),
+//                        mc.getPrimaryKey(),
+//                        mc.getTableName());
+//                MetaObject[] mos = MetaObjectCache.getInstance().getMetaObjectsByQuery(routeQuery, false);
+//                
+//                if (mos != null && mos.length > 0) {
+//                    for (MetaObject tmp : mos) {
+//                        if (tmp.toString().equals(value)) {
+//                            return String.valueOf( tmp.getID() );
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                LOG.error("ConnectionException e");
+//                return super.decoratePropertyValue(columnName, value);
+//            }            
+//        }
+//        
+//        return super.decoratePropertyValue(columnName, value);
+//    }
+//
+//    private MetaClass getMetaClass(int classId) throws ConnectionException {
+//        return SessionManager.getConnection()
+//                    .getMetaClass(SessionManager.getSession().getUser(),
+//                        classId,
+//                        metaClass.getDomain());
+//    }
 }
