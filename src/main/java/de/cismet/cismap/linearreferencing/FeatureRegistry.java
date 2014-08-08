@@ -48,12 +48,21 @@ public class FeatureRegistry implements LinearReferencingConstants, LinearRefere
     private static FeatureRegistry instance = new FeatureRegistry();
 
     private static final Color[] COLORS = new Color[] {
-            new Color(41, 86, 178),
-            new Color(101, 156, 239),
-            new Color(125, 189, 0),
-            new Color(220, 246, 0),
-            new Color(255, 91, 0)
+            new Color(217, 215, 204),
+            new Color(242, 187, 19),
+            new Color(217, 159, 126),
+            new Color(242, 65, 48),
+            new Color(121, 132, 39),
+            new Color(184, 206, 233),
+            new Color(216, 120, 57)
         };
+//            new Color[] {
+//            new Color(41, 86, 178),
+//            new Color(101, 156, 239),
+//            new Color(125, 189, 0),
+//            new Color(220, 246, 0),
+//            new Color(255, 91, 0)
+//        };
 
     //~ Instance fields --------------------------------------------------------
 

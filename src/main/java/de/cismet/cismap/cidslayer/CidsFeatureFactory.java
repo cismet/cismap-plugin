@@ -43,6 +43,8 @@ import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.features.JDBCFeature;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.AbstractFeatureFactory;
@@ -59,6 +61,10 @@ import de.cismet.commons.converter.ConversionException;
  * @version  $Revision$, $Date$
  */
 class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String> {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static int currentId = -1;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -126,6 +132,36 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
     }
 
     @Override
+    public synchronized FeatureServiceFeature createNewFeature() {
+        final HashMap<String, Object> properties = new HashMap<String, Object>(featureServiceAttributes.size());
+
+        for (int j = featureServiceAttributes.size() - 1; j >= 0; j--) {
+            if (featureServiceAttributes.get(j).getName().equalsIgnoreCase("id")) {
+                properties.put(featureServiceAttributes.get(j).getName(), getFreeId());
+            } else {
+                properties.put(featureServiceAttributes.get(j).getName(), null);
+            }
+        }
+
+        final CidsLayerFeature feature = new CidsLayerFeature(
+                properties /*oid, cid, geom,*/,
+                metaClass, getLayerInfo(),
+                layerProperties,
+                getStyle(metaClass.getName()));
+
+        return feature;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private synchronized int getFreeId() {
+        return currentId--;
+    }
+
+    @Override
     public List<CidsLayerFeature> createFeatures(final String query,
             final BoundingBox boundingBox,
             final SwingWorker workerThread) throws TooManyFeaturesException, Exception {
@@ -148,7 +184,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                     final Object info = c.newInstance(metaClass);
 
                     if (info instanceof CidsLayerInfo) {
-                        layerInfo = (CidsLayerInfo)info;
+                        setLayerInfo((CidsLayerInfo)info);
                     }
                 } catch (Exception e) {
                     logger.error("Cannot instantiate CidsLayerInfo class: " + className, e);
@@ -267,10 +303,15 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getSrs().getCode());
 
         final CrsTransformer transformer = new CrsTransformer(crs);
-        final BoundingBox boundingBox2 = transformer.transformBoundingBox(
-                boundingBox,
-                CismapBroker.getInstance().getSrs().getCode());
+        BoundingBox boundingBoxIncurrentCrs = null;
         final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(metaClass);
+
+        if (boundingBox != null) {
+            boundingBoxIncurrentCrs = transformer.transformBoundingBox(
+                    boundingBox,
+                    CismapBroker.getInstance().getSrs().getCode());
+        }
+
         serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
         String[] orderByStrings = new String[0];
 
@@ -283,11 +324,11 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         }
 
         // if the hole envelope of the layer should be requested, the coordinate limitation is not reaquired
-        if (!envelope.coveredBy(boundingBox2.getGeometry(srid))) {
-            serverSearch.setX1(boundingBox2.getX1());
-            serverSearch.setY1(boundingBox2.getY1());
-            serverSearch.setX2(boundingBox2.getX2());
-            serverSearch.setY2(boundingBox2.getY2());
+        if ((boundingBoxIncurrentCrs != null) && !envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid))) {
+            serverSearch.setX1(boundingBoxIncurrentCrs.getX1());
+            serverSearch.setY1(boundingBoxIncurrentCrs.getY1());
+            serverSearch.setX2(boundingBoxIncurrentCrs.getX2());
+            serverSearch.setY2(boundingBoxIncurrentCrs.getY2());
         }
 
         serverSearch.setQuery(query);
@@ -334,8 +375,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
                         properties /*oid, cid, geom,*/,
-                        metaClass,
-                        layerInfo,
+                        metaClass, getLayerInfo(),
                         layerProperties,
                         getStyle(metaClass.getName()));
             }
@@ -346,10 +386,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             return null;
         }
 
-        if (saveAsLastCreated) {
+        if (saveAsLastCreated && (boundingBoxIncurrentCrs != null)) {
             updateLastCreatedFeatures(
                 features,
-                boundingBox2.getGeometry(CrsTransformer.extractSridFromCrs(crs)),
+                boundingBoxIncurrentCrs.getGeometry(CrsTransformer.extractSridFromCrs(crs)),
                 query);
         }
 
@@ -396,5 +436,19 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
      */
     public Geometry getEnvelope() {
         return envelope;
+    }
+
+    /**
+     * @return the layerInfo
+     */
+    public CidsLayerInfo getLayerInfo() {
+        return layerInfo;
+    }
+
+    /**
+     * @param layerInfo the layerInfo to set
+     */
+    public void setLayerInfo(CidsLayerInfo layerInfo) {
+        this.layerInfo = layerInfo;
     }
 }

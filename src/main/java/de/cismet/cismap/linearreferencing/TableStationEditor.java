@@ -21,6 +21,8 @@ import net.infonode.docking.View;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Exceptions;
+
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -51,6 +53,8 @@ import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointF
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeatureListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.cismap.linearreferencing.tools.StationEditorInterface;
+
 import de.cismet.tools.CurrentStackTrace;
 
 /**
@@ -59,7 +63,7 @@ import de.cismet.tools.CurrentStackTrace;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class TableStationEditor extends javax.swing.JPanel implements DisposableCidsBeanStore {
+public class TableStationEditor extends javax.swing.JPanel implements DisposableCidsBeanStore, StationEditorInterface {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -212,7 +216,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                             cidsBean = (CidsBean)evt.getNewValue();
                             // neu initialisieren
                             init();
-                            cidsBeanChanged(getValue());
+                            cidsBeanChanged((Double)getValue());
                         }
                     }
                 });
@@ -242,7 +246,6 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     public void setCidsBean(final CidsBean cidsBean) {
         // aufräumen falls vorher cidsbean schon gesetzt war
         cleanup();
-
         // neue cidsbean setzen
         this.cidsBean = cidsBean;
         createBackupBean();
@@ -252,7 +255,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         // neu initialisieren
         init();
 
-        cidsBeanChanged(getValue());
+        cidsBeanChanged((Double)getValue());
     }
 
     /**
@@ -336,6 +339,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         if (!diaExp.isVisible()) {
             if (line) {
                 dialogLineEditor = new LinearReferencedLineEditor(true);
+                dialogLineEditor.setRouteCombo(true);
                 // se.setDrawingFeaturesEnabled(false);
                 dialogLineEditor.setCidsBean(lineBean);
                 jPanel1.add(dialogLineEditor);
@@ -344,6 +348,19 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
                         @Override
                         public void linearReferencedLineCreated() {
+                            // route was changed
+                            if (line) {
+                                final CidsBean newLineBean = dialogLineEditor.getCidsBean();
+                                for (final String propertyName : newLineBean.getPropertyNames()) {
+                                    if (!propertyName.equalsIgnoreCase("id")) {
+                                        try {
+                                            lineBean.setProperty(propertyName, newLineBean.getProperty(propertyName));
+                                        } catch (Exception ex) {
+                                            LOG.error("Error while setting a property", ex);
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         @Override
@@ -369,6 +386,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         final Point p = this.getLocationOnScreen();
         final Rectangle r = this.getBounds();
         diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
+        diaExp.setAlwaysOnTop(true);
         diaExp.setVisible(true);
     } //GEN-LAST:event_butExpandActionPerformed
 
@@ -380,6 +398,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     /**
      * DOCUMENT ME!
      */
+    @Override
     public void undoChanges() {
         restore();
     }
@@ -492,7 +511,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
             if (pointBean != null) {
                 pointBean.addPropertyChangeListener(getCidsBeanListener());
-                final double pointValue = getValue();
+                final double pointValue = (Double)getValue();
 //                setValueToLabel(pointValue);
 //                labGwk.setText(Long.toString(FeatureRegistry.getInstance().getLinearReferencingSolver().getRouteNameFromStationBean(pointBean)));
 
@@ -620,7 +639,8 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      *
      * @return  DOCUMENT ME!
      */
-    public double getValue() {
+    @Override
+    public Object getValue() {
         if (cidsBean != null) {
             return linearReferencingHelper.getLinearValueFromStationBean(cidsBean);
         } else {

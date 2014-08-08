@@ -17,9 +17,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
+import org.openide.util.NbBundle;
+
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -70,20 +73,31 @@ import de.cismet.cids.editors.EditorClosedEvent;
 import de.cismet.cids.editors.EditorSaveListener;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
+import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
+
+import de.cismet.cismap.cidslayer.CidsLayer;
+import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
 import de.cismet.cismap.commons.Crs;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.attributetable.AttributeTableTransferHandler;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedLineFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeatureListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.interaction.CrsChangeListener;
 import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
+import de.cismet.cismap.commons.retrieval.RetrievalEvent;
+import de.cismet.cismap.commons.retrieval.RetrievalListener;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -174,6 +188,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private LinearReferencedLineEditor externalOthersEditor;
     private LinearReferencedLineEditor parent = null;
     private LinePropertyChangeListener linePropertyChangeListener = new LinePropertyChangeListener();
+    private boolean routeCombo = false;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnFromBadGeom;
@@ -183,10 +198,14 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private javax.swing.JToggleButton btnToBadGeom;
     private javax.swing.JButton btnToBadGeomCorrect;
     private javax.swing.JButton btnToPointSplit;
+    private javax.swing.JButton butApply;
+    private javax.swing.JButton butCancel;
+    private javax.swing.JComboBox cbPossibleRoute;
     private javax.swing.JDialog externalGeomDialog;
     private javax.swing.JPanel geomDialogInternalPanel;
     private javax.swing.JScrollPane geomDialogScrollPane;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel lblError;
     private javax.swing.JLabel lblFromIcon;
     private javax.swing.JLabel lblFromValue;
@@ -196,6 +215,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private javax.swing.JLabel lblToPointSplit;
     private javax.swing.JLabel lblToValue;
     private javax.swing.JPanel panAdd;
+    private javax.swing.JPanel panAddFromFeature;
     private javax.swing.JPanel panEdit;
     private javax.swing.JPanel panError;
     private javax.swing.JPanel panFromBadGeomSpacer;
@@ -222,7 +242,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      *
      * @param  isEditable  DOCUMENT ME!
      */
-    protected LinearReferencedLineEditor(final boolean isEditable) {
+    public LinearReferencedLineEditor(final boolean isEditable) {
         this(isEditable, isEditable);
     }
 
@@ -232,7 +252,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isEditable                DOCUMENT ME!
      * @param  isDrawingFeaturesEnabled  DOCUMENT ME!
      */
-    protected LinearReferencedLineEditor(final boolean isEditable, final boolean isDrawingFeaturesEnabled) {
+    public LinearReferencedLineEditor(final boolean isEditable, final boolean isDrawingFeaturesEnabled) {
         initComponents();
 
         setEditable(isEditable);
@@ -240,7 +260,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         try {
             if (isEditable) {
-                new CidsBeanDropTarget(this);
+                new LineEditorDropTarget(this);
             }
             new DropTarget(lblFromIcon, new PointBeanDropTargetListener(FROM));
             new DropTarget(lblToIcon, new PointBeanDropTargetListener(TO));
@@ -301,6 +321,15 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  routeCombo  DOCUMENT ME!
+     */
+    public void setRouteCombo(final boolean routeCombo) {
+        this.routeCombo = routeCombo;
+    }
 
     @Override
     public void pointBeanMergeRequest(final boolean fromPoint, final CidsBean withPointBean) {
@@ -638,6 +667,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         if (cidsBean != null) {
             MERGE_REGISTRY.addRequestListener(cidsBean, this);
+//            CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, true);
+//            cbRoute.setMetaClass(linearReferencingHelper.getRouteBeanFromStationBean(station).getMetaObject().getMetaClass());
         }
 
         // cache für beans setzen
@@ -1287,7 +1318,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 break;
             }
             case add: {
-                ((CardLayout)getLayout()).show(this, "add");
+                if (routeCombo) {
+                    ((CardLayout)getLayout()).show(this, "addFeature");
+                } else {
+                    ((CardLayout)getLayout()).show(this, "add");
+                }
                 break;
             }
             case error: {
@@ -2063,6 +2098,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         jLabel3 = new javax.swing.JLabel();
         panError = new javax.swing.JPanel();
         lblError = new javax.swing.JLabel();
+        panAddFromFeature = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        cbPossibleRoute = new javax.swing.JComboBox();
+        butApply = new javax.swing.JButton();
+        butCancel = new javax.swing.JButton();
 
         externalGeomDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         externalGeomDialog.setTitle(org.openide.util.NbBundle.getMessage(
@@ -2089,6 +2129,13 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         panEdit.setLayout(new java.awt.GridBagLayout());
 
         panLinePoints.setOpaque(false);
+        panLinePoints.addMouseListener(new java.awt.event.MouseAdapter() {
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    panLinePointsMouseClicked(evt);
+                }
+            });
         panLinePoints.setLayout(new java.awt.GridBagLayout());
 
         lblFromIcon.setIcon(new javax.swing.ImageIcon(
@@ -2098,7 +2145,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 "LinearReferencedLineEditor.lblFromIcon.text_1"));                           // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         panLinePoints.add(lblFromIcon, gridBagConstraints);
@@ -2110,7 +2157,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 "LinearReferencedLineEditor.lblToIcon.text_1"));                             // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 15);
         panLinePoints.add(lblToIcon, gridBagConstraints);
@@ -2121,7 +2168,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         spnFrom.setPreferredSize(new java.awt.Dimension(100, 28));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
         panLinePoints.add(spnFrom, gridBagConstraints);
@@ -2132,7 +2179,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         spnTo.setPreferredSize(new java.awt.Dimension(100, 28));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
         panLinePoints.add(spnTo, gridBagConstraints);
@@ -2144,7 +2191,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         lblFromValue.setPreferredSize(new java.awt.Dimension(100, 28));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panLinePoints.add(lblFromValue, gridBagConstraints);
@@ -2156,7 +2203,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         lblToValue.setPreferredSize(new java.awt.Dimension(100, 28));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
@@ -2204,7 +2251,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panLinePoints.add(panFromBadGeomSpacer, gridBagConstraints);
 
@@ -2250,7 +2297,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         panLinePoints.add(panToBadGeomSpacer, gridBagConstraints);
 
@@ -2265,7 +2312,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         lblToPointSplit.setPreferredSize(new java.awt.Dimension(16, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         panLinePoints.add(lblToPointSplit, gridBagConstraints);
 
         lblFrontPointSplit.setText(org.openide.util.NbBundle.getMessage(
@@ -2279,7 +2326,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         lblFrontPointSplit.setPreferredSize(new java.awt.Dimension(16, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         panLinePoints.add(lblFrontPointSplit, gridBagConstraints);
 
         btnFromPointSplit.setIcon(ICON_MERGED_WITH_FROM_POINT);
@@ -2301,7 +2348,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         panLinePoints.add(btnFromPointSplit, gridBagConstraints);
 
         btnToPointSplit.setIcon(ICON_MERGED_WITH_TO_POINT);
@@ -2323,7 +2370,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         panLinePoints.add(btnToPointSplit, gridBagConstraints);
 
         lblRoute.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -2332,7 +2379,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 "LinearReferencedLineEditor.lblRoute.text_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         panLinePoints.add(lblRoute, gridBagConstraints);
@@ -2352,7 +2399,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
@@ -2361,10 +2408,17 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         panLine.setBackground(new java.awt.Color(255, 91, 0));
         panLine.setMinimumSize(new java.awt.Dimension(10, 3));
         panLine.setPreferredSize(new java.awt.Dimension(100, 3));
+        panLine.addMouseListener(new java.awt.event.MouseAdapter() {
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    panLineMouseClicked(evt);
+                }
+            });
         panLine.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
@@ -2405,7 +2459,10 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         jLabel3.setText(org.openide.util.NbBundle.getMessage(
                 LinearReferencedLineEditor.class,
                 "LinearReferencedLineEditor.jLabel3.text_1")); // NOI18N
-        panAdd.add(jLabel3, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        panAdd.add(jLabel3, gridBagConstraints);
 
         add(panAdd, "add");
 
@@ -2418,6 +2475,72 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         panError.add(lblError, new java.awt.GridBagConstraints());
 
         add(panError, "error");
+
+        panAddFromFeature.setOpaque(false);
+        panAddFromFeature.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(
+                LinearReferencedLineEditor.class,
+                "LinearReferencedLineEditor.jLabel4.text_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        panAddFromFeature.add(jLabel4, gridBagConstraints);
+
+        cbPossibleRoute.setModel(new javax.swing.DefaultComboBoxModel(
+                new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbPossibleRoute.setPreferredSize(new java.awt.Dimension(300, 20));
+        cbPossibleRoute.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    cbPossibleRouteActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        panAddFromFeature.add(cbPossibleRoute, gridBagConstraints);
+
+        butApply.setText(org.openide.util.NbBundle.getMessage(
+                LinearReferencedLineEditor.class,
+                "LinearReferencedLineEditor.butApply.text_1",
+                new Object[] {})); // NOI18N
+        butApply.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    butApplyActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        panAddFromFeature.add(butApply, gridBagConstraints);
+
+        butCancel.setText(org.openide.util.NbBundle.getMessage(
+                LinearReferencedLineEditor.class,
+                "LinearReferencedLineEditor.butCancel.text_1",
+                new Object[] {})); // NOI18N
+        butCancel.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    butCancelActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        panAddFromFeature.add(butCancel, gridBagConstraints);
+
+        add(panAddFromFeature, "addFeature");
     } // </editor-fold>//GEN-END:initComponents
 
     /**
@@ -2482,6 +2605,160 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private void btnRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnRouteActionPerformed
         updateOtherLinesPanelVisibility();
     }                                                                            //GEN-LAST:event_btnRouteActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
+        // TODO add your handling code here:
+    } //GEN-LAST:event_cbPossibleRouteActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butApplyActionPerformed
+        if (isEnabled() && isEditable()) {
+            if (cbPossibleRoute.getSelectedItem() instanceof CidsLayerFeature) {
+                final CidsLayerFeature f = (CidsLayerFeature)cbPossibleRoute.getSelectedItem();
+                final CidsBean routeBean = f.getBean();
+
+                if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {
+                    setLineBeanFromRouteBean(routeBean);
+                    setChangedSinceDrop(false);
+                }
+                if (isAutoZoomActivated) {
+                    zoomToFeatureCollection(getZoomFeatures());
+                }
+            }
+        }
+    } //GEN-LAST:event_butApplyActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butCancelActionPerformed
+        showCard(Card.edit);
+    }                                                                             //GEN-LAST:event_butCancelActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void panLineMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLineMouseClicked
+        if (!routeCombo) {
+            return;
+        }
+        showCard(Card.add);
+        final List<Feature> selectedRoutes = getPossibleRoutes();
+
+        if (!selectedRoutes.isEmpty()) {
+            cbPossibleRoute.setModel(new DefaultComboBoxModel(selectedRoutes.toArray()));
+        } else {
+            cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
+            final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, true);
+            final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
+                        .getMetaObject()
+                        .getMetaClass();
+            final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
+
+            final CidsLayer layer = new CidsLayer(routeMc);
+            try {
+                layer.setBoundingBox(mc.getCurrentBoundingBox());
+                layer.addRetrievalListener(new RetrievalListener() {
+
+                        @Override
+                        public void retrievalStarted(final RetrievalEvent e) {
+                        }
+
+                        @Override
+                        public void retrievalProgress(final RetrievalEvent e) {
+                        }
+
+                        @Override
+                        public void retrievalComplete(final RetrievalEvent e) {
+                            if (!e.isInitialisationEvent()) {
+                                complete((List)e.getRetrievedObject());
+                            }
+                        }
+
+                        @Override
+                        public void retrievalAborted(final RetrievalEvent e) {
+                            complete((List)e.getRetrievedObject());
+                        }
+
+                        @Override
+                        public void retrievalError(final RetrievalEvent e) {
+                            complete((List)e.getRetrievedObject());
+                        }
+
+                        private void complete(final List features) {
+                            final List<Feature> routes = new ArrayList<Feature>();
+
+                            if (features instanceof List) {
+                                final List fl = (List)features;
+
+                                for (final Object o : fl) {
+                                    if (o instanceof Feature) {
+                                        routes.add((Feature)o);
+                                    }
+                                }
+                            }
+                            cbPossibleRoute.setModel(new DefaultComboBoxModel(routes.toArray()));
+                        }
+                    });
+
+                layer.retrieve(true);
+            } catch (Exception e) {
+                LOG.error("Error while retrieving features", e);
+            }
+        }
+    } //GEN-LAST:event_panLineMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLinePointsMouseClicked
+        panLineMouseClicked(evt);
+    }                                                                             //GEN-LAST:event_panLinePointsMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public List<Feature> getPossibleRoutes() {
+        final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
+        final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
+        final List<PFeature> featureList = sl.getAllSelectedPFeatures();
+        final List<Feature> possibleRoutes = new ArrayList<Feature>();
+        final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, true);
+        final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
+                    .getMetaObject()
+                    .getMetaClass();
+
+        for (final PFeature f : featureList) {
+            final Feature selectedFeature = f.getFeature();
+
+            if (selectedFeature instanceof CidsLayerFeature) {
+                final CidsLayerFeature clFeature = (CidsLayerFeature)selectedFeature;
+
+                if (routeMc.equals(clFeature.getBean().getMetaObject().getMetaClass())) {
+                    possibleRoutes.add(selectedFeature);
+                }
+            }
+        }
+
+        return possibleRoutes;
+    }
 
     /**
      * DOCUMENT ME!
@@ -2682,6 +2959,13 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                     bean.removePropertyChangeListener(linePropertyChangeListener);
                 }
                 getCidsBean().setProperty(getLineField(), lineBean);
+                lineBean.addPropertyChangeListener(linePropertyChangeListener);
+            } else {
+                final CidsBean bean = getCidsBean();
+                if (bean != null) {
+                    bean.removePropertyChangeListener(linePropertyChangeListener);
+                }
+                cidsBean = lineBean;
                 lineBean.addPropertyChangeListener(linePropertyChangeListener);
             }
             initLine();
@@ -2956,6 +3240,97 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * Processes the route drop events. The transferable object can either contains cids beans or features
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class LineEditorDropTarget extends CidsBeanDropTarget {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new LineEditorDropTarget object.
+         *
+         * @param   c  DOCUMENT ME!
+         *
+         * @throws  HeadlessException  DOCUMENT ME!
+         */
+        public LineEditorDropTarget(final CidsBeanDropListenerComponent c) throws HeadlessException {
+            super(c);
+        }
+
+        /**
+         * Creates a new LineEditorDropTarget object.
+         *
+         * @param   c  DOCUMENT ME!
+         *
+         * @throws  HeadlessException  DOCUMENT ME!
+         */
+        public LineEditorDropTarget(final Component c) throws HeadlessException {
+            super(c);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public synchronized void drop(final DropTargetDropEvent dtde) {
+            boolean consumed = false;
+
+            try {
+                if (dtde.getTransferable().isDataFlavorSupported(AttributeTableTransferHandler.rowFlavor)) {
+                    final Transferable t = dtde.getTransferable();
+                    final Object data = t.getTransferData(AttributeTableTransferHandler.rowFlavor);
+
+                    if (data instanceof FeatureServiceFeature[]) {
+                        final FeatureServiceFeature[] fsf = (FeatureServiceFeature[])t.getTransferData(
+                                AttributeTableTransferHandler.rowFlavor);
+                        consumed = true;
+
+                        for (final FeatureServiceFeature f : fsf) {
+                            if (f instanceof CidsLayerFeature) {
+                                final CidsBean routeBean = ((CidsLayerFeature)f).getBean();
+                                final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(
+                                        cidsBean,
+                                        true);
+                                final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
+                                            .getMetaObject()
+                                            .getMetaClass();
+
+                                if (routeBean.getMetaObject().getMetaClass().equals(routeMc)) {
+                                    if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {
+                                        setLineBeanFromRouteBean(routeBean);
+                                        setChangedSinceDrop(false);
+                                    }
+                                    if (isAutoZoomActivated) {
+                                        zoomToFeatureCollection(getZoomFeatures());
+                                    }
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        LinearReferencedLineEditor.this,
+                                        NbBundle.getMessage(
+                                            LinearReferencedLineEditor.class,
+                                            "LinearReferencedLineEditor.LineEditorDropTarget.invalidRoute.message"),
+                                        NbBundle.getMessage(
+                                            LinearReferencedLineEditor.class,
+                                            "LinearReferencedLineEditor.LineEditorDropTarget.invalidRoute.title"),
+                                        JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOG.error("Error processing drop event", e);
+            }
+
+            if (!consumed) {
+                super.drop(dtde);
+            }
+        }
+    }
 
     /**
      * DOCUMENT ME!

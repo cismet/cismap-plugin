@@ -200,4 +200,11 @@ public interface LinearReferencingHelper extends LinearReferencingSingletonInsta
      * @return  DOCUMENT ME!
      */
     String getValueProperty(CidsBean station);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String[] getAllUsedDomains();
 }
