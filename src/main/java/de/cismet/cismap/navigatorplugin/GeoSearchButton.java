@@ -21,6 +21,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
+import org.openide.util.NbBundle;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 
@@ -121,7 +123,7 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
     public GeoSearchButton(final String interactionMode,
             final MappingComponent mappingComponent,
             final String searchName) {
-        this(interactionMode, mappingComponent, searchName, "");
+        this(interactionMode, mappingComponent, searchName, ""); // NOI18N
     }
 
     /**
@@ -452,17 +454,22 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                 @Override
                 public void actionPerformed(final ActionEvent e) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("bufferSearchGeometry");                 // NOI18N
+                        LOG.debug("bufferSearchGeometry");                                  // NOI18N
                     }
+                    final String message = NbBundle.getMessage(
+                            GeoSearchButton.class,
+                            "GeoSearchButton.createSearchBufferAction().bufferDialog.message"); // NOI18N
+                    final String title = NbBundle.getMessage(
+                            GeoSearchButton.class,
+                            "GeoSearchButton.createSearchBufferAction().bufferDialog.title"); // NOI18N
                     final String s = (String)JOptionPane.showInputDialog(
                             StaticSwingTools.getParentFrame(mappingComponent),
-                            "Geben Sie den Abstand des zu erzeugenden\n"   // NOI18N
-                                    + "Puffers der letzten Suchgeometrie an.", // NOI18N
-                            "Puffer",                                      // NOI18N
+                            message,
+                            title,
                             JOptionPane.PLAIN_MESSAGE,
                             null,
                             null,
-                            "");                                           // NOI18N
+                            "");                                                            // NOI18N
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(s);
                     }
@@ -514,10 +521,17 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                             mappingComponent.setInteractionMode(interactionMode);
                         }
                     } catch (final NumberFormatException ex) {
+                        final String messageEx = NbBundle.getMessage(
+                                GeoSearchButton.class,
+                                "GeoSearchButton.createSearchBufferAction().NumberFormatException.bufferDialog.message"); // NOI18N
+                        final String titleEx = NbBundle.getMessage(
+                                GeoSearchButton.class,
+                                "GeoSearchButton.createSearchBufferAction().NumberFormatException.bufferDialog.title"); // NOI18N
+
                         JOptionPane.showMessageDialog(
                             StaticSwingTools.getParentFrame(mappingComponent),
-                            "The given value was not a floating point value.!",
-                            "Error",
+                            messageEx,
+                            titleEx,
                             JOptionPane.ERROR_MESSAGE); // NOI18N
                     } catch (final Exception ex) {
                         if (LOG.isDebugEnabled()) {
