@@ -2181,23 +2181,40 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menFile.add(jSeparator9);
 
         mniClipboard.setAction(new ExportMapToClipboardAction());
-        mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
+        mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_C,
+                java.awt.event.InputEvent.CTRL_MASK));
         mniClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png"))); // NOI18N
-        mniClipboard.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniClipboard.text")); // NOI18N
+        mniClipboard.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniClipboard.text"));                                                         // NOI18N
         menFile.add(mniClipboard);
 
         mniMapToFile.setAction(new ExportMapToFileAction());
-        mniMapToFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        mniMapToFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_F,
+                java.awt.event.InputEvent.CTRL_MASK));
         mniMapToFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png"))); // NOI18N
-        mniMapToFile.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniMapToFile.text")); // NOI18N
-        mniMapToFile.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniMapToFile.toolTipText")); // NOI18N
+        mniMapToFile.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniMapToFile.text"));                                                         // NOI18N
+        mniMapToFile.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniMapToFile.toolTipText"));                                                  // NOI18N
         menFile.add(mniMapToFile);
 
         mniGeoLinkClipboard.setAction(new ExportGeoPointToClipboardAction());
-        mniGeoLinkClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        mniGeoLinkClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_C,
+                java.awt.event.InputEvent.ALT_MASK
+                        | java.awt.event.InputEvent.CTRL_MASK));
         mniGeoLinkClipboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png"))); // NOI18N
-        mniGeoLinkClipboard.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniGeoLinkClipboard.text")); // NOI18N
-        mniGeoLinkClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniGeoLinkClipboard.tooltip")); // NOI18N
+        mniGeoLinkClipboard.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniGeoLinkClipboard.text"));                                                         // NOI18N
+        mniGeoLinkClipboard.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniGeoLinkClipboard.tooltip"));                                                      // NOI18N
         menFile.add(mniGeoLinkClipboard);
 
         mniPrint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
@@ -2434,15 +2451,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         menExtras.add(mniBufferSelectedGeom);
 
-        mniAngleMeasurement.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        mniAngleMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/commons/gui/piccolo/Angle-Thingy-icon_16.png"))); // NOI18N
-        mniAngleMeasurement.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAngleMeasurement.text")); // NOI18N
-        mniAngleMeasurement.setToolTipText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.mniAngleMeasurement.toolTipText")); // NOI18N
+        mniAngleMeasurement.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_L,
+                java.awt.event.InputEvent.CTRL_MASK));
+        mniAngleMeasurement.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/de/cismet/cismap/commons/gui/piccolo/Angle-Thingy-icon_16.png"))); // NOI18N
+        mniAngleMeasurement.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAngleMeasurement.text"));                                                  // NOI18N
+        mniAngleMeasurement.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAngleMeasurement.toolTipText"));                                           // NOI18N
         mniAngleMeasurement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mniAngleMeasurementActionPerformed(evt);
-            }
-        });
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniAngleMeasurementActionPerformed(evt);
+                }
+            });
         menExtras.add(mniAngleMeasurement);
         menExtras.add(jSeparator17);
 
@@ -2840,9 +2866,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAngleMeasurementActionPerformed
+    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
         StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
-    }//GEN-LAST:event_mniAngleMeasurementActionPerformed
+    }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
 
     /**
      * DOCUMENT ME!

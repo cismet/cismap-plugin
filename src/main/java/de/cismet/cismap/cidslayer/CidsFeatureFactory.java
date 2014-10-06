@@ -145,7 +145,8 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
         final CidsLayerFeature feature = new CidsLayerFeature(
                 properties /*oid, cid, geom,*/,
-                metaClass, getLayerInfo(),
+                metaClass,
+                getLayerInfo(),
                 layerProperties,
                 getStyle(metaClass.getName()));
 
@@ -375,7 +376,8 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             if (lastFeature == null) {
                 lastFeature = new CidsLayerFeature(
                         properties /*oid, cid, geom,*/,
-                        metaClass, getLayerInfo(),
+                        metaClass,
+                        getLayerInfo(),
                         layerProperties,
                         getStyle(metaClass.getName()));
             }
@@ -438,32 +440,21 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         return envelope;
     }
 
-            serverSearch.setX1(boundingBox2.getX1());
-            serverSearch.setY1(boundingBox2.getY1());
-            serverSearch.setX2(boundingBox2.getX2());
-            serverSearch.setCountOnly(true);
-
-            final Collection resultCollection = SessionManager.getProxy()
-                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
-
-            final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
-
-            if ((resultArray != null) && (resultArray.size() > 0) && (resultArray.get(0).size() > 0)) {
-                return ((Number)resultArray.get(0).get(0)).intValue();
-            }
-        } catch (Exception e) {
-            logger.error("Cannot determine the feature count", e);
-        }
-
-        return 0;
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the layerInfo
+     */
+    public CidsLayerInfo getLayerInfo() {
+        return layerInfo;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @return  the envelope
+     * @param  layerInfo  the layerInfo to set
      */
-    public Geometry getEnvelope() {
-        return envelope;
+    public void setLayerInfo(final CidsLayerInfo layerInfo) {
+        this.layerInfo = layerInfo;
     }
 }

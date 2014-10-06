@@ -15,6 +15,7 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.newuser.permission.Permission;
 
 import org.openide.util.Exceptions;
 

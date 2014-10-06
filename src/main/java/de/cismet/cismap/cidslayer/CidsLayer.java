@@ -19,51 +19,6 @@ import org.apache.log4j.Logger;
 import org.deegree.style.se.unevaluated.Style;
 
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-
-import java.util.LinkedList;
-import java.util.Map;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.util.LinkedList;
-import java.util.Map;
-
-import java.util.LinkedList;
-import java.util.Map;
-
-import java.util.LinkedList;
-import java.util.Map;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.util.LinkedList;
-import java.util.Map;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,8 +28,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
-import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
+import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
@@ -244,29 +199,37 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     }
 
     @Override
-    public String decoratePropertyName(String name) {
-        CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
-        
+    public String decoratePropertyName(final String name) {
+        final CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+
         return getSQLName(info, name);
     }
-    
-    private String getSQLName(CidsLayerInfo info, String name) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   info  DOCUMENT ME!
+     * @param   name  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getSQLName(final CidsLayerInfo info, final String name) {
         int i;
-        String[] colNames = info.getColumnNames();
-        
+        final String[] colNames = info.getColumnNames();
+
         for (i = 0; i < colNames.length; ++i) {
             if (colNames[i].equals(name)) {
                 return info.getSqlColumnNames()[i];
             }
         }
-        
+
         return name;
     }
 //
 //    @Override
 //    public String decoratePropertyValue(String columnName, String value) {
 //        CidsLayerInfo layerInfo = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
-//        
+//
 //        if (layerInfo.isCatalogue(columnName)) {
 //            int classId = layerInfo.getCatalogueClass(columnName);
 //            try {
@@ -278,7 +241,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 //                        mc.getPrimaryKey(),
 //                        mc.getTableName());
 //                MetaObject[] mos = MetaObjectCache.getInstance().getMetaObjectsByQuery(routeQuery, false);
-//                
+//
 //                if (mos != null && mos.length > 0) {
 //                    for (MetaObject tmp : mos) {
 //                        if (tmp.toString().equals(value)) {
@@ -289,9 +252,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 //            } catch (Exception e) {
 //                LOG.error("ConnectionException e");
 //                return super.decoratePropertyValue(columnName, value);
-//            }            
+//            }
 //        }
-//        
+//
 //        return super.decoratePropertyValue(columnName, value);
 //    }
 //

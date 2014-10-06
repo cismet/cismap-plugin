@@ -30,8 +30,8 @@ import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreator;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-import de.cismet.cismap.linearreferencing.CreateLinearReferencedLineListener;
-import de.cismet.cismap.linearreferencing.CreateStationLineListener;
+import de.cismet.cismap.linearreferencing.CreateLinearReferencedPointListener;
+import de.cismet.cismap.linearreferencing.CreateStationListener;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
 /**
@@ -40,17 +40,17 @@ import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class StationLineCreator implements FeatureCreator {
+public class StationCreator implements FeatureCreator {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger LOG = Logger.getLogger(StationLineCreator.class);
+    private static final Logger LOG = Logger.getLogger(StationCreator.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    private String property;
-    private MetaClass routeClass;
-    private LinearReferencingHelper helper;
+    private final String property;
+    private final MetaClass routeClass;
+    private final LinearReferencingHelper helper;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -61,7 +61,7 @@ public class StationLineCreator implements FeatureCreator {
      * @param  routeClass  DOCUMENT ME!
      * @param  helper      DOCUMENT ME!
      */
-    public StationLineCreator(final String property, final MetaClass routeClass, final LinearReferencingHelper helper) {
+    public StationCreator(final String property, final MetaClass routeClass, final LinearReferencingHelper helper) {
         this.property = property;
         this.routeClass = routeClass;
         this.helper = helper;
@@ -77,34 +77,21 @@ public class StationLineCreator implements FeatureCreator {
                 public void run() {
                     final String oldInteractionMode = mc.getInteractionMode();
 
-                    final CreateLinearReferencedLineListener listener = new CreateLinearReferencedLineListener(
+                    final CreateLinearReferencedPointListener listener = new CreateLinearReferencedPointListener(
                             mc,
-                            new CreateStationLineListener() {
+                            new CreateStationListener() {
 
                                 @Override
-                                public void lineFinished(final CidsBean route,
-                                        Geometry lineGeom,
-                                        final Geometry startGeom,
-                                        final Geometry endGeom,
-                                        final double start,
-                                        final double end) {
+                                public void pointFinished(final CidsBean route,
+                                        Geometry pointGeom,
+                                        final double point) {
                                     mc.setInteractionMode(oldInteractionMode);
-                                    lineGeom = CrsTransformer.transformToDefaultCrs(lineGeom);
-                                    lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
-                                    final CidsBean line = helper.createLineBeanFromRouteBean(route);
-                                    final CidsBean startStation = helper.createStationBeanFromRouteBean(route, start);
-                                    final CidsBean endStation = helper.createStationBeanFromRouteBean(route, end);
+                                    pointGeom = CrsTransformer.transformToDefaultCrs(pointGeom);
+                                    pointGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+                                    final CidsBean station = helper.createStationBeanFromRouteBean(route, point);
 
-                                    try {
-                                        // todo: use helper
-                                        helper.setGeometryToLineBean(lineGeom, line);
-                                        line.setProperty("von", startStation);
-                                        line.setProperty("bis", endStation);
-                                    } catch (Exception ex) {
-                                        LOG.error("Error while creating new line feature", ex);
-                                    }
-                                    feature.setProperty(property, line);
-                                    feature.setGeometry(lineGeom);
+                                    feature.setProperty(property, station);
+                                    feature.setGeometry(pointGeom);
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
                                             ((DefaultFeatureServiceFeature)feature).saveChanges();
@@ -127,15 +114,15 @@ public class StationLineCreator implements FeatureCreator {
                             },
                             routeClass);
                     mc.addInputListener(
-                        CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE,
+                        CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE,
                         listener);
-                    mc.setInteractionMode(CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE);
+                    mc.setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
                 }
             });
     }
 
     @Override
     public String getTypeName() {
-        return "stationierte Linie";
+        return "Station";
     }
 }

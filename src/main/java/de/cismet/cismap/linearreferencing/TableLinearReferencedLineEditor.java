@@ -118,10 +118,13 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         toStation.removePropertyChangeListener(this);
 
         recreateGeometry();
-        
+
         FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void recreateGeometry() {
         final double from = (Double)fromStation.getValue();
         final double to = (Double)toStation.getValue();
@@ -138,7 +141,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
             LOG.error("Cannot create line geometry", e);
         }
     }
-    
+
     @Override
     public CidsBean getCidsBean() {
         return cidsBean;
