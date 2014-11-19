@@ -76,6 +76,8 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import java.beans.PropertyChangeListener;
 
@@ -308,6 +310,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private List<String> windows2skip;
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
     private MetaSearchHelper metaSearchComponentFactory;
+    private WindowAdapter loadLayoutWhenOpenedAdapter = null;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
@@ -950,26 +953,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     .setVisible(true);
             rootWindow.getRootWindowProperties().getDragRectangleShapedPanelProperties().setComponentPainter(x);
 
-            if (!EventQueue.isDispatchThread()) {
-                EventQueue.invokeAndWait(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (plugin) {
-                                loadLayout(cismapDirectory + fs + pluginLayoutName);
-                            } else {
-                                loadLayout(cismapDirectory + fs + standaloneLayoutName);
-                            }
-                        }
-                    });
-            } else {
-                if (plugin) {
-                    loadLayout(cismapDirectory + fs + pluginLayoutName);
-                } else {
-                    loadLayout(cismapDirectory + fs + standaloneLayoutName);
-                }
-            }
-
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
                         .getProgressObserver()
@@ -1088,6 +1071,42 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             initPluginToolbarComponents();
         } catch (final Exception e) {
             log.error("Exception while initializing Toolbar!", e);                      // NOI18N
+        }
+
+        // The layout should be loaded after the main windaw was opened. Otherwise, the connection
+        // between the plugin windows and the main window will be broken
+        if (!plugin) {
+            // cismap standalone mode
+            loadLayoutWhenOpenedAdapter = new WindowAdapter() {
+
+                    @Override
+                    public void windowOpened(final WindowEvent e) {
+                        loadLayout(cismapDirectory + fs + standaloneLayoutName);
+                        removeWindowListener(loadLayoutWhenOpenedAdapter);
+                    }
+                };
+
+            addWindowListener(loadLayoutWhenOpenedAdapter);
+        }
+
+        // cismap plugin mode
+        if (plugin) {
+            if (ComponentRegistry.getRegistry().getMainWindow() != null) {
+                loadLayoutWhenOpenedAdapter = new WindowAdapter() {
+
+                        @Override
+                        public void windowOpened(final WindowEvent e) {
+                            loadLayout(cismapDirectory + fs + pluginLayoutName);
+                            ComponentRegistry.getRegistry()
+                                    .getMainWindow()
+                                    .removeWindowListener(loadLayoutWhenOpenedAdapter);
+                        }
+                    };
+
+                ComponentRegistry.getRegistry().getMainWindow().addWindowListener(loadLayoutWhenOpenedAdapter);
+            } else {
+                loadLayout(cismapDirectory + fs + pluginLayoutName);
+            }
         }
     }
 
