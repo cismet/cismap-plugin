@@ -21,7 +21,6 @@ import java.util.Properties;
 import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-
 import de.cismet.tools.CismetThreadPool;
 
 /**
@@ -144,8 +143,8 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtZeile1ActionPerformed
-    }//GEN-LAST:event_txtZeile1ActionPerformed
+    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtZeile1ActionPerformed
+    }                                                                             //GEN-LAST:event_txtZeile1ActionPerformed
 
     /**
      * DOCUMENT ME!
