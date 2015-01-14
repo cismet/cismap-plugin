@@ -40,20 +40,10 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
     //~ Instance fields --------------------------------------------------------
 
     String geoPropertyName;
+    Geometry oldGeom = null;
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new BeanUpdatingCidsFeature object.
-     *
-     * @param   mo  DOCUMENT ME!
-     *
-     * @throws  IllegalArgumentException  DOCUMENT ME!
-     */
-    public BeanUpdatingCidsFeature(final MetaObject mo) throws IllegalArgumentException {
-        super(mo);
-    }
 
     /**
      * Creates a new BeanUpdatingCidsFeature object.
@@ -65,8 +55,13 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
      */
     public BeanUpdatingCidsFeature(final CidsBean cidsBean, final String geoPropertyName)
             throws IllegalArgumentException {
-        this(cidsBean.getMetaObject());
+        super(cidsBean.getMetaObject());
         this.geoPropertyName = geoPropertyName;
+        if ((cidsBean.getProperty(geoPropertyName) != null)) {
+            oldGeom = (Geometry)((Geometry)cidsBean.getProperty(geoPropertyName)).clone();
+        } else {
+            oldGeom = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -101,13 +96,6 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
     public void updateBeanGeometry() {
         try {
             final Geometry geom = getGeometry();
-
-            final Geometry oldGeom;
-            if ((getCidsBean() != null) && (getCidsBean().getProperty(geoPropertyName) != null)) {
-                oldGeom = (Geometry)((Geometry)getCidsBean().getProperty(geoPropertyName)).clone();
-            } else {
-                oldGeom = null;
-            }
 
             // oldGeom !(===) geom
             if (!((oldGeom == geom) || ((oldGeom != null) && oldGeom.equalsExact(geom)))) {
