@@ -274,9 +274,9 @@ public class GotoPointDialog extends javax.swing.JDialog {
         final BoundingBox c = mapC.getCurrentBoundingBoxFromCamera();
         final double x = (c.getX1() + c.getX2()) / 2;
         final double y = (c.getY1() + c.getY2()) / 2;
-        tfCoordinates.setText(StaticDecimalTools.round(x)
-                    + "," // NOI18N
-                    + StaticDecimalTools.round(y));
+        final String pattern = (CismapBroker.getInstance().getSrs().isMetric() ? "0.00" : "0.000000");
+
+        tfCoordinates.setText(StaticDecimalTools.round(pattern, x) + "," + StaticDecimalTools.round(pattern, y));
     }
 
     /**
