@@ -44,7 +44,9 @@ public class CidsBeanLocker {
 
     private static final Logger LOG = Logger.getLogger(CidsBeanLocker.class);
     private static final String LOCK_QUERY = "SELECT DISTINCT %1$s, %2$s "
-                + " FROM %3$s WHERE class_id = %4$s and object_id = %5$s;";
+                + " FROM %3$s WHERE class_id = %4$s and (object_id = %5$s or object_id is null) and user_string <> '%6$s';";
+    private static final String LOCK_MC_QUERY = "SELECT DISTINCT %1$s, %2$s "
+                + " FROM %3$s WHERE class_id = %4$s and user_string <> '%5$s' limit 1;";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -64,7 +66,11 @@ public class CidsBeanLocker {
      */
     public CidsBean lock(final CidsBean bean) throws LockAlreadyExistsException, Exception {
         try {
-            final MetaClass lockMc = getLockMetaClassForBean(bean);
+            final MetaClass lockMc = getLockMetaClassForBean(bean.getMetaObject().getDomain());
+            final String userString = NbBundle.getMessage(
+                    CidsBeanLocker.class,
+                    "CidsLayerLocker.lock(CidsBean).userString",
+                    SessionManager.getSession().getUser().toString());
 
             // Check, if the lock already exists
             final String query = String.format(
@@ -73,7 +79,8 @@ public class CidsBeanLocker {
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
                     bean.getMetaObject().getMetaClass().getID(),
-                    bean.getMetaObject().getID());
+                    bean.getMetaObject().getID(),
+                    userString);
             final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
 
             if ((mos != null) && (mos.length > 0)) {
@@ -85,14 +92,63 @@ public class CidsBeanLocker {
             }
 
             // create lock
-            final String userString = NbBundle.getMessage(
-                    CidsBeanLocker.class,
-                    "CidsLayerLocker.lock(CidsBean).userString",
-                    SessionManager.getSession().getUser().toString());
             CidsBean lockBean = lockMc.getEmptyInstance().getBean();
             lockBean.setProperty("class_id", bean.getMetaObject().getMetaClass().getID());
             lockBean.setProperty("object_id", bean.getMetaObject().getId());
             lockBean.setProperty("user_string", userString);
+            lockBean = lockBean.persist();
+
+            return lockBean;
+        } catch (LockAlreadyExistsException e) {
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Error while creating lock object", e);
+            throw new Exception("Cannot lock object");
+        }
+    }
+
+    /**
+     * Locks all beans of the given meta class.
+     *
+     * @param   mc  the meta class to lock
+     *
+     * @return  the lock bean. This bean can be used to unlock the given meta class
+     *
+     * @throws  LockAlreadyExistsException  if at least one bean of the given meta class is already locked
+     * @throws  Exception                   DOCUMENT ME!
+     */
+    public CidsBean lock(final MetaClass mc) throws LockAlreadyExistsException, Exception {
+        try {
+            final MetaClass lockMc = getLockMetaClassForBean(mc.getDomain());
+            final String userString = NbBundle.getMessage(
+                    CidsBeanLocker.class,
+                    "CidsLayerLocker.lock(CidsBean).userString",
+                    SessionManager.getSession().getUser().toString());
+
+            // Check, if the lock already exists
+            final String query = String.format(
+                    LOCK_MC_QUERY,
+                    lockMc.getID(),
+                    lockMc.getPrimaryKey(),
+                    lockMc.getTableName(),
+                    mc.getID(),
+                    userString);
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+
+            if ((mos != null) && (mos.length > 0)) {
+                final LockAlreadyExistsException ex = new LockAlreadyExistsException(
+                        "The lock does already exists",
+                        String.valueOf(mos[0].getBean().getProperty("user_string")));
+
+                throw ex;
+            }
+
+            // create lock
+            CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+            lockBean.setProperty("class_id", mc.getID());
+            lockBean.setProperty("object_id", null);
+            lockBean.setProperty("user_string", userString);
+            lockBean.setProperty("additional_info", "locks the whole table");
             lockBean = lockBean.persist();
 
             return lockBean;
@@ -124,15 +180,14 @@ public class CidsBeanLocker {
     /**
      * Determines the meta class of the cs_locks cids class, that should be used to lock the given bean.
      *
-     * @param   bean  the bean to lock
+     * @param   domain  the domain to lock in
      *
-     * @return  the meta class of the cs_locks cids class, that should be used to lock the given bean
+     * @return  the meta class of the cs_locks cids class, that should be used to lock a bean of the given domain
      *
      * @throws  Exception  if the meta class cannot be determined
      */
-    protected MetaClass getLockMetaClassForBean(final CidsBean bean) throws Exception {
+    protected MetaClass getLockMetaClassForBean(final String domain) throws Exception {
         // determine the cs_locks meta class
-        final String domain = bean.getMetaObject().getDomain();
         MetaClass lockMc = LOCK_MC_MAP.get(domain);
 
         if (lockMc == null) {

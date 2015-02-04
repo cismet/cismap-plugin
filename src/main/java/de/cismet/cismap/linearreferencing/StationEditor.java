@@ -1318,7 +1318,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         if (isEditable()) {
             final LinearReferencedPointFeature feature = getFeature();
             final Feature badFeature = getBadGeomFeature();
-            feature.moveTo(badFeature.getGeometry().getCoordinate());
+            feature.moveTo(badFeature.getGeometry().getCoordinate(), null);
             zoomToBadFeature();
         }
     }

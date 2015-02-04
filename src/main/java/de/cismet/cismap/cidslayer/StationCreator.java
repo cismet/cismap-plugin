@@ -19,15 +19,18 @@ import org.apache.log4j.Logger;
 
 import java.awt.EventQueue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
-import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
-import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.gui.MappingComponent;
-import de.cismet.cismap.commons.gui.attributetable.FeatureCreator;
+import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
+import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
+import de.cismet.cismap.commons.gui.attributetable.creator.AbstractFeatureCreator;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.linearreferencing.CreateLinearReferencedPointListener;
@@ -40,13 +43,15 @@ import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class StationCreator implements FeatureCreator {
+public class StationCreator extends AbstractFeatureCreator {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(StationCreator.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    protected List<FeatureCreatedListener> listener = new ArrayList<FeatureCreatedListener>();
 
     private final String property;
     private final MetaClass routeClass;
@@ -94,17 +99,13 @@ public class StationCreator implements FeatureCreator {
                                     feature.setGeometry(pointGeom);
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
+                                            fillFeatureWithDefaultValues((DefaultFeatureServiceFeature)feature);
                                             ((DefaultFeatureServiceFeature)feature).saveChanges();
 
-                                            // reload layer
-                                            final LayerProperties props = feature.getLayerProperties();
-
-                                            if (props != null) {
-                                                final AbstractFeatureService service = props.getFeatureService();
-
-                                                if (service != null) {
-                                                    service.retrieve(true);
-                                                }
+                                            for (final FeatureCreatedListener featureCreatedListener
+                                                        : StationCreator.this.listener) {
+                                                featureCreatedListener.featureCreated(
+                                                    new FeatureCreatedEvent(StationCreator.this, feature));
                                             }
                                         } catch (Exception e) {
                                             LOG.error("Cannot save new feature", e);
@@ -119,6 +120,11 @@ public class StationCreator implements FeatureCreator {
                     mc.setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
                 }
             });
+    }
+
+    @Override
+    public void addFeatureCreatedListener(final FeatureCreatedListener listener) {
+        this.listener.add(listener);
     }
 
     @Override

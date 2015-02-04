@@ -22,7 +22,7 @@ import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerConfig implements LayerConfig {
+public class CidsLayerConfig implements LayerConfig, Comparable<CidsLayerConfig> {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -55,5 +55,10 @@ public class CidsLayerConfig implements LayerConfig {
     @Override
     public String getTitle() {
         return config.getName();
+    }
+
+    @Override
+    public int compareTo(final CidsLayerConfig o) {
+        return getTitle().compareTo(o.getTitle());
     }
 }

@@ -11,6 +11,7 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
 import Sirius.navigator.tools.MetaObjectCache;
 
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
@@ -72,6 +73,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private String query;
     private String tableName;
     private MetaClass metaClass;
+    private String metaDocumentLink;
+    private String geometryType = AbstractFeatureService.UNKNOWN;
+    private Integer maxFeaturesPerPage = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,6 +89,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         tableName = cl.tableName;
         query = cl.getQuery();
         metaClass = cl.metaClass;
+        metaDocumentLink = cl.metaDocumentLink;
         // sldDefinition = cl.sldDefinition;
     }
 
@@ -97,8 +102,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public CidsLayer(final Element e) throws Exception {
         super(e);
-        // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml"));
-        // name = "CidsLayer"; cidsStatement = new CidsLayerSearchStatement();
+        additionalInitializationFromElement(e);
+        // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml")); name = "CidsLayer";
+        // cidsStatement = new CidsLayerSearchStatement();
     }
 
     /**
@@ -111,6 +117,24 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         name = clazz.getName();
         tableName = clazz.getTableName();
         metaClass = clazz;
+        final ClassAttribute metaDocumentAttr = metaClass.getClassAttribute("metaDocument");
+
+        if ((metaDocumentAttr != null) && (metaDocumentAttr.getValue() != null)) {
+            metaDocumentLink = metaDocumentAttr.getValue().toString();
+        }
+
+        final ClassAttribute maxPageSizeAttr = metaClass.getClassAttribute("maxPageSize");
+
+        if ((maxPageSizeAttr != null) && (maxPageSizeAttr.getValue() != null)) {
+            try {
+                maxFeaturesPerPage = Integer.parseInt(maxPageSizeAttr.getValue().toString());
+            } catch (Exception e) {
+                LOG.error("the max page size attribute does not contain a valid number: "
+                            + maxPageSizeAttr.getValue().toString(),
+                    e);
+            }
+        }
+
         // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml"));
     }
 
@@ -132,6 +156,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     protected FeatureFactory createFeatureFactory() throws Exception {
         final Map<String, LinkedList<Style>> styles = parseSLD(getSLDDefiniton());
         featureFactory = new CidsFeatureFactory(metaClass, this.getLayerProperties(), styles);
+        geometryType = ((CidsFeatureFactory)featureFactory).getGeometryType();
         return featureFactory;
     }
 
@@ -173,23 +198,50 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         final Element className = new Element("className");
         className.setText(tableName);
         parentElement.addContent(className);
+
+        if ((query != null) && !query.isEmpty()) {
+            final Element queryElement = new Element("currentQuery");
+            queryElement.addContent(query);
+            parentElement.addContent(queryElement);
+        }
+
+        if (metaDocumentLink != null) {
+            parentElement.setAttribute("metaDocumentLink", metaDocumentLink);
+        }
+
+        if (maxFeaturesPerPage != null) {
+            parentElement.setAttribute("maxFeaturesPerPage", maxFeaturesPerPage.toString());
+        }
         return parentElement;
     }
 
-    @Override
-    public void initFromElement(final Element element) throws Exception {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   element  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public void additionalInitializationFromElement(final Element element) throws Exception {
+        tableName = element.getChildText("className").trim();
+        metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
+                tableName);
+        if (metaClass == null) {
+            return;
+        }
+
+        final String queryText = element.getChildText("currentQuery");
+        if (queryText != null) {
+            setQuery(queryText);
+        }
+
+        metaDocumentLink = element.getAttributeValue("metaDocumentLink");
         try {
-            super.initFromElement(element);
-            tableName = element.getChildText("className").trim();
-            metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
-                    tableName);
-            if (metaClass == null) {
-                return;
-            }
-            // this.setName(clazz.getName());
-// setQuery(new CidsLayerSearchStatement(metaClass));
-        } catch (ConnectionException ex) {
-            LOG.error("Configuration could not be loaded", ex);
+            maxFeaturesPerPage = Integer.parseInt(element.getAttributeValue("maxFeaturesPerPage"));
+        } catch (NumberFormatException e) {
+            LOG.warn("maxFeaturesPerPage attribute has an invalid value: "
+                        + element.getAttributeValue("maxFeaturesPerPage"),
+                e);
         }
     }
 
@@ -225,6 +277,16 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
         return name;
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the meta class of this CidsLayer
+     */
+    public MetaClass getMetaClass() {
+        return metaClass;
+    }
+
 //
 //    @Override
 //    public String decoratePropertyValue(String columnName, String value) {
@@ -264,4 +326,36 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 //                        classId,
 //                        metaClass.getDomain());
 //    }
+
+    @Override
+    public String getGeometryType() {
+        return geometryType;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the metaDocumentLink
+     */
+    public String getMetaDocumentLink() {
+        return metaDocumentLink;
+    }
+
+    @Override
+    public int getMaxFeaturesPerPage() {
+        if (maxFeaturesPerPage == null) {
+            return -1;
+        } else {
+            return maxFeaturesPerPage;
+        }
+    }
+
+    @Override
+    public String[] getCalculatedAttributes() {
+        if ((this.getLayerProperties() != null) && (this.getLayerProperties().getAttributeTableRuleSet() != null)) {
+            return this.getLayerProperties().getAttributeTableRuleSet().getAdditionalFieldNames();
+        } else {
+            return super.getCalculatedAttributes();
+        }
+    }
 }

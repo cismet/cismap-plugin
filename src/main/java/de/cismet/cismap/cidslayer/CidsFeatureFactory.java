@@ -16,14 +16,12 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
 
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-
-import org.apache.log4j.Logger;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.io.WKBReader;
 
 import org.deegree.datatypes.Types;
-
-import org.postgresql.util.PGobject;
 
 import java.lang.reflect.Constructor;
 
@@ -41,18 +39,20 @@ import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.search.builtin.CidsLayerInitStatement;
 import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
+import de.cismet.cids.tools.CidsLayerUtil;
+
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
-import de.cismet.cismap.commons.features.JDBCFeature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.AbstractFeatureFactory;
+import de.cismet.cismap.commons.gui.attributetable.AttributeTableRuleSet;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.commons.tools.FeatureTools;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
-
-import de.cismet.commons.converter.ConversionException;
 
 /**
  * DOCUMENT ME!
@@ -74,6 +74,8 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
     MetaClass metaClass;
     private Geometry envelope;
     private CidsLayerInfo layerInfo;
+    private String geometryType = AbstractFeatureService.UNKNOWN;
+    private Double maxArea = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -166,6 +168,16 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
     public List<CidsLayerFeature> createFeatures(final String query,
             final BoundingBox boundingBox,
             final SwingWorker workerThread) throws TooManyFeaturesException, Exception {
+        if ((maxArea != null) && (boundingBox != null)) {
+            Geometry bbox = boundingBox.getGeometry(CrsTransformer.extractSridFromCrs(
+                        CismapBroker.getInstance().getSrs().getCode()));
+            bbox = CrsTransformer.transformToMetricCrs(bbox);
+
+            if (bbox.getArea() > maxArea) {
+                return new ArrayList<CidsLayerFeature>();
+            }
+        }
+
         return createFeaturesInternal(query, boundingBox, workerThread, 0, 0, null, true);
     }
 
@@ -174,31 +186,50 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
      */
     private void initLayer() {
         try {
-            final ClassAttribute attr = metaClass.getClassAttribute("cidsLayer");
+            final Object info = CidsLayerUtil.getCidsLayerInfo(metaClass, SessionManager.getSession().getUser());
+            setLayerInfo((CidsLayerInfo)info);
 
-            if (attr != null) {
-                final String className = attr.getValue().toString();
+            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxArea");
 
+            if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
                 try {
-                    final Class classObject = Class.forName(className);
-                    final Constructor c = classObject.getConstructor(MetaClass.class);
-                    final Object info = c.newInstance(metaClass);
-
-                    if (info instanceof CidsLayerInfo) {
-                        setLayerInfo((CidsLayerInfo)info);
-                    }
+                    maxArea = Double.parseDouble(scaleAttr.getValue().toString());
                 } catch (Exception e) {
-                    logger.error("Cannot instantiate CidsLayerInfo class: " + className, e);
+                    logger.error("the max scale attribute does not contain a valid number: "
+                                + scaleAttr.getValue().toString(),
+                        e);
                 }
             }
 
-            final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(metaClass);
-            final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager.getProxy()
-                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+            final ClassAttribute typeAttr = metaClass.getClassAttribute("geometryType");
+            final ClassAttribute boundingBoxAttr = metaClass.getClassAttribute("boundingBox");
+            geometryType = AbstractFeatureService.UNKNOWN;
             final String crs = CismapBroker.getInstance().getDefaultCrs();
 
-            for (final ArrayList row : resultArray) {
-                envelope = converter.convertForward((String)row.get(0), crs);
+            if ((typeAttr == null) || (boundingBoxAttr == null)) {
+                final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(
+                        metaClass,
+                        SessionManager.getSession().getUser());
+                final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager.getProxy()
+                            .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+
+                for (final ArrayList row : resultArray) {
+                    if (row.get(0) != null) {
+                        envelope = converter.convertForward((String)row.get(0), crs);
+
+                        if (row.size() == 2) {
+                            geometryType = converter.convertForward((String)row.get(1), crs).getGeometryType();
+                        }
+                    }
+                }
+            }
+
+            if ((typeAttr != null) && (typeAttr.getValue() != null)) {
+                geometryType = typeAttr.getValue().toString();
+            }
+
+            if ((boundingBoxAttr != null) && (boundingBoxAttr.getValue() != null)) {
+                envelope = converter.convertForward(boundingBoxAttr.getValue().toString(), crs);
             }
 
             featureServiceAttributes = new ArrayList<FeatureServiceAttribute>();
@@ -208,6 +239,24 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             for (int i = 0; i < names.length; ++i) {
                 final String type = String.valueOf(getTypeByTypeName(types[i]));
                 featureServiceAttributes.add(new FeatureServiceAttribute(names[i], type, true));
+            }
+
+            final AttributeTableRuleSet ruleSet = layerProperties.getAttributeTableRuleSet();
+
+            if (ruleSet != null) {
+                final String[] additionalFields = ruleSet.getAdditionalFieldNames();
+
+                if (additionalFields != null) {
+                    for (int index = 0; index < additionalFields.length; ++index) {
+                        final String name = additionalFields[index];
+                        final Class cl = ruleSet.getAdditionalFieldClass(index);
+                        final FeatureServiceAttribute fsa = new FeatureServiceAttribute(
+                                name,
+                                FeatureTools.getType(cl),
+                                true);
+                        featureServiceAttributes.add(fsa);
+                    }
+                }
             }
         } catch (Exception e) {
             logger.error("Error while initialiseing the cids layer.", e);
@@ -259,6 +308,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             return Types.DATE;
         } else if (type.toLowerCase().contains("bool")) {
             return Types.BOOLEAN;
+        } else if (type.toLowerCase().contains("geometry")) {
+            return Types.GEOMETRY;
+        } else if (type.equalsIgnoreCase("BigDecimal")) {
+            return Types.NUMERIC;
         } else {
             return Types.VARCHAR;
         }
@@ -305,7 +358,9 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
         final CrsTransformer transformer = new CrsTransformer(crs);
         BoundingBox boundingBoxIncurrentCrs = null;
-        final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(metaClass);
+        final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(
+                metaClass,
+                SessionManager.getSession().getUser());
 
         if (boundingBox != null) {
             boundingBoxIncurrentCrs = transformer.transformBoundingBox(
@@ -320,12 +375,13 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             orderByStrings = new String[orderBy.length];
 
             for (int i = 0; i < orderBy.length; ++i) {
-                orderByStrings[i] = orderBy[i].getName();
+                orderByStrings[i] = orderBy[i].getName() + " " + (orderBy[i].isAscOrder() ? "asc" : "desc");
             }
         }
 
-        // if the hole envelope of the layer should be requested, the coordinate limitation is not reaquired
-        if ((boundingBoxIncurrentCrs != null) && !envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid))) {
+        // if the hole envelope of the layer should be requested, the coordinate limitation is not required
+        if ((boundingBoxIncurrentCrs != null)
+                    && ((envelope == null) || !envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)))) {
             serverSearch.setX1(boundingBoxIncurrentCrs.getX1());
             serverSearch.setY1(boundingBoxIncurrentCrs.getY1());
             serverSearch.setX2(boundingBoxIncurrentCrs.getX2());
@@ -351,21 +407,18 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
         final Vector<CidsLayerFeature> features = new Vector<CidsLayerFeature>();
         CidsLayerFeature lastFeature = null;
+        final GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING),
+                CrsTransformer.extractSridFromCrs(crs));
+        final WKBReader wkbReader = new WKBReader(geomFactory);
 
         for (int i = 0; i < resultArray.size(); i++) {
             final HashMap<String, Object> properties = new HashMap<String, Object>(featureServiceAttributes.size());
             for (int j = resultArray.get(i).size() - 1; j >= 0; j--) {
-                if (resultArray.get(i).get(j) instanceof String) {
+                if (resultArray.get(i).get(j) instanceof byte[]) {
                     try {
-                        final String value = (String)resultArray.get(i).get(j);
-                        if ((value == null) || value.isEmpty()) {
-                            throw new ConversionException("An empty string is no geomety");
-                        }
-                        properties.put(featureServiceAttributes.get(j).getName(),
-                            converter.convertForward(value, crs));
-                    } catch (ConversionException ex) {
-                        Logger.getLogger(this.getClass())
-                                .info("Tried to parse field " + featureServiceAttributes.get(j).getName() + " to geom");
+                        final Geometry g = wkbReader.read((byte[])resultArray.get(i).get(j));
+                        properties.put(featureServiceAttributes.get(j).getName(), g);
+                    } catch (final Exception ex) {
                         properties.put(featureServiceAttributes.get(j).getName(), resultArray.get(i).get(j));
                     }
                 } else {
@@ -380,6 +433,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                         getLayerInfo(),
                         layerProperties,
                         getStyle(metaClass.getName()));
+                lastFeature.setSimplifiedGeometryAllowed(saveAsLastCreated);
             }
             features.add(lastFeature);
             lastFeature = null;
@@ -399,7 +453,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
     }
 
     @Override
-    public int getFeatureCount(final BoundingBox bb) {
+    public int getFeatureCount(final String query, final BoundingBox bb) {
         try {
             final String crs = CismapBroker.getInstance().getDefaultCrs();
 
@@ -407,14 +461,21 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             final BoundingBox boundingBox2 = transformer.transformBoundingBox(
                     bb,
                     CismapBroker.getInstance().getSrs().getCode());
-            final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(metaClass);
+            final CidsLayerSearchStatement serverSearch = new CidsLayerSearchStatement(
+                    metaClass,
+                    SessionManager.getSession().getUser());
+            final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getSrs().getCode());
             serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
 
-            serverSearch.setX1(boundingBox2.getX1());
-            serverSearch.setY1(boundingBox2.getY1());
-            serverSearch.setX2(boundingBox2.getX2());
-            serverSearch.setY2(boundingBox2.getY2());
+            // if the hole envelope of the layer should be requested, the coordinate limitation is not required
+            if ((boundingBox2 != null) && ((envelope == null) || !envelope.coveredBy(boundingBox2.getGeometry(srid)))) {
+                serverSearch.setX1(boundingBox2.getX1());
+                serverSearch.setY1(boundingBox2.getY1());
+                serverSearch.setX2(boundingBox2.getX2());
+                serverSearch.setY2(boundingBox2.getY2());
+            }
             serverSearch.setCountOnly(true);
+            serverSearch.setQuery(query);
 
             final Collection resultCollection = SessionManager.getProxy()
                         .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
@@ -456,5 +517,14 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
      */
     public void setLayerInfo(final CidsLayerInfo layerInfo) {
         this.layerInfo = layerInfo;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the geometryType
+     */
+    public String getGeometryType() {
+        return geometryType;
     }
 }

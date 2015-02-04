@@ -20,6 +20,8 @@ import javax.swing.table.TableCellEditor;
 
 import de.cismet.cids.editors.DefaultBindableReferenceCombo;
 
+import de.cismet.cids.tools.CidsBeanFilter;
+
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
@@ -36,6 +38,7 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
 
     private DefaultBindableReferenceCombo combo = new DefaultBindableReferenceCombo();
     private String colName;
+    private CidsBeanFilter filter;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -45,7 +48,18 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
      * @param  colName  DOCUMENT ME!
      */
     public CidsLayerReferencedComboEditor(final String colName) {
+        this(colName, null);
+    }
+
+    /**
+     * Creates a new CidsLayerReferencedComboEditor object.
+     *
+     * @param  colName  DOCUMENT ME!
+     * @param  filter   DOCUMENT ME!
+     */
+    public CidsLayerReferencedComboEditor(final String colName, final CidsBeanFilter filter) {
         this.colName = colName;
+        this.filter = filter;
     }
 
     //~ Methods ----------------------------------------------------------------

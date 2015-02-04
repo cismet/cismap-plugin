@@ -16,6 +16,7 @@ import Sirius.server.middleware.types.MetaClass;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.attributetable.FeatureLockingInterface;
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 
@@ -42,10 +43,21 @@ public class CidsLayerLocker extends CidsBeanLocker implements FeatureLockingInt
     }
 
     @Override
+    public Object lock(final AbstractFeatureService service) throws LockAlreadyExistsException, Exception {
+        if (service instanceof CidsLayer) {
+            final CidsLayer layer = (CidsLayer)service;
+
+            return lock(layer.getMetaClass());
+        }
+
+        throw new IllegalArgumentException("Only CidsLayerFeature are supported");
+    }
+
+    @Override
     public void unlock(final Object lockObject) throws Exception {
         if (lockObject instanceof CidsBean) {
             final CidsBean bean = (CidsBean)lockObject;
-            final MetaClass lockMc = getLockMetaClassForBean(bean);
+            final MetaClass lockMc = getLockMetaClassForBean(bean.getMetaObject().getMetaClass().getDomain());
 
             if (bean.getMetaObject().getMetaClass().equals(lockMc)) {
                 unlock(bean);

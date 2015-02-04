@@ -52,6 +52,7 @@ import de.cismet.cismap.commons.features.ModifiableFeature;
 import de.cismet.cismap.commons.features.PermissionProvider;
 import de.cismet.cismap.commons.features.SLDStyledFeature;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
+import de.cismet.cismap.commons.gui.attributetable.AttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.PSticky;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -108,14 +109,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         this.layerInfo = feature.layerInfo;
         if (feature.metaObject != null) {
             metaObject = feature.metaObject;
-        } else {
-            /*final ExecutorService executor = CismetConcurrency.getInstance("CidsLayerFeature").getDefaultExecutor();
-             * executor.execute(new Runnable() {
-             *
-             * @Override public void run() { try { metaObject = SessionManager.getConnection() .getMetaObject(
-             * SessionManager.getSession().getUser(), getId(), (Integer)properties.get(CLASS_ID),
-             * SessionManager.getSession().getUser().getDomain()); LOG.info("MetaObject geladen: " + getId()); } catch
-             * (ConnectionException ex) { LOG.error("Could not load the metaObject", ex); } } });*/
         }
     }
 
@@ -140,19 +133,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         this.metaClass = metaClass;
         this.layerInfo = layerInfo;
         this.addProperties(properties);
-        // this.properties = new HashMap<String, Object>(properties);
-        // this.style = style;
-
-        /*} catch (ConnectionException ex) {
-         *  Exceptions.printStackTrace(ex); this.stylings = style.evaluate(null, null);}*/
-
-        /*final ExecutorService executor = CismetConcurrency.getInstance("CidsLayerFeature").getDefaultExecutor();
-         * executor.execute(new Runnable() {
-         *
-         * @Override public void run() { try { metaObject = SessionManager.getConnection() .getMetaObject(
-         * SessionManager.getSession().getUser(), getId(), (Integer)properties.get(CLASS_ID),
-         * SessionManager.getSession().getUser().getDomain()); LOG.info( "MetaObject geladen: " + getId()); } catch
-         * (ConnectionException ex) { LOG.error("Could not load the metaObject", ex); } } });*/
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -176,12 +156,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         return new CidSLayerDeegreeFeature();
     }
 
-    /*@Override
-     * public FeatureAnnotationSymbol getPointAnnotationSymbol() { return annotation; }
-     */
     @Override
     public boolean isPrimaryAnnotationVisible() {
-        return false; // To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 
     @Override
@@ -226,9 +203,23 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     stations.get(key).dispose();
                 }
                 stations.clear();
+
+                if ((getLayerProperties().getAttributeTableRuleSet() != null)
+                            && getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
+                    if (CismapBroker.getInstance().getMappingComponent().getFeatureCollection().isHoldFeature(this)) {
+                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unholdFeature(this);
+                    }
+                    if (CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(this) != null) {
+                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(this);
+                    }
+                }
             } else {
-                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unholdFeature(this);
-                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(this);
+                if (CismapBroker.getInstance().getMappingComponent().getFeatureCollection().isHoldFeature(this)) {
+                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unholdFeature(this);
+                }
+                if (CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(this) != null) {
+                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(this);
+                }
             }
 
             if (editable) {
@@ -248,8 +239,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                             String.valueOf(statInfo.getLineId()));
 
                                     if (st == null) {
+                                        final String colName = layerInfo.getColumnPropertyNames()[i];
                                         final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                                    .getProperty(layerInfo.getColumnPropertyNames()[i]);
+                                                    .getProperty(colName.substring(0, colName.indexOf(".")));
                                         st = new TableLinearReferencedLineEditor();
                                         st.setCidsBean(bean);
                                         st.addPropertyChangeListener(propListener);
@@ -267,8 +259,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                     if (stations == null) {
                                         stations = new HashMap<String, DisposableCidsBeanStore>();
                                     }
+                                    final String colName = layerInfo.getColumnPropertyNames()[i];
                                     final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                                .getProperty(layerInfo.getColumnPropertyNames()[i]);
+                                                .getProperty(colName.substring(0, colName.indexOf(".")));
                                     final TableStationEditor st = new TableStationEditor();
                                     st.setCidsBean(bean);
                                     st.addPropertyChangeListener(propListener);
@@ -281,11 +274,22 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     } catch (Exception e) {
                         LOG.error("Error while retrieving meta object", e);
                     }
+
+                    if ((getLayerProperties().getAttributeTableRuleSet() != null)
+                                && getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
+                        backupGeometry = (Geometry)getGeometry().clone();
+                        backupProperties = (HashMap)super.getProperties().clone();
+                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
+                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
+                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(this);
+//                        backgroundColor = new Color(255, 91, 0);
+                    }
                 } else {
                     backupGeometry = (Geometry)getGeometry().clone();
                     backupProperties = (HashMap)super.getProperties().clone();
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
+                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(this);
                     backgroundColor = new Color(255, 91, 0);
                 }
 
@@ -304,13 +308,14 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                         foreignClass,
                                         true,
                                         false);
+                                final String colName = layerInfo.getColumnPropertyNames()[i];
                                 final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                            .getProperty(layerInfo.getColumnPropertyNames()[i]);
+                                            .getProperty(colName.substring(0, colName.indexOf(".")));
                                 catalogueEditor.setSelectedItem(bean);
                                 combos.put(col, catalogueEditor);
                             }
                         } catch (Exception e) {
-                            LOG.error("Error while recieving meta class", e);
+                            LOG.error("Error while receiving meta class", e);
                         }
                     }
                 }
@@ -355,12 +360,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final String[] cols = layerInfo.getColumnNames();
         final String[] props = layerInfo.getColumnPropertyNames();
         final HashMap<String, String> colMap = new HashMap<String, String>();
+        final boolean hasAdditionalFields = hasAdditionalProperties();
+        final AttributeTableRuleSet ruleSet = getLayerProperties().getAttributeTableRuleSet();
 
         for (int i = 0; i < cols.length; ++i) {
             colMap.put(cols[i], props[i]);
         }
 
         for (final String key : propertyMap.keySet()) {
+            if (hasAdditionalFields && (ruleSet.getIndexOfAdditionalFieldName(key) != -1)) {
+                // additional fields cannot be saved
+                continue;
+            }
             if (key.equalsIgnoreCase("id")) {
                 // nothing to do. the id should not be changed
             } else if (layerInfo.isPrimitive(key)) {
@@ -387,26 +398,37 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 if (info.isStationLine()) {
                     if (stations != null) {
                         final DisposableCidsBeanStore store = stations.get(String.valueOf(info.getLineId()));
-                        bean.setProperty(colMap.get(key), store.getCidsBean());
+                        bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
+                            store.getCidsBean());
                     } else {
                         if (getProperty(key) != null) {
-                            bean.setProperty(colMap.get(key), getProperty(key));
+                            bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
+                                getProperty(key));
                         }
                     }
                 } else {
                     if (stations != null) {
                         final DisposableCidsBeanStore store = stations.get(key);
-                        bean.setProperty(colMap.get(key), store.getCidsBean());
+                        bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
+                            store.getCidsBean());
                     } else {
-                        bean.setProperty(colMap.get(key), getProperty(key));
+                        bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")), getProperty(key));
                     }
                 }
+            } else {
+                String propKey = colMap.get(key);
+
+                if (propKey == null) {
+                    propKey = key;
+                }
+                bean.setProperty(propKey, propertyMap.get(key));
             }
         }
 //LOG.error(bean.getMOString());
         final CidsBean savedBean = bean.persist();
         setId(savedBean.getMetaObject().getID());
-        metaObject = null;
+        setProperty("id", savedBean.getMetaObject().getID());
+        metaObject = savedBean.getMetaObject();
     }
 
     @Override

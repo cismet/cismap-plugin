@@ -1301,7 +1301,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         if (isEditable()) {
             final LinearReferencedPointFeature feature = getPointFeature(isFrom);
             final Feature badFeature = getBadGeomFeature(isFrom);
-            feature.moveTo(badFeature.getGeometry().getCoordinate());
+            feature.moveTo(badFeature.getGeometry().getCoordinate(), null);
             zoomToBadFeature(isFrom);
         }
     }

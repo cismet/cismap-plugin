@@ -207,4 +207,13 @@ public interface LinearReferencingHelper extends LinearReferencingSingletonInsta
      * @return  DOCUMENT ME!
      */
     String[] getAllUsedDomains();
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   route  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    Geometry getGeometryFromRoute(CidsBean route);
 }

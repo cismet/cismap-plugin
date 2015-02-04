@@ -16,13 +16,18 @@ import Sirius.server.middleware.types.MetaClass;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.linearref.LengthIndexedLine;
 
 import edu.umd.cs.piccolo.event.PInputEvent;
 
 import org.apache.log4j.Logger;
 
+import java.awt.Component;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
@@ -32,6 +37,8 @@ import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateLinearReferencedMarksListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
+
+import de.cismet.tools.gui.StaticSwingTools;
 
 /**
  * DOCUMENT ME!
@@ -51,6 +58,7 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
     private int counter = 0;
     private CreateStationLineListener lineFinishedListener;
     private MetaClass acceptedRoute;
+    private float minDistance = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -60,23 +68,42 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
      * @param  mc                        DOCUMENT ME!
      * @param  geometryFinishedListener  DOCUMENT ME!
      * @param  acceptedRoute             DOCUMENT ME!
+     * @param  minDistance               DOCUMENT ME!
      */
     public CreateLinearReferencedLineListener(final MappingComponent mc,
             final CreateStationLineListener geometryFinishedListener,
-            final MetaClass acceptedRoute) {
+            final MetaClass acceptedRoute,
+            final float minDistance) {
         super(mc);
         mcModus = CREATE_LINEAR_REFERENCED_LINE_MODE;
         this.lineFinishedListener = geometryFinishedListener;
         this.acceptedRoute = acceptedRoute;
+        this.minDistance = minDistance;
+        if (getSelectedLinePFeature() == null) {
+            JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
+                "Bevor Sie ein neues Objekt anlegen können, \nmüssen Sie ein Objekt vom Typ "
+                        + acceptedRoute.getName()
+                        + " markieren.",
+                "Keine Route markiert",
+                JOptionPane.WARNING_MESSAGE);
+            lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public void mouseClicked(final PInputEvent event) {
-        super.mouseClicked(event);
-
         if (event.isLeftMouseButton()) {
+            if (counter == 0) {
+                super.mouseClicked(event);
+            } else if (counter == 1) {
+                if (Math.abs(getCurrentPosition() - getMarkPositionsOfSelectedFeature()[0]) > minDistance) {
+                    super.mouseClicked(event);
+                } else {
+                    return;
+                }
+            }
             ++counter;
 
             if (counter == 2) {
@@ -87,10 +114,8 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
                     final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
                     final Geometry point2 = LinearReferencedPointFeature.getPointOnLine(pos[1], route);
 
-                    final Geometry g = LinearReferencedPointFeature.getReducedLineGeometry(
-                            route,
-                            point1.getCoordinate(),
-                            point2.getCoordinate());
+                    LengthIndexedLine lil = new LengthIndexedLine(route);
+                    Geometry g = lil.extractLine(lil.indexOf(point1.getCoordinate()), lil.indexOf(point2.getCoordinate()));
 
                     final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
                     lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);
