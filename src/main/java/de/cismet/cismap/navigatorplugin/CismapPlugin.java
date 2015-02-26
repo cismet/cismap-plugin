@@ -83,8 +83,10 @@ import java.beans.PropertyChangeListener;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -4365,12 +4367,52 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         final File layoutFile = new File(file);
 
         if (layoutFile.exists()) {
+            try {
+                loadLayout(new FileInputStream(layoutFile));
+            } catch (FileNotFoundException e) {
+                log.error("Layout file not found", e);
+            }
+        } else {
+            if (isInit) {
+                log.fatal("File does not exist --> default layout (init)"); // NOI18N
+                EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
+                            // setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
+                            setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                        }
+                    });
+            } else {
+                log.fatal("File does not exist)");                               // NOI18N
+                JOptionPane.showMessageDialog(
+                    StaticSwingTools.getParentFrame(mapC),
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.title"),    // NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  layoutInput  DOCUMENT ME!
+     */
+    public void loadLayout(final InputStream layoutInput) {
+        if (layoutInput != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Layout File exists"); // NOI18N
             }
 
             try {
-                final FileInputStream layoutInput = new FileInputStream(layoutFile);
                 final ObjectInputStream in = new ObjectInputStream(layoutInput);
                 rootWindow.read(in);
                 in.close();
@@ -4405,32 +4447,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             "CismapPlugin.loadLayout(String).JOptionPane.title"), // NOI18N
                         JOptionPane.INFORMATION_MESSAGE);
                 }
-            }
-        } else {
-            if (isInit) {
-                log.fatal("File does not exist --> default layout (init)");       // NOI18N
-                EventQueue.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
-                            // setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
-                            setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
-                        }
-                    });
-            } else {
-                log.fatal("File does not exist)");                               // NOI18N
-                JOptionPane.showMessageDialog(
-                    StaticSwingTools.getParentFrame(mapC),
-                    org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
-                    org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.loadLayout(String).JOptionPane.title"),    // NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }
