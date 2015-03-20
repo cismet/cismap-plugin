@@ -112,6 +112,7 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
 
                 @Override
                 protected SearchFeature doInBackground() throws Exception {
+                    Thread.currentThread().setName("CidsBeanDropJPopupMenuButton beansDropped()");
                     SearchFeature search = null;
                     final Collection<Geometry> searchGeoms = new ArrayList<Geometry>();
                     for (final CidsBean cb : beans) {
