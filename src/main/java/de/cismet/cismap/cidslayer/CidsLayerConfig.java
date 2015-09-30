@@ -11,7 +11,10 @@
  */
 package de.cismet.cismap.cidslayer;
 
+import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
+
+import org.apache.log4j.Logger;
 
 import de.cismet.cismap.commons.LayerConfig;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
@@ -24,9 +27,17 @@ import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
  */
 public class CidsLayerConfig implements LayerConfig, Comparable<CidsLayerConfig> {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(CidsLayerConfig.class);
+    public static final String LAYER_TITLE = "cidsLayerTitle";
+    private static final String LAYER_POSITION = "cidsLayerPosition";
+
     //~ Instance fields --------------------------------------------------------
 
-    private MetaClass config;
+    private final MetaClass config;
+    private final String title;
+    private int position = -1;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -37,6 +48,23 @@ public class CidsLayerConfig implements LayerConfig, Comparable<CidsLayerConfig>
      */
     public CidsLayerConfig(final MetaClass clazz) {
         config = clazz;
+        final ClassAttribute titleAttribute = config.getClassAttribute(LAYER_TITLE);
+
+        if ((titleAttribute != null) && (titleAttribute.getValue() != null)) {
+            title = titleAttribute.getValue().toString();
+        } else {
+            title = config.getName();
+        }
+
+        final ClassAttribute positionAttribute = config.getClassAttribute(LAYER_POSITION);
+
+        if ((positionAttribute != null) && (positionAttribute.getValue() != null)) {
+            try {
+                position = Integer.parseInt(positionAttribute.getValue().toString());
+            } catch (NumberFormatException ex) {
+                LOG.warn("The position attribute of the cidsLayer " + title + " does not contain a valid number", ex);
+            }
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -54,11 +82,15 @@ public class CidsLayerConfig implements LayerConfig, Comparable<CidsLayerConfig>
 
     @Override
     public String getTitle() {
-        return config.getName();
+        return title;
     }
 
     @Override
     public int compareTo(final CidsLayerConfig o) {
-        return getTitle().compareTo(o.getTitle());
+        if (position == o.position) {
+            return getTitle().compareTo(o.getTitle());
+        } else {
+            return position - o.position;
+        }
     }
 }

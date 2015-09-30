@@ -16,7 +16,7 @@ import Sirius.navigator.exception.ConnectionException;
 
 import Sirius.server.middleware.types.MetaClass;
 
-import org.openide.util.Exceptions;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,11 +24,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
+import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
 
 /**
  * DOCUMENT ME!
@@ -36,12 +37,16 @@ import javax.swing.tree.TreePath;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerTreeModel implements TreeModel {
+public class CidsLayerTreeModel implements TreeModel, StringFilter {
 
     //~ Instance fields --------------------------------------------------------
 
+    private Logger LOG = Logger.getLogger(CidsLayerTreeModel.class);
+
     private String domain;
-    private Vector<Object> classes = new Vector<Object>();
+    private String title;
+    private List<Object> classes = new ArrayList<Object>();
+    private String filterString;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -49,15 +54,18 @@ public class CidsLayerTreeModel implements TreeModel {
      * Creates a new CidsLayerTreeModel object.
      *
      * @param  domain  DOCUMENT ME!
+     * @param  title   DOCUMENT ME!
      */
-    public CidsLayerTreeModel(final String domain) {
+    public CidsLayerTreeModel(final String domain, final String title) {
         this.domain = domain;
+        this.title = title;
         try {
-            final MetaClass[] classes = SessionManager.getProxy().getClasses(domain);
+            final MetaClass[] mc = SessionManager.getProxy().getClasses(domain);
 
-            for (final MetaClass clazz : classes) {
+            for (final MetaClass clazz : mc) {
                 final Collection attributes = clazz.getAttributeByName("cidsLayer");
-                if ((attributes == null) || attributes.isEmpty()) {
+                final Collection hidden = clazz.getAttributeByName("hidden");
+                if ((attributes == null) || attributes.isEmpty() || (hidden != null && !hidden.isEmpty() && hidden.toArray()[0].toString().equals("true"))) {
                     continue;
                 }
                 final Collection folderAttributes = clazz.getAttributeByName("cidsLayerFolder");
@@ -79,7 +87,7 @@ public class CidsLayerTreeModel implements TreeModel {
                         final String folder = folderObject;
 
                         TreeFolder tf = new TreeFolder(folder);
-                        int index = currentFolder.indexOf(tf);
+                        final int index = currentFolder.indexOf(tf);
 
                         if (index == -1) {
                             currentFolder.add(tf);
@@ -98,30 +106,53 @@ public class CidsLayerTreeModel implements TreeModel {
                 }
             }
         } catch (ConnectionException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.error("Error while creating cids layer tree", ex);
         }
-        Collections.sort(this.classes, new Comparator<Object>() {
-
-                @Override
-                public int compare(final Object o1, final Object o2) {
-                    return o1.toString().compareTo(o2.toString());
-                }
-            });
+        sortList(classes);
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listToSort  DOCUMENT ME!
+     */
+    private void sortList(final List listToSort) {
+        Collections.sort(listToSort, new Comparator<Object>() {
+
+                @Override
+                public int compare(final Object o1, final Object o2) {
+                    if (!(o1 instanceof CidsLayerConfig) && !(o2 instanceof CidsLayerConfig)) {
+                        return o1.toString().compareTo(o2.toString());
+                    } else if (!(o1 instanceof CidsLayerConfig)) {
+                        return -1;
+                    } else if (!(o2 instanceof CidsLayerConfig)) {
+                        return 1;
+                    } else {
+                        return ((CidsLayerConfig)o1).compareTo((CidsLayerConfig)o2);
+                    }
+                }
+            });
+
+        for (final Object o : listToSort) {
+            if (o instanceof List) {
+                sortList((List)o);
+            }
+        }
+    }
+
     @Override
     public Object getRoot() {
-        return domain;
+        return title;
     }
 
     @Override
     public Object getChild(final Object parent, final int index) {
-        if ((parent != null) && parent.equals(domain)) {
-            return classes.get(index);
+        if ((parent != null) && parent.equals(title)) {
+            return filteredChildren(classes).get(index);
         } else if (parent instanceof TreeFolder) {
-            return ((TreeFolder)parent).get(index);
+            return filteredChildren((TreeFolder)parent).get(index);
         }
 
         return null;
@@ -129,10 +160,10 @@ public class CidsLayerTreeModel implements TreeModel {
 
     @Override
     public int getChildCount(final Object parent) {
-        if ((parent != null) && parent.equals(domain)) {
-            return classes.size();
+        if ((parent != null) && parent.equals(title)) {
+            return filteredChildren(classes).size();
         } else if (parent instanceof TreeFolder) {
-            return ((TreeFolder)parent).size();
+            return filteredChildren((TreeFolder)parent).size();
         } else {
             return 0;
         }
@@ -140,18 +171,11 @@ public class CidsLayerTreeModel implements TreeModel {
 
     @Override
     public boolean isLeaf(final Object node) {
-        if (node instanceof CidsLayerConfig) {
-            return true;
-        } else if (node instanceof TreeFolder) {
-            return ((TreeFolder)node).size() == 0;
-        } else {
-            return false;
-        }
+        return getChildCount(node) == 0;
     }
 
     @Override
     public void valueForPathChanged(final TreePath path, final Object newValue) {
-
     }
 
     @Override
@@ -161,12 +185,62 @@ public class CidsLayerTreeModel implements TreeModel {
 
     @Override
     public void addTreeModelListener(final TreeModelListener l) {
-
     }
 
     @Override
     public void removeTreeModelListener(final TreeModelListener l) {
+    }
 
+    @Override
+    public void setFilterString(final String filterString) {
+        this.filterString = filterString;
+    }
+
+    /**
+     * Creates a new list with all elements of the given list, which matchs the filter string.
+     *
+     * @param   objectList  entryList parent the folder, its children should be determined
+     *
+     * @return  a list with all children, which considers the filter string
+     */
+    private List<Object> filteredChildren(final List<Object> objectList) {
+        final List<Object> entries = new ArrayList<Object>();
+
+        for (final Object entry : objectList) {
+            if (fulfilFilterRequirements(entry)) {
+                entries.add(entry);
+            }
+        }
+
+        return entries;
+    }
+
+    /**
+     * Checks, if the given entry fulfils the filter requirement.
+     *
+     * @param   entry  the entry to check
+     *
+     * @return  true, iff the filter requirement is fulfilled
+     */
+    private boolean fulfilFilterRequirements(final Object entry) {
+        if (entry instanceof TreeFolder) {
+            if ((filterString == null)
+                        || ((TreeFolder)entry).name.toLowerCase().contains(filterString.toLowerCase())) {
+                return true;
+            } else {
+                for (final Object o : (TreeFolder)entry) {
+                    if (fulfilFilterRequirements(o)) {
+                        return true;
+                    }
+                }
+            }
+        } else {
+            return (((filterString == null)
+                                || ((CidsLayerConfig)entry).getTitle().toLowerCase().contains(
+                                    filterString.toLowerCase())));
+        }
+
+        return false;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -198,21 +272,6 @@ public class CidsLayerTreeModel implements TreeModel {
         @Override
         public String toString() {
             return name;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param   tf  DOCUMENT ME!
-         *
-         * @return  DOCUMENT ME!
-         */
-        public TreeFolder getFolder(final TreeFolder tf) {
-            if (contains(tf)) {
-                return (TreeFolder)get(indexOf(tf));
-            } else {
-                return null;
-            }
         }
 
         @Override

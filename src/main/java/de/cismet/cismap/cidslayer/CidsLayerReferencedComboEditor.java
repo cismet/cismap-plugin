@@ -11,11 +11,19 @@
  */
 package de.cismet.cismap.cidslayer;
 
+import org.apache.log4j.Logger;
+
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
+
 import java.awt.Component;
 import java.awt.Container;
 
+import java.util.HashSet;
+
 import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.table.TableCellEditor;
 
 import de.cismet.cids.editors.DefaultBindableReferenceCombo;
@@ -23,8 +31,10 @@ import de.cismet.cids.editors.DefaultBindableReferenceCombo;
 import de.cismet.cids.tools.CidsBeanFilter;
 
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
+import de.cismet.cismap.commons.tools.FeatureTools;
 
 /**
  * DOCUMENT ME!
@@ -34,32 +44,64 @@ import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
  */
 public class CidsLayerReferencedComboEditor extends AbstractCellEditor implements TableCellEditor {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(CidsLayerReferencedComboEditor.class);
+
     //~ Instance fields --------------------------------------------------------
 
     private DefaultBindableReferenceCombo combo = new DefaultBindableReferenceCombo();
-    private String colName;
     private CidsBeanFilter filter;
+    private FeatureServiceAttribute attr;
+    private boolean useAutoCompleteDecorator = true;
+    private ListCellRenderer listRenderer = null;
+    private boolean nullable = false;
+    private HashSet<DefaultBindableReferenceCombo> configuredCombos = new HashSet<DefaultBindableReferenceCombo>();
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new CidsLayerReferencedComboEditor object.
      *
-     * @param  colName  DOCUMENT ME!
+     * @param  attr  The attribute, this editor will be used for.
      */
-    public CidsLayerReferencedComboEditor(final String colName) {
-        this(colName, null);
+    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr) {
+        this(attr, null);
     }
 
     /**
      * Creates a new CidsLayerReferencedComboEditor object.
      *
-     * @param  colName  DOCUMENT ME!
-     * @param  filter   DOCUMENT ME!
+     * @param  attr                      The attribute, this editor will be used for.
+     * @param  useAutoCompleteDecorator  DOCUMENT ME!
      */
-    public CidsLayerReferencedComboEditor(final String colName, final CidsBeanFilter filter) {
-        this.colName = colName;
+    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr, final boolean useAutoCompleteDecorator) {
+        this(attr, useAutoCompleteDecorator, null);
+    }
+
+    /**
+     * Creates a new CidsLayerReferencedComboEditor object.
+     *
+     * @param  attr    The attribute, this editor will be used for.
+     * @param  filter  DOCUMENT ME!
+     */
+    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr, final CidsBeanFilter filter) {
+        this(attr, true, filter);
+    }
+
+    /**
+     * Creates a new CidsLayerReferencedComboEditor object.
+     *
+     * @param  attr                      The attribute, this editor will be used for.
+     * @param  useAutoCompleteDecorator  DOCUMENT ME!
+     * @param  filter                    DOCUMENT ME!
+     */
+    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr,
+            final boolean useAutoCompleteDecorator,
+            final CidsBeanFilter filter) {
         this.filter = filter;
+        this.useAutoCompleteDecorator = useAutoCompleteDecorator;
+        this.attr = attr;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -71,7 +113,12 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
         if (value == null) {
             return "";
         } else {
-            return String.valueOf(combo.getSelectedItem());
+            try {
+                return FeatureTools.convertObjectToClass(combo.getSelectedItem(), FeatureTools.getClass(attr));
+            } catch (Exception e) {
+                LOG.error("Cannot convert the given object.", e);
+                return null;
+            }
         }
     }
 
@@ -94,7 +141,7 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
 
             if (feature instanceof CidsLayerFeature) {
                 final CidsLayerFeature cidsFeature = (CidsLayerFeature)feature;
-                combo = cidsFeature.getCatalogueCombo(colName);
+                combo = cidsFeature.getCatalogueCombo(attr.getName());
             }
         } else if (o.getParent() instanceof FeatureInfoPanel) {
             final FeatureInfoPanel infoPanel = (FeatureInfoPanel)o.getParent();
@@ -102,18 +149,71 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
 
             if (feature instanceof CidsLayerFeature) {
                 final CidsLayerFeature cidsFeature = (CidsLayerFeature)feature;
-                combo = cidsFeature.getCatalogueCombo(colName);
+                combo = cidsFeature.getCatalogueCombo(attr.getName());
             }
         }
 
-//        for (int i = 0; i < combo.getItemCount(); ++i) {
-//            Object item = combo.getItemAt(i);
-//            if ((item == null && value == null) || (item != null && item.toString().equals(value))) {
-//                combo.setSelectedIndex(i);
-//                break;
-//            }
-//        }
+        if ((combo != null) && !configuredCombos.contains(combo)) {
+            combo.setNullable(nullable);
+            combo.setBeanFilter(filter);
+
+            if (useAutoCompleteDecorator) {
+                AutoCompleteDecorator.decorate(combo, new ObjectToStringConverter() {
+
+                        @Override
+                        public String getPreferredStringForItem(final Object o) {
+                            if (o == null) {
+                                return "";
+                            } else {
+                                return o.toString();
+                            }
+                        }
+                    });
+            }
+
+            if (getListRenderer() != null) {
+                combo.setRenderer(getListRenderer());
+            }
+
+            configuredCombos.add(combo);
+        }
 
         return combo;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the listRenderer
+     */
+    public ListCellRenderer getListRenderer() {
+        return listRenderer;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listRenderer  the listRenderer to set
+     */
+    public void setListRenderer(final ListCellRenderer listRenderer) {
+        this.listRenderer = listRenderer;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the nullable
+     */
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  nullable  the nullable to set
+     */
+    public void setNullable(final boolean nullable) {
+        this.nullable = nullable;
     }
 }

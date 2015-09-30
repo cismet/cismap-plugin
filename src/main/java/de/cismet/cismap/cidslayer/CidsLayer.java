@@ -8,12 +8,11 @@
 package de.cismet.cismap.cidslayer;
 
 import Sirius.navigator.connection.SessionManager;
-import Sirius.navigator.exception.ConnectionException;
-import Sirius.navigator.tools.MetaObjectCache;
 
 import Sirius.server.localserver.attribute.ClassAttribute;
 import Sirius.server.middleware.types.MetaClass;
-import Sirius.server.middleware.types.MetaObject;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
@@ -32,10 +31,13 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
+import de.cismet.cismap.commons.CrsTransformer;
+import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
+import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 
 /**
@@ -76,6 +78,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private String metaDocumentLink;
     private String geometryType = AbstractFeatureService.UNKNOWN;
     private Integer maxFeaturesPerPage = null;
+    private Double maxArea = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,6 +93,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         query = cl.getQuery();
         metaClass = cl.metaClass;
         metaDocumentLink = cl.metaDocumentLink;
+        setAttributeTableRuleSet();
         // sldDefinition = cl.sldDefinition;
     }
 
@@ -114,9 +118,12 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public CidsLayer(final MetaClass clazz) {
         super();
-        name = clazz.getName();
+
+        name = determineLayerName(clazz);
+
         tableName = clazz.getTableName();
         metaClass = clazz;
+        setAttributeTableRuleSet();
         final ClassAttribute metaDocumentAttr = metaClass.getClassAttribute("metaDocument");
 
         if ((metaDocumentAttr != null) && (metaDocumentAttr.getValue() != null)) {
@@ -143,13 +150,53 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     @Override
     protected LayerProperties createLayerProperties() {
         final DefaultLayerProperties defaultLayerProperties = new DefaultLayerProperties();
-        defaultLayerProperties.getStyle()
-                .setPointSymbol(new FeatureAnnotationSymbol(
-                        new javax.swing.ImageIcon(
-                            getClass().getResource(
-                                "/de/cismet/cismap/commons/gui/res/pushpin.png")).getImage()));
+        final FeatureAnnotationSymbol symbol = new FeatureAnnotationSymbol(new javax.swing.ImageIcon(
+                    getClass().getResource(
+                        "/de/cismet/cismap/commons/gui/res/pushpin.png")).getImage());
+        symbol.setSweetSpotX(0.46d);
+        symbol.setSweetSpotY(0.9d);
+        defaultLayerProperties.getStyle().setPointSymbol(symbol);
         defaultLayerProperties.setFeatureService(this);
+
         return defaultLayerProperties;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   clazz  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String determineLayerName(final MetaClass clazz) {
+        String name;
+        final ClassAttribute titleAttribute = clazz.getClassAttribute(CidsLayerConfig.LAYER_TITLE);
+
+        if ((titleAttribute != null) && (titleAttribute.getValue() != null)) {
+            name = titleAttribute.getValue().toString();
+        } else {
+            name = clazz.getName();
+        }
+
+        return name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void setAttributeTableRuleSet() {
+        final String ruleSetName = DefaultLayerProperties.camelize(metaClass.getName()) + "RuleSet";
+
+        try {
+            final Class ruleSetClass = Class.forName("de.cismet.cismap.custom.attributerule." + ruleSetName);
+            final Object o = ruleSetClass.newInstance();
+            if (o instanceof DefaultAttributeTableRuleSet) {
+                ((DefaultLayerProperties)getLayerProperties()).setAttributeTableRuleSet((DefaultAttributeTableRuleSet)
+                    o);
+            }
+        } catch (Exception e) {
+            // nothing to do
+        }
     }
 
     @Override
@@ -229,6 +276,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         if (metaClass == null) {
             return;
         }
+        setAttributeTableRuleSet();
 
         final String queryText = element.getChildText("currentQuery");
         if (queryText != null) {
@@ -237,12 +285,42 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
         metaDocumentLink = element.getAttributeValue("metaDocumentLink");
         try {
-            maxFeaturesPerPage = Integer.parseInt(element.getAttributeValue("maxFeaturesPerPage"));
+            if (element.getAttributeValue("maxFeaturesPerPage") != null) {
+                maxFeaturesPerPage = Integer.parseInt(element.getAttributeValue("maxFeaturesPerPage"));
+            }
         } catch (NumberFormatException e) {
             LOG.warn("maxFeaturesPerPage attribute has an invalid value: "
                         + element.getAttributeValue("maxFeaturesPerPage"),
                 e);
         }
+    }
+
+    @Override
+    public boolean isVisibleInBoundingBox(final XBoundingBox box) {
+        if ((getMaxArea() == null) && (metaClass != null)) {
+            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxArea");
+
+            if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
+                try {
+                    maxArea = Double.parseDouble(scaleAttr.getValue().toString());
+                } catch (Exception e) {
+                    LOG.error("the max scale attribute does not contain a valid number: "
+                                + scaleAttr.getValue().toString(),
+                        e);
+                }
+            }
+        }
+
+        if ((getMaxArea() != null) && (box != null)) {
+            Geometry bbox = box.getGeometry();
+            bbox = CrsTransformer.transformToMetricCrs(bbox);
+
+            if (bbox.getArea() > getMaxArea()) {
+                return false;
+            }
+        }
+
+        return super.isVisibleInBoundingBox(box);
     }
 
     @Override
@@ -265,7 +343,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      *
      * @return  DOCUMENT ME!
      */
-    private String getSQLName(final CidsLayerInfo info, final String name) {
+    public static String getSQLName(final CidsLayerInfo info, final String name) {
         int i;
         final String[] colNames = info.getColumnNames();
 
@@ -357,5 +435,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         } else {
             return super.getCalculatedAttributes();
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the maxArea
+     */
+    public Double getMaxArea() {
+        return maxArea;
     }
 }

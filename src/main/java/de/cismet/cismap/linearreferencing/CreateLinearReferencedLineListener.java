@@ -56,9 +56,10 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
     //~ Instance fields --------------------------------------------------------
 
     private int counter = 0;
-    private CreateStationLineListener lineFinishedListener;
-    private MetaClass acceptedRoute;
+    private final CreateStationLineListener lineFinishedListener;
+    private final MetaClass acceptedRoute;
     private float minDistance = 0;
+    private float maxDistance = Float.MAX_VALUE;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,16 +70,19 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
      * @param  geometryFinishedListener  DOCUMENT ME!
      * @param  acceptedRoute             DOCUMENT ME!
      * @param  minDistance               DOCUMENT ME!
+     * @param  maxDistance               DOCUMENT ME!
      */
     public CreateLinearReferencedLineListener(final MappingComponent mc,
             final CreateStationLineListener geometryFinishedListener,
             final MetaClass acceptedRoute,
-            final float minDistance) {
+            final float minDistance,
+            final float maxDistance) {
         super(mc);
         mcModus = CREATE_LINEAR_REFERENCED_LINE_MODE;
         this.lineFinishedListener = geometryFinishedListener;
         this.acceptedRoute = acceptedRoute;
         this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
         if (getSelectedLinePFeature() == null) {
             JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
                 "Bevor Sie ein neues Objekt anlegen können, \nmüssen Sie ein Objekt vom Typ "
@@ -98,7 +102,8 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
             if (counter == 0) {
                 super.mouseClicked(event);
             } else if (counter == 1) {
-                if (Math.abs(getCurrentPosition() - getMarkPositionsOfSelectedFeature()[0]) > minDistance) {
+                if ((Math.abs(getCurrentPosition() - getMarkPositionsOfSelectedFeature()[0]) > minDistance)
+                            && (Math.abs(getCurrentPosition() - getMarkPositionsOfSelectedFeature()[0]) <= maxDistance)) {
                     super.mouseClicked(event);
                 } else {
                     return;
@@ -114,8 +119,9 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
                     final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
                     final Geometry point2 = LinearReferencedPointFeature.getPointOnLine(pos[1], route);
 
-                    LengthIndexedLine lil = new LengthIndexedLine(route);
-                    Geometry g = lil.extractLine(lil.indexOf(point1.getCoordinate()), lil.indexOf(point2.getCoordinate()));
+                    final LengthIndexedLine lil = new LengthIndexedLine(route);
+                    final Geometry g = lil.extractLine(lil.indexOf(point1.getCoordinate()),
+                            lil.indexOf(point2.getCoordinate()));
 
                     final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
                     lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);

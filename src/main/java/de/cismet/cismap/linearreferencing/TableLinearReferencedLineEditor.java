@@ -56,13 +56,17 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     private Color lineColor;
     private List<PropertyChangeListener> propListener = new ArrayList<PropertyChangeListener>();
     private String valueProperty;
+    private String routeName;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new TableLinearReferencedLineEditor object.
+     *
+     * @param  routeName  DOCUMENT ME!
      */
-    public TableLinearReferencedLineEditor() {
+    public TableLinearReferencedLineEditor(final String routeName) {
+        this.routeName = routeName;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -72,9 +76,9 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         this.cidsBean = cidsBean;
 
         if (cidsBean != null) {
-            fromStation = new TableStationEditor(true, cidsBean);
+            fromStation = new TableStationEditor(true, cidsBean, routeName);
             fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
-            toStation = new TableStationEditor(true, cidsBean);
+            toStation = new TableStationEditor(true, cidsBean, routeName);
             toStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, false));
             lineFeature = FeatureRegistry.getInstance()
                         .addLinearReferencedLineFeature(
@@ -114,31 +118,39 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
     @Override
     public void dispose() {
-        fromStation.removePropertyChangeListener(this);
-        toStation.removePropertyChangeListener(this);
+        if (fromStation != null) {
+            fromStation.removePropertyChangeListener(this);
+        }
+
+        if (toStation != null) {
+            toStation.removePropertyChangeListener(this);
+        }
 
         recreateGeometry();
-
-        FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
+        if (cidsBean != null) {
+            FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
+        }
     }
 
     /**
      * DOCUMENT ME!
      */
     private void recreateGeometry() {
-        final double from = (Double)fromStation.getValue();
-        final double to = (Double)toStation.getValue();
+        if ((fromStation != null) && (toStation != null)) {
+            final double from = (Double)fromStation.getValue();
+            final double to = (Double)toStation.getValue();
 
-        final Geometry lineGeom = LinearReferencedLineFeature.createSubline(
-                from,
-                to,
-                linearReferencedHelper.getRouteGeometryFromStationBean(fromStation.getCidsBean()));
-        lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+            final Geometry lineGeom = LinearReferencedLineFeature.createSubline(
+                    from,
+                    to,
+                    linearReferencedHelper.getRouteGeometryFromStationBean(fromStation.getCidsBean()));
+            lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
 
-        try {
-            linearReferencedHelper.setGeometryToLineBean(lineGeom, cidsBean);
-        } catch (Exception e) {
-            LOG.error("Cannot create line geometry", e);
+            try {
+                linearReferencedHelper.setGeometryToLineBean(lineGeom, cidsBean);
+            } catch (Exception e) {
+                LOG.error("Cannot create line geometry", e);
+            }
         }
     }
 

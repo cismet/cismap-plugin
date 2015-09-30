@@ -200,7 +200,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     if (editor instanceof TableLinearReferencedLineEditor) {
                         ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
                     }
-                    stations.get(key).dispose();
+
+                    if (stations.get(key) != null) {
+                        stations.get(key).dispose();
+                    }
                 }
                 stations.clear();
 
@@ -242,7 +245,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                         final String colName = layerInfo.getColumnPropertyNames()[i];
                                         final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                     .getProperty(colName.substring(0, colName.indexOf(".")));
-                                        st = new TableLinearReferencedLineEditor();
+                                        st = new TableLinearReferencedLineEditor(statInfo.getRouteTable());
                                         st.setCidsBean(bean);
                                         st.addPropertyChangeListener(propListener);
                                         backgroundColor = st.getLineColor();
@@ -262,7 +265,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                     final String colName = layerInfo.getColumnPropertyNames()[i];
                                     final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                 .getProperty(colName.substring(0, colName.indexOf(".")));
-                                    final TableStationEditor st = new TableStationEditor();
+                                    final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable());
                                     st.setCidsBean(bean);
                                     st.addPropertyChangeListener(propListener);
 //                                        backgroundColor = st.getLineColor();
@@ -309,8 +312,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                         true,
                                         false);
                                 final String colName = layerInfo.getColumnPropertyNames()[i];
-                                final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                            .getProperty(colName.substring(0, colName.indexOf(".")));
+                                final CidsBean bean = (CidsBean)getMetaObject().getBean().getProperty(colName);
                                 catalogueEditor.setSelectedItem(bean);
                                 combos.put(col, catalogueEditor);
                             }
@@ -321,6 +323,35 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 }
             }
         }
+    }
+
+    /**
+     * If the feature is in the edit mode and the given property references on a catalogue, this method returns the
+     * catalogue object. Otherwise, the getProperty method will be invoked.
+     *
+     * @param   propertyName  the name of the property
+     *
+     * @return  the underlaying object
+     */
+    public Object getPropertyObject(final String propertyName) {
+        if (layerInfo.isCatalogue(propertyName)) {
+            return getCatalogueCombo(propertyName).getSelectedItem();
+        } else {
+            return getProperty(propertyName);
+        }
+    }
+
+    /**
+     * Adds the given property. This method uses a client object and a server object. In the most cases is the server
+     * object a cidsBean and the client object is its representation on the client side (the value of a specific field
+     * e.g.).
+     *
+     * @param  propertyName  the name of the property
+     * @param  property      the value that is shown on the client side
+     * @param  serverObject  the object, that is saved on the server side
+     */
+    public void addProperty(final String propertyName, final Object property, final Object serverObject) {
+        super.addProperty(propertyName, property); // To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -368,7 +399,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         }
 
         for (final String key : propertyMap.keySet()) {
-            if (hasAdditionalFields && (ruleSet.getIndexOfAdditionalFieldName(key) != -1)) {
+            if (hasAdditionalFields && (ruleSet.getIndexOfAdditionalFieldName(key) != Integer.MIN_VALUE)) {
                 // additional fields cannot be saved
                 continue;
             }
@@ -390,7 +421,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 bean.setProperty(colMap.get(key), geom);
             } else if (layerInfo.isCatalogue(key)) {
                 if (getCatalogueCombo(key) != null) {
-                    bean.setProperty(key, getCatalogueCombo(key).getSelectedItem());
+                    bean.setProperty(colMap.get(key), getCatalogueCombo(key).getSelectedItem());
+                } else {
+                    // A new object was created
+                    bean.setProperty(colMap.get(key), propertyMap.get(key));
                 }
             } else if (layerInfo.isStation(key)) {
                 final StationInfo info = layerInfo.getStationInfo(key);
@@ -421,7 +455,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 if (propKey == null) {
                     propKey = key;
                 }
-                bean.setProperty(propKey, propertyMap.get(key));
+//                bean.setProperty(propKey, propertyMap.get(key));
             }
         }
 //LOG.error(bean.getMOString());

@@ -57,6 +57,7 @@ public class StationLineCreator extends AbstractFeatureCreator {
     private MetaClass routeClass;
     private LinearReferencingHelper helper;
     private float minDistance = 0;
+    private float maxDistance = Float.MAX_VALUE;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -82,10 +83,27 @@ public class StationLineCreator extends AbstractFeatureCreator {
             final MetaClass routeClass,
             final LinearReferencingHelper helper,
             final float minDistance) {
+        this(property, routeClass, helper, minDistance, Float.MAX_VALUE);
+    }
+    /**
+     * Creates a new StationLineCreator object.
+     *
+     * @param  property     mode DOCUMENT ME!
+     * @param  routeClass   DOCUMENT ME!
+     * @param  helper       DOCUMENT ME!
+     * @param  minDistance  DOCUMENT ME!
+     * @param  maxDistance  DOCUMENT ME!
+     */
+    public StationLineCreator(final String property,
+            final MetaClass routeClass,
+            final LinearReferencingHelper helper,
+            final float minDistance,
+            final float maxDistance) {
         this.property = property;
         this.routeClass = routeClass;
         this.helper = helper;
         this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -149,7 +167,8 @@ public class StationLineCreator extends AbstractFeatureCreator {
                                 }
                             },
                             routeClass,
-                            minDistance);
+                            minDistance,
+                            maxDistance);
                     mc.addInputListener(
                         CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE,
                         listener);

@@ -666,7 +666,9 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                             code = dataDefinition + "\n " + code;
                             final Object result = engine.eval(code);
 
-                            temporaryObjectMap.put(feature, convertToClass(result, FeatureTools.getClass(attribute)));
+                            temporaryObjectMap.put(
+                                feature,
+                                FeatureTools.convertObjectToClass(result, FeatureTools.getClass(attribute)));
                         }
 
                         for (final FeatureServiceFeature feature : temporaryObjectMap.keySet()) {
@@ -697,62 +699,6 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                 }
             });
     } //GEN-LAST:event_btnSearchCancelActionPerformed
-
-    /**
-     * Converts the given object to the given class.
-     *
-     * @param   object  the object to convert
-     * @param   cl      the class, the object should be converted to
-     *
-     * @return  the converted object
-     *
-     * @throws  Exception  If the conversion is not possible
-     */
-    private Object convertToClass(final Object object, final Class cl) throws Exception {
-        final String objectAsString = String.valueOf(object);
-        if (object == null) {
-            return object;
-        }
-
-        try {
-            if (cl.equals(String.class)) {
-                return objectAsString;
-            } else if (cl.equals(Double.class)) {
-                return Double.parseDouble(objectAsString);
-            } else if (cl.equals(Float.class)) {
-                return Float.parseFloat(objectAsString);
-            } else if (cl.equals(Integer.class)) {
-                try {
-                    return Integer.parseInt(objectAsString);
-                } catch (NumberFormatException e) {
-                    final Double d = Double.parseDouble(objectAsString);
-
-                    return d.intValue();
-                }
-            } else if (cl.equals(Boolean.class)) {
-                return Boolean.parseBoolean(objectAsString);
-            } else if (cl.equals(Long.class)) {
-                try {
-                    return Long.parseLong(objectAsString);
-                } catch (NumberFormatException e) {
-                    final Double d = Double.parseDouble(objectAsString);
-
-                    return d.longValue();
-                }
-            } else if (cl.equals(Date.class)) {
-                return Timestamp.valueOf(objectAsString);
-            } else {
-                return object;
-            }
-        } catch (Exception e) {
-            LOG.error("Wrong data type: " + objectAsString + " expected type: " + cl.toString(), e);
-            throw new Exception(NbBundle.getMessage(
-                    FieldCalculatorDialog.class,
-                    "FieldCalculatorDialog.convertToClass.message",
-                    objectAsString,
-                    cl.getName()));
-        }
-    }
 
     /**
      * Solve all length properties.

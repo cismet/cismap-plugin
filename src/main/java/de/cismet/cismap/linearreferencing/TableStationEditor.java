@@ -87,6 +87,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     private CidsBean lineBean;
     private LinearReferencedLineEditor dialogLineEditor;
     private StationEditor dialogStationEditor;
+    private String routeTable;
     private WindowListener dialogCleanupListener = new WindowAdapter() {
 
             @Override
@@ -183,20 +184,24 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
     /**
      * Creates new form StationEditor.
+     *
+     * @param  routeTable  DOCUMENT ME!
      */
-    public TableStationEditor() {
-        this(false, null);
+    public TableStationEditor(final String routeTable) {
+        this(false, null, routeTable);
     }
 
     /**
      * Creates new form StationEditor.
      *
-     * @param  line      DOCUMENT ME!
-     * @param  lineBean  DOCUMENT ME!
+     * @param  line        DOCUMENT ME!
+     * @param  lineBean    DOCUMENT ME!
+     * @param  routeTable  DOCUMENT ME!
      */
-    public TableStationEditor(final boolean line, final CidsBean lineBean) {
+    public TableStationEditor(final boolean line, final CidsBean lineBean, final String routeTable) {
         this.line = line;
         this.lineBean = lineBean;
+        this.routeTable = routeTable;
         initComponents();
 
         initSpinnerListener();
@@ -256,6 +261,10 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         init();
 
         cidsBeanChanged((Double)getValue());
+
+        if (diaExp.isVisible()) {
+            diaExp.pack();
+        }
     }
 
     /**
@@ -376,8 +385,8 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                     });
                 diaExp.pack();
             } else {
-                dialogStationEditor = new StationEditor(false);
-                dialogStationEditor.setCidsBean(cidsBean);
+                dialogStationEditor = new StationEditor(true, routeTable);
+                dialogStationEditor.setCidsBeanStore(this);
                 jPanel1.add(dialogStationEditor);
 //                diaExp.setSize(200,100);
                 diaExp.pack();
@@ -408,6 +417,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     private void createBackupBean() {
         try {
+            if (cidsBean == null) {
+                return;
+            }
             final Double value = linearReferencingHelper.getLinearValueFromStationBean(cidsBean);
             final CidsBean routeBean = linearReferencingHelper.getRouteBeanFromStationBean(cidsBean);
             backupBean = linearReferencingHelper.createStationBeanFromRouteBean(routeBean, value);
@@ -421,6 +433,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     private void restore() {
         try {
+            if (backupBean == null) {
+                cidsBean = null;
+            }
             final Double value = linearReferencingHelper.getLinearValueFromStationBean(backupBean);
             linearReferencingHelper.setLinearValueToStationBean(value, cidsBean);
 
@@ -471,7 +486,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 //                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(badGeomFeature);
 //                setBadGeomFeature(null);
 //            }
-        diaExp.dispose();
+//        diaExp.dispose();
         setInited(false);
     }
 
@@ -512,8 +527,6 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             if (pointBean != null) {
                 pointBean.addPropertyChangeListener(getCidsBeanListener());
                 final double pointValue = (Double)getValue();
-//                setValueToLabel(pointValue);
-//                labGwk.setText(Long.toString(FeatureRegistry.getInstance().getLinearReferencingSolver().getRouteNameFromStationBean(pointBean)));
 
                 setValueToFeature(pointValue);
                 setValueToSpinner(pointValue);

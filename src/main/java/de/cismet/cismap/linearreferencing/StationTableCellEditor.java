@@ -55,7 +55,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
 
     //~ Instance fields --------------------------------------------------------
 
-    private TableStationEditor stat = new TableStationEditor();
+    private TableStationEditor stat;
     private String columnName;
     private List<LinearReferencingInfo> linRefInfos;
     private LinearReferencingHelper linHelper = FeatureRegistry.getInstance().getLinearReferencingSolver();
@@ -153,7 +153,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                         // create station
                         final CidsBean stationBean = linHelper.createStationBeanFromRouteBean(routeObject.getBean(),
                                 (Double)feature.getProperty(info.getFromField()));
-                        final TableStationEditor editor = new TableStationEditor();
+                        final TableStationEditor editor = new TableStationEditor(info.getLinRefReferenceName());
                         editor.setCidsBean(stationBean);
                         editor.addPropertyChangeListener(feature.getPropertyChangeListener());
                         feature.setStationEditor(getColumnName(), editor);
@@ -170,21 +170,15 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                         linHelper.setLinearValueToStationBean((Double)feature.getProperty(info.getTillField()),
                             toStation);
 
-                        final TableLinearReferencedLineEditor st = new TableLinearReferencedLineEditor();
+                        final TableLinearReferencedLineEditor st = new TableLinearReferencedLineEditor(
+                                info.getLinRefReferenceName());
                         st.setCidsBean(lineBean);
 
                         final TableStationEditor fromEditor = st.getFromStation();
                         final TableStationEditor toEditor = st.getToStation();
 
-//                        final TableStationEditor fromEditor = new TableStationEditor(true, lineBean);
-//                        fromEditor.setCidsBean(fromStation);
-//                        final TableStationEditor toEditor = new TableStationEditor(true, lineBean);
-//                        fromEditor.setCidsBean(toStation);
-
                         st.addPropertyChangeListener(feature.getPropertyChangeListener());
                         feature.setBackgroundColor(st.getLineColor());
-//                        fromEditor.addPropertyChangeListener(feature.getPropertyChangeListener());
-//                        toEditor.addPropertyChangeListener(feature.getPropertyChangeListener());
 
                         feature.setStationEditor(info.getGeomField(), st);
                         feature.setStationEditor(info.getFromField(), fromEditor);

@@ -23,7 +23,6 @@ import com.vividsolutions.jts.io.WKBReader;
 
 import org.deegree.datatypes.Types;
 
-import java.lang.reflect.Constructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,6 +87,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         super(cff);
         metaClass = cff.metaClass;
         this.envelope = cff.envelope;
+        this.featureServiceAttributes = cff.featureServiceAttributes;
+        this.layerInfo = cff.layerInfo;
+        this.geometryType = cff.geometryType;
+        this.maxArea = cff.maxArea;
     }
 
     /**
@@ -117,7 +120,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         this.layerProperties = layerProperties;
         this.setSLDStyle(styles);
         this.metaClass = metaClass;
-        layerName = metaClass.getTableName();
+        layerName = CidsLayer.determineLayerName(metaClass);
         initLayer();
     }
 
@@ -150,7 +153,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                 metaClass,
                 getLayerInfo(),
                 layerProperties,
-                getStyle(metaClass.getName()));
+                getStyle(CidsLayer.determineLayerName(metaClass)));
 
         return feature;
     }
@@ -254,7 +257,12 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                                 name,
                                 FeatureTools.getType(cl),
                                 true);
-                        featureServiceAttributes.add(fsa);
+                        int attributeIndex = ruleSet.getIndexOfAdditionalFieldName(name);
+
+                        if (attributeIndex < 0) {
+                            attributeIndex = featureServiceAttributes.size() + 1 + attributeIndex;
+                        }
+                        featureServiceAttributes.add(attributeIndex, fsa);
                     }
                 }
             }
@@ -353,6 +361,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         if (checkCancelled(workerThread, "creatureFeatures()")) {
             return null;
         }
+        final long startTime = System.currentTimeMillis();
         final String crs = CismapBroker.getInstance().getDefaultCrs();
         final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getSrs().getCode());
 
@@ -370,18 +379,20 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
         serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
         String[] orderByStrings = new String[0];
-
+        
         if (orderBy != null) {
             orderByStrings = new String[orderBy.length];
 
             for (int i = 0; i < orderBy.length; ++i) {
-                orderByStrings[i] = orderBy[i].getName() + " " + (orderBy[i].isAscOrder() ? "asc" : "desc");
+                orderByStrings[i] = CidsLayer.getSQLName(layerInfo,  orderBy[i].getName()) + " " + (orderBy[i].isAscOrder() ? "asc" : "desc");
             }
         }
+        final boolean ignoreGeoLimitations = ((boundingBoxIncurrentCrs == null)
+                ? true : envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)));
 
         // if the hole envelope of the layer should be requested, the coordinate limitation is not required
         if ((boundingBoxIncurrentCrs != null)
-                    && ((envelope == null) || !envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)))) {
+                    && ((envelope == null) || !ignoreGeoLimitations)) {
             serverSearch.setX1(boundingBoxIncurrentCrs.getX1());
             serverSearch.setY1(boundingBoxIncurrentCrs.getY1());
             serverSearch.setX2(boundingBoxIncurrentCrs.getX2());
@@ -392,49 +403,84 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         serverSearch.setLimit(limit);
         serverSearch.setOffset(offset);
         serverSearch.setOrderBy(orderByStrings);
-        if (!saveAsLastCreated) {
-            serverSearch.setExactSearch(true);
-        }
+//        if (!saveAsLastCreated) {
+//            serverSearch.setExactSearch(true);
+//        }
 
         if (checkCancelled(workerThread, "PreQuery")) {
             return null;
         }
+
+        final boolean compressed = true;
+
+        serverSearch.setCompressed(compressed);
+
         final Collection resultCollection = SessionManager.getProxy()
                     .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
         if (checkCancelled(workerThread, "PostQuery")) {
             return null;
         }
-        final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
+
+        ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
+
+        if (compressed) {
+            resultArray = CidsLayerSearchStatement.uncompressResult(resultArray);
+        }
+
         final Vector<CidsLayerFeature> features = new Vector<CidsLayerFeature>();
-        CidsLayerFeature lastFeature = null;
         final GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING),
                 CrsTransformer.extractSridFromCrs(crs));
         final WKBReader wkbReader = new WKBReader(geomFactory);
+        final List<FeatureServiceAttribute> attributeListWithoutGenericAttributes =
+            new ArrayList<FeatureServiceAttribute>();
+
+        for (final FeatureServiceAttribute attr : featureServiceAttributes) {
+            if ((layerProperties.getAttributeTableRuleSet() == null)
+                        || (layerProperties.getAttributeTableRuleSet().getIndexOfAdditionalFieldName(attr.getName())
+                            == Integer.MIN_VALUE)) {
+                attributeListWithoutGenericAttributes.add(attr);
+            }
+        }
 
         for (int i = 0; i < resultArray.size(); i++) {
-            final HashMap<String, Object> properties = new HashMap<String, Object>(featureServiceAttributes.size());
+            final HashMap<String, Object> properties = new HashMap<String, Object>(
+                    attributeListWithoutGenericAttributes.size());
+            boolean abort = false;
             for (int j = resultArray.get(i).size() - 1; j >= 0; j--) {
                 if (resultArray.get(i).get(j) instanceof byte[]) {
                     try {
                         final Geometry g = wkbReader.read((byte[])resultArray.get(i).get(j));
-                        properties.put(featureServiceAttributes.get(j).getName(), g);
+
+                        if (!ignoreGeoLimitations && !saveAsLastCreated) {
+                            if ((boundingBoxIncurrentCrs != null)
+                                        && !g.intersects(boundingBoxIncurrentCrs.getGeometry(srid))) {
+                                abort = true;
+                                break;
+                            }
+                        }
+
+                        properties.put(attributeListWithoutGenericAttributes.get(j).getName(), g);
                     } catch (final Exception ex) {
-                        properties.put(featureServiceAttributes.get(j).getName(), resultArray.get(i).get(j));
+                        properties.put(attributeListWithoutGenericAttributes.get(j).getName(),
+                            resultArray.get(i).get(j));
                     }
                 } else {
-                    properties.put(featureServiceAttributes.get(j).getName(), resultArray.get(i).get(j));
+                    properties.put(attributeListWithoutGenericAttributes.get(j).getName(), resultArray.get(i).get(j));
                 }
             }
 
-            if (lastFeature == null) {
-                lastFeature = new CidsLayerFeature(
-                        properties /*oid, cid, geom,*/,
-                        metaClass,
-                        getLayerInfo(),
-                        layerProperties,
-                        getStyle(metaClass.getName()));
-                lastFeature.setSimplifiedGeometryAllowed(saveAsLastCreated);
+            if (abort) {
+                continue;
             }
+
+            CidsLayerFeature lastFeature = new CidsLayerFeature(
+                    properties /*oid, cid, geom,*/,
+                    metaClass,
+                    getLayerInfo(),
+                    layerProperties,
+                    getStyle(CidsLayer.determineLayerName(metaClass)));
+            lastFeature.setSimplifiedGeometryAllowed(saveAsLastCreated);
+
             features.add(lastFeature);
             lastFeature = null;
         }
@@ -448,6 +494,8 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                 boundingBoxIncurrentCrs.getGeometry(CrsTransformer.extractSridFromCrs(crs)),
                 query);
         }
+
+        logger.error("time to receive features" + (System.currentTimeMillis() - startTime));
 
         return features;
     }
@@ -466,9 +514,10 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
                     SessionManager.getSession().getUser());
             final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getSrs().getCode());
             serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
+            final boolean ignoreGeoLimitations = envelope.coveredBy(boundingBox2.getGeometry(srid));
 
             // if the hole envelope of the layer should be requested, the coordinate limitation is not required
-            if ((boundingBox2 != null) && ((envelope == null) || !envelope.coveredBy(boundingBox2.getGeometry(srid)))) {
+            if ((boundingBox2 != null) && ((envelope == null) || !ignoreGeoLimitations)) {
                 serverSearch.setX1(boundingBox2.getX1());
                 serverSearch.setY1(boundingBox2.getY1());
                 serverSearch.setX2(boundingBox2.getX2());
@@ -497,6 +546,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
      *
      * @return  the envelope
      */
+    @Override
     public Geometry getEnvelope() {
         return envelope;
     }

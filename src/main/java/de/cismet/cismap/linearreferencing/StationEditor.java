@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cismap.linearreferencing;
 
+import Sirius.server.middleware.types.MetaClass;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -14,7 +16,15 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
+import org.openide.util.NbBundle;
+
 import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.HeadlessException;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
@@ -31,6 +41,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
@@ -39,17 +50,23 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.CidsBeanStore;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
+import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+
+import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
 import de.cismet.cismap.commons.Crs;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.DefaultStyledFeature;
 import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.gui.attributetable.AttributeTableTransferHandler;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeatureListener;
@@ -58,6 +75,10 @@ import de.cismet.cismap.commons.interaction.CrsChangeListener;
 import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
 
 import de.cismet.tools.CurrentStackTrace;
+
+import static de.cismet.cismap.linearreferencing.LinearReferencingConstants.CN_ROUTE;
+import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInstances.FEATURE_REGISTRY;
+import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInstances.LOG;
 
 /**
  * DOCUMENT ME!
@@ -107,6 +128,10 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private boolean changedSinceDrop = false;
     private boolean isEditable;
     private boolean firstStationInCurrentBB = false;
+    private LinearReferencingHelper linearReferencingHelper = FeatureRegistry.getInstance()
+                .getLinearReferencingSolver();
+    private String routeName;
+    private CidsBeanStore cidsBeanStore;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton badGeomButton;
@@ -130,24 +155,31 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
 
     /**
      * Creates a new StationEditor object.
+     *
+     * @param  routeName  DOCUMENT ME!
      */
-    public StationEditor() {
-        this(true);
+    public StationEditor(final String routeName) {
+        this(true, routeName);
     }
 
     /**
      * Creates a new StationEditor object.
      *
      * @param  isEditable  DOCUMENT ME!
+     * @param  routeName   DOCUMENT ME!
      */
-    protected StationEditor(final boolean isEditable) {
+    protected StationEditor(final boolean isEditable, final String routeName) {
+        this.routeName = routeName;
         initComponents();
 
         setEditable(isEditable);
         if (isEditable) {
             try {
-                new CidsBeanDropTarget(panAdd);
-                new CidsBeanDropTarget(this);
+//                new CidsBeanDropTarget(panAdd);
+//                new CidsBeanDropTarget(this);
+                new LineEditorDropTarget(this);
+                new LineEditorDropTarget(panAdd);
+//                new LineEditorDropTarget(jLabel3);
             } catch (Exception ex) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("error while creating CidsBeanDropTarget");
@@ -995,6 +1027,16 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     /**
      * DOCUMENT ME!
      *
+     * @param  cidsBeanStore  DOCUMENT ME!
+     */
+    public void setCidsBeanStore(final CidsBeanStore cidsBeanStore) {
+        this.cidsBeanStore = cidsBeanStore;
+        setCidsBean(cidsBeanStore.getCidsBean());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param  msg  DOCUMENT ME!
      */
     private void setErrorMsg(final String msg) {
@@ -1429,36 +1471,125 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @version  $Revision$, $Date$
      */
-    class AddPanel extends JPanel implements CidsBeanDropListener {
+    class AddPanel extends JPanel {
+    }
+//implements CidsBeanDropListener {
+//
+//        //~ Methods ------------------------------------------------------------
+//
+//        @Override
+//        public void beansDropped(final ArrayList<CidsBean> beans) {
+//            if (isEditable()) {
+//                CidsBean routeBean = null;
+//                for (final CidsBean bean : beans) {
+//                    if (bean.getMetaObject().getMetaClass().getName().equals(CN_ROUTE)) {
+//                        if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {
+//                            routeBean = bean;
+//                            setChangedSinceDrop(false);
+//                        }
+//                        double value = 0d;
+//
+//                        if (isFirstStationInCurrentBB()) {
+//                            value = getPointInCurrentBB(routeBean);
+//                        }
+//                        setCidsBean(FEATURE_REGISTRY.getInstance().getLinearReferencingSolver()
+//                                    .createStationBeanFromRouteBean(routeBean, value));
+//                        if (isAutoZoomActivated) {
+//                            zoomToFeatureCollection(getZoomFeatures());
+//                        }
+//                        return;
+//                    }
+//                }
+//                if (LOG.isDebugEnabled()) {
+//                    LOG.debug("no route found in dropped objects");
+//                }
+//            }
+//        }
+//    }
+
+    /**
+     * Processes the route drop events. The transferable object can either contains cids beans or features
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class LineEditorDropTarget extends DropTarget {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new LineEditorDropTarget object.
+         *
+         * @param   c  DOCUMENT ME!
+         *
+         * @throws  HeadlessException  DOCUMENT ME!
+         */
+        public LineEditorDropTarget(final Component c) throws HeadlessException {
+            super(c, new DropTargetAdapter() {
+
+                    @Override
+                    public void drop(final DropTargetDropEvent dtde) {
+                        drop(dtde);
+                    }
+                });
+        }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void beansDropped(final ArrayList<CidsBean> beans) {
-            if (isEditable()) {
-                CidsBean routeBean = null;
-                for (final CidsBean bean : beans) {
-                    if (bean.getMetaObject().getMetaClass().getName().equals(CN_ROUTE)) {
-                        if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {
-                            routeBean = bean;
-                            setChangedSinceDrop(false);
-                        }
-                        double value = 0d;
+        public synchronized void drop(final DropTargetDropEvent dtde) {
+            try {
+                if (isEditable()) {
+                    if (dtde.getTransferable().isDataFlavorSupported(AttributeTableTransferHandler.rowFlavor)) {
+                        final Transferable t = dtde.getTransferable();
+                        final Object data = t.getTransferData(AttributeTableTransferHandler.rowFlavor);
 
-                        if (isFirstStationInCurrentBB()) {
-                            value = getPointInCurrentBB(routeBean);
+                        if (data instanceof FeatureServiceFeature[]) {
+                            final FeatureServiceFeature[] fsf = (FeatureServiceFeature[])t.getTransferData(
+                                    AttributeTableTransferHandler.rowFlavor);
+
+                            for (final FeatureServiceFeature f : fsf) {
+                                if (f instanceof CidsLayerFeature) {
+                                    CidsBean routeBean = null;
+                                    if (((CidsLayerFeature)f).getBean().getMetaObject().getMetaClass().getTableName()
+                                                .equalsIgnoreCase(
+                                                    routeName)) {
+                                        if ((getDropBehavior() == null)
+                                                    || getDropBehavior().checkForAdding(routeBean)) {
+                                            routeBean = ((CidsLayerFeature)f).getBean();
+                                            setChangedSinceDrop(false);
+                                        }
+                                        double value = 0d;
+
+                                        if (isFirstStationInCurrentBB()) {
+                                            value = getPointInCurrentBB(routeBean);
+                                        }
+                                        if (cidsBean != null) {
+                                            FEATURE_REGISTRY.removeStationFeature(cidsBean);
+                                        }
+                                        final CidsBean newStationBean = FEATURE_REGISTRY.getInstance()
+                                                    .getLinearReferencingSolver()
+                                                    .createStationBeanFromRouteBean(routeBean, value);
+
+                                        if (cidsBeanStore != null) {
+                                            cidsBeanStore.setCidsBean(newStationBean);
+                                        }
+
+                                        setCidsBean(newStationBean);
+                                        if (isAutoZoomActivated) {
+                                            zoomToFeatureCollection(getZoomFeatures());
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
                         }
-                        setCidsBean(FEATURE_REGISTRY.getInstance().getLinearReferencingSolver()
-                                    .createStationBeanFromRouteBean(routeBean, value));
-                        if (isAutoZoomActivated) {
-                            zoomToFeatureCollection(getZoomFeatures());
-                        }
-                        return;
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("no route found in dropped objects");
                     }
                 }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("no route found in dropped objects");
-                }
+            } catch (Exception e) {
+                LOG.error("Error processing drop event", e);
             }
         }
     }
