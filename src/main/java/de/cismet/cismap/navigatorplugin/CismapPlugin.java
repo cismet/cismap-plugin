@@ -155,6 +155,7 @@ import de.cismet.cismap.commons.gui.infowidgets.LayerInfo;
 import de.cismet.cismap.commons.gui.infowidgets.Legend;
 import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
+import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
@@ -347,6 +348,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator14;
     private javax.swing.JSeparator jSeparator15;
@@ -388,6 +390,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniLoadConfig;
     private javax.swing.JMenuItem mniLoadConfigFromServer;
     private javax.swing.JMenuItem mniLoadLayout;
+    private javax.swing.JMenuItem mniLoadShape;
     private javax.swing.JMenuItem mniMap;
     private javax.swing.JMenuItem mniMapToFile;
     private javax.swing.JMenuItem mniNews;
@@ -1500,6 +1503,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSaveLayout = new javax.swing.JMenuItem();
         mniLoadLayout = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
+        mniLoadShape = new javax.swing.JMenuItem();
+        jSeparator12 = new javax.swing.JPopupMenu.Separator();
         mniClipboard = new javax.swing.JMenuItem();
         mniMapToFile = new javax.swing.JMenuItem();
         mniGeoLinkClipboard = new javax.swing.JMenuItem();
@@ -2199,6 +2204,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menFile.add(mniLoadLayout);
         menFile.add(jSeparator9);
 
+        mniLoadShape.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icon-importfile.png"))); // NOI18N
+        mniLoadShape.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadShape.text"));                                                             // NOI18N
+        mniLoadShape.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadShape.toolTipText",
+                new Object[] {}));                                                                              // NOI18N
+        mniLoadShape.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniLoadShapeActionPerformed(evt);
+                }
+            });
+        menFile.add(mniLoadShape);
+        menFile.add(jSeparator12);
+
         mniClipboard.setAction(new ExportMapToClipboardAction());
         mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
@@ -2888,6 +2911,48 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
         StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
     }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadShapeActionPerformed
+        JFileChooser fc;
+
+        try {
+            fc = new JFileChooser(cismapDirectory);
+        } catch (Exception bug) {
+            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
+            fc = new JFileChooser(cismapDirectory, new RestrictedFileSystemView());
+        }
+
+        fc.setFileFilter(new FileFilter() {
+
+                @Override
+                public boolean accept(final File f) {
+                    return f.isDirectory()
+                                || f.getName().toLowerCase().endsWith(".shp"); // NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return org.openide.util.NbBundle.getMessage(
+                            CismapPlugin.class,
+                            "CismapPlugin.mniLoadShapeActionPerformed.FileFiltergetDescription.return"); // NOI18N
+                }
+            });
+
+        final int state = fc.showOpenDialog(this);
+
+        if (state == JFileChooser.APPROVE_OPTION) {
+            final File file = fc.getSelectedFile();
+            final String name = file.getAbsolutePath();
+
+            final ActiveLayerModel model = (ActiveLayerModel)mapC.getMappingModel();
+            LayerDropUtils.handleFiles(Collections.nCopies(1, file), model, 0, this);
+        }
+    } //GEN-LAST:event_mniLoadShapeActionPerformed
 
     /**
      * DOCUMENT ME!
