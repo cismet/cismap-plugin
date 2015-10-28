@@ -108,6 +108,7 @@ import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -314,6 +315,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
     private MetaSearchHelper metaSearchComponentFactory;
     private WindowAdapter loadLayoutWhenOpenedAdapter = null;
+
+    private final CopyOnWriteArraySet<LayoutListener> layoutListeners = new CopyOnWriteArraySet<LayoutListener>();
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
@@ -4469,6 +4472,33 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     /**
      * DOCUMENT ME!
      *
+     * @param  l  DOCUMENT ME!
+     */
+    public void addLayoutListener(final LayoutListener l) {
+        layoutListeners.add(l);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  l  DOCUMENT ME!
+     */
+    public void removeLayoutListener(final LayoutListener l) {
+        layoutListeners.remove(l);
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void fireLayoutLoaded() {
+        for (final LayoutListener l : layoutListeners) {
+            l.layoutLoaded();
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param  layoutInput  DOCUMENT ME!
      */
     public void loadLayout(final InputStream layoutInput) {
@@ -4484,6 +4514,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 rootWindow.getWindowBar(Direction.LEFT).setEnabled(true);
                 rootWindow.getWindowBar(Direction.DOWN).setEnabled(true);
                 rootWindow.getWindowBar(Direction.RIGHT).setEnabled(true);
+
+                fireLayoutLoaded();
+
                 if (log.isDebugEnabled()) {
                     log.debug("Loading Layout successfull");                          // NOI18N
                 }
