@@ -50,6 +50,7 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.FeatureRenderer;
+import de.cismet.cismap.commons.features.FeatureRendererAwareFeature;
 import de.cismet.cismap.commons.features.Highlightable;
 import de.cismet.cismap.commons.features.InfoNodeAwareFeature;
 import de.cismet.cismap.commons.features.PureFeatureGroup;
@@ -75,7 +76,8 @@ public class CidsFeature implements XStyledFeature,
     RasterLayerSupportedFeature,
     FeatureGroup,
     CidsBeanActionsProvider,
-    InfoNodeAwareFeature {
+    InfoNodeAwareFeature,
+    FeatureRendererAwareFeature {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -1052,6 +1054,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public FeatureRenderer getFeatureRenderer() {
         return featureRenderer;
     }
