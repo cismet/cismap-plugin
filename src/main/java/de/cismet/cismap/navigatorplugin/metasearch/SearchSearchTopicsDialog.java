@@ -56,6 +56,8 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
     private SearchControlPanel pnlSearchCancel;
     private boolean searchRunning = false;
+    private final SearchTopicsDialogModel model = new SearchTopicsDialogModel();
+
 //    private SwingWorker searchThread;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
@@ -208,6 +210,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         chkCaseSensitive.setText(org.openide.util.NbBundle.getMessage(
                 SearchSearchTopicsDialog.class,
                 "SearchSearchTopicsDialog.chkCaseSensitive.text")); // NOI18N
+        chkCaseSensitive.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    chkCaseSensitiveActionPerformed(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -245,6 +254,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         chkHere.setText(org.openide.util.NbBundle.getMessage(
                 SearchSearchTopicsDialog.class,
                 "SearchSearchTopicsDialog.chkHere.text")); // NOI18N
+        chkHere.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    chkHereActionPerformed(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -329,6 +345,33 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void chkCaseSensitiveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkCaseSensitiveActionPerformed
+        model.setCaseSensitiveEnabled(chkCaseSensitive.isSelected());
+    }                                                                                    //GEN-LAST:event_chkCaseSensitiveActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void chkHereActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkHereActionPerformed
+        model.setSearchGeometryEnabled(chkHere.isSelected());
+    }                                                                           //GEN-LAST:event_chkHereActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public SearchTopicsDialogModel getModel() {
+        return model;
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     private void switchControls() {
         if (searchRunning) {
@@ -344,17 +387,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         }
     }
 
-    @Override
-    public MetaObjectNodeServerSearch assembleSearch() {
-        final Collection<String> selectedSearchClasses = MetaSearch.instance().getSelectedSearchClassesForQuery();
-
-        LOG.info("Starting search for '" + txtSearchParameter.getText() + "' in '" + selectedSearchClasses
-                    + "'. Case sensitive? "
-                    + chkCaseSensitive.isSelected() + ", Only in cismap? " + chkHere.isSelected());
-
-        FullTextSearch fullTextSearch = null;
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Geometry createSearchGeometry() {
         Geometry searchGeometry = null;
-
         if (chkHere.isSelected()) {
             final BoundingBox boundingBox = CismapBroker.getInstance()
                         .getMappingComponent()
@@ -366,14 +405,53 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
             // Damits auch mit -1 funzt:
             searchGeometry.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
         }
+        return searchGeometry;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isCaseSensitiveEnabled() {
+        return chkCaseSensitive.isSelected();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isGeometryEnabled() {
+        return chkHere.isSelected();
+    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public SearchTopicsPanel getPnlSearchTopics() {
+        return pnlSearchTopics;
+    }
+
+    @Override
+    public MetaObjectNodeServerSearch assembleSearch() {
+        final Collection<String> selectedSearchClasses = MetaSearch.instance().getSelectedSearchClassesForQuery();
+
+        LOG.info("Starting search for '" + txtSearchParameter.getText() + "' in '" + selectedSearchClasses
+                    + "'. Case sensitive? "
+                    + chkCaseSensitive.isSelected() + ", Only in cismap? " + chkHere.isSelected());
+
+        model.setSearchText(txtSearchParameter.getText());
+
+        final Geometry searchGeometry = createSearchGeometry();
 
         // default search is always present
-        fullTextSearch = Lookup.getDefault().lookup(FullTextSearch.class);
+        final FullTextSearch fullTextSearch = Lookup.getDefault().lookup(FullTextSearch.class);
         fullTextSearch.setSearchText(txtSearchParameter.getText());
         fullTextSearch.setCaseSensitive(chkCaseSensitive.isSelected());
         fullTextSearch.setGeometry(searchGeometry);
         fullTextSearch.setValidClassesFromStrings(selectedSearchClasses);
-
         return fullTextSearch;
     }
 
@@ -432,6 +510,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
         @Override
         public void itemStateChanged(final ItemEvent e) {
+            model.setSearchClassesString(pnlSearchTopics.getSelectedClassesString());
             enableSearchButton();
         }
 
