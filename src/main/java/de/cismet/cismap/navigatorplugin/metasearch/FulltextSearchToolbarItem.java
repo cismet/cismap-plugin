@@ -8,6 +8,7 @@
 package de.cismet.cismap.navigatorplugin.metasearch;
 
 import Sirius.navigator.resource.PropertyManager;
+import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.ui.RightStickyToolbarItem;
 
 import org.openide.util.Lookup;
@@ -17,13 +18,20 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 import de.cismet.cids.navigator.utils.CidsClientToolbarItem;
 
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
 import de.cismet.cids.server.search.builtin.FullTextSearch;
+
+import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
+
+import de.cismet.commons.gui.protocol.ProtocolHandler;
 
 /**
  * DOCUMENT ME!
@@ -233,6 +241,24 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
             fullTextSearch.setCaseSensitive(model.isCaseSensitiveEnabled());
             fullTextSearch.setGeometry(SearchSearchTopicsDialog.instance().createSearchGeometry());
             fullTextSearch.setValidClassesFromStrings(searchTopics);
+            if (fullTextSearch instanceof SearchResultListenerProvider) {
+                ((SearchResultListenerProvider)fullTextSearch).setSearchResultListener(new SearchResultListener() {
+
+                        @Override
+                        public void searchDone(final List results) {
+                            if (ProtocolHandler.getInstance().isRecordEnabled()) {
+                                ProtocolHandler.getInstance()
+                                        .recordStep(
+                                            new FulltextSearchProtocolStepImpl(
+                                                fullTextSearch,
+                                                MetaSearch.instance().getSelectedSearchTopics(),
+                                                results));
+                            }
+                        }
+                    });
+            }
+
+            CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch);
         }
     } //GEN-LAST:event_jSearchTextField1ActionPerformed
 
