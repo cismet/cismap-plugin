@@ -28,16 +28,23 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
 import de.cismet.cids.server.search.builtin.FullTextSearch;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+
+import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
+
+import de.cismet.commons.gui.protocol.ProtocolHandler;
 
 /**
  * DOCUMENT ME!
@@ -54,7 +61,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
     //~ Instance fields --------------------------------------------------------
 
-    private SearchControlPanel pnlSearchCancel;
+    private final SearchControlPanel pnlSearchCancel;
     private boolean searchRunning = false;
     private final SearchTopicsDialogModel model = new SearchTopicsDialogModel();
 
@@ -452,6 +459,22 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         fullTextSearch.setCaseSensitive(chkCaseSensitive.isSelected());
         fullTextSearch.setGeometry(searchGeometry);
         fullTextSearch.setValidClassesFromStrings(selectedSearchClasses);
+        if (fullTextSearch instanceof SearchResultListenerProvider) {
+            ((SearchResultListenerProvider)fullTextSearch).setSearchResultListener(new SearchResultListener() {
+
+                    @Override
+                    public void searchDone(final List results) {
+                        if (ProtocolHandler.getInstance().isRecordEnabled()) {
+                            ProtocolHandler.getInstance()
+                                    .recordStep(
+                                        new FulltextSearchProtocolStepImpl(
+                                            fullTextSearch,
+                                            MetaSearch.instance().getSelectedSearchTopics(),
+                                            results));
+                        }
+                    }
+                });
+        }
         return fullTextSearch;
     }
 
