@@ -38,6 +38,8 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 
 import de.cismet.cismap.commons.features.AbstractNewFeature;
@@ -295,27 +297,14 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                                 final DefaultMetaTreeNode[] nodes = ComponentRegistry.getRegistry()
                                             .getActiveCatalogue()
                                             .getSelectedNodesArray();
-                                final Collection<Geometry> searchGeoms = new ArrayList<Geometry>();
-
+                                final Collection<CidsBean> beans = new ArrayList<CidsBean>();
                                 for (final DefaultMetaTreeNode dmtn : nodes) {
                                     if (dmtn instanceof ObjectTreeNode) {
                                         final MetaObject mo = ((ObjectTreeNode)dmtn).getMetaObject();
-                                        final CidsFeature cf = new CidsFeature(mo);
-                                        searchGeoms.add(cf.getGeometry());
+                                        beans.add(mo.getBean());
                                     }
                                 }
-                                final Geometry[] searchGeomsArr = searchGeoms.toArray(
-                                        new Geometry[0]);
-                                final GeometryCollection coll =
-                                    new GeometryFactory().createGeometryCollection(
-                                        searchGeomsArr);
-
-                                final Geometry newG = coll.buffer(0.1d);
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("SearchGeom " + newG.toText()); // NOI18N
-                                }
-
-                                final SearchFeature sf = new SearchFeature(newG, interactionMode);
+                                final SearchFeature sf = CidsBeansSearchFeature.createFromBeans(beans, interactionMode);
                                 sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
                                 return sf;
                             }
