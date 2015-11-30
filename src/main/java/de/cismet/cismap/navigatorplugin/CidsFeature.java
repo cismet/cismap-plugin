@@ -1064,6 +1064,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public SubFeatureAwareFeatureRenderer getParentFeatureRenderer() {
         return parentFeatureRenderer;
     }
