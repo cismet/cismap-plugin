@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.SearchFeature;
 
 /**
@@ -67,16 +68,33 @@ public class CidsBeansSearchFeature extends SearchFeature {
     public static CidsBeansSearchFeature createFromBeans(final Collection<CidsBean> beans,
             final String interactionmode) {
         final Collection<Geometry> searchGeoms = new ArrayList<Geometry>();
+        Integer origSrid = null;
+        String metricCrs = null;
+
         for (final CidsBean cb : beans) {
             final MetaObject mo = cb.getMetaObject();
             final CidsFeature cf = new CidsFeature(mo);
-            searchGeoms.add(cf.getGeometry());
+
+            if (origSrid == null) {
+                origSrid = cf.getGeometry().getSRID();
+                final int metricSrid = CrsTransformer.transformToMetricCrs(cf.getGeometry()).getSRID();
+                metricCrs = CrsTransformer.createCrsFromSrid(metricSrid);
+            }
+
+            searchGeoms.add(CrsTransformer.transformToGivenCrs(cf.getGeometry(), metricCrs));
         }
+
         final Geometry[] searchGeomsArr = searchGeoms.toArray(
                 new Geometry[0]);
         final GeometryCollection coll = new GeometryFactory().createGeometryCollection(searchGeomsArr);
 
-        final Geometry newG = coll.buffer(0.1d);
+        Geometry newG = coll.buffer(0.1d);
+        newG.setSRID(CrsTransformer.extractSridFromCrs(metricCrs));
+
+        if (origSrid != null) {
+            newG = CrsTransformer.transformToGivenCrs(newG, CrsTransformer.createCrsFromSrid(origSrid));
+            newG.setSRID(origSrid);
+        }
 
         return new CidsBeansSearchFeature(newG, beans, interactionmode);
     }
