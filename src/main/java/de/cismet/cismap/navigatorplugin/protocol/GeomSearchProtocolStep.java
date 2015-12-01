@@ -32,6 +32,7 @@ public interface GeomSearchProtocolStep extends ProtocolStep {
      * @return  DOCUMENT ME!
      */
     Geometry getGeometry();
+    
     @Override
     GeomSearchProtocolStepConfiguration getConfiguration();
 }
