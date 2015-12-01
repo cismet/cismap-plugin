@@ -127,7 +127,6 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
 
         setMaximumSize(new java.awt.Dimension(200, 31));
         setMinimumSize(new java.awt.Dimension(200, 27));
-        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(200, 27));
         setLayout(new java.awt.GridBagLayout());
 
