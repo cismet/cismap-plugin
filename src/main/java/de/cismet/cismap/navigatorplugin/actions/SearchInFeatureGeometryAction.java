@@ -23,10 +23,8 @@
  */
 package de.cismet.cismap.navigatorplugin.actions;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -36,29 +34,18 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
 
 import de.cismet.cismap.commons.features.AbstractNewFeature;
 import de.cismet.cismap.commons.features.CommonFeatureAction;
 import de.cismet.cismap.commons.features.Feature;
-import de.cismet.cismap.commons.features.PureNewFeature;
 import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.AbstractCreateSearchGeometryListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
-
-import de.cismet.tools.gui.StaticSwingTools;
 
 /**
  * DOCUMENT ME!
@@ -113,7 +100,6 @@ public class SearchInFeatureGeometryAction extends AbstractAction implements Com
 
     @Override
     public void actionPerformed(final ActionEvent e) {
-
         de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<Void, Void>() {
 
                 @Override
@@ -144,49 +130,7 @@ public class SearchInFeatureGeometryAction extends AbstractAction implements Com
 
                 @Override
                 protected void done() {
-
-                    
                 }
             });
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  args  DOCUMENT ME!
-     */
-    public static void main(final String[] args) {
-        final WaitDialog w = new WaitDialog();
-        w.setVisible(true);
-    }
-}
-
-/**
- * DOCUMENT ME!
- *
- * @version  $Revision$, $Date$
- */
-class WaitDialog extends JDialog {
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new WaitDialog object.
-     */
-    public WaitDialog() {
-        super(StaticSwingTools.getParentFrame(CismapBroker.getInstance().getMappingComponent()), true);
-        setLayout(new FlowLayout());
-        getContentPane().add(new JLabel(
-                new javax.swing.ImageIcon(
-                    getClass().getResource("/de/cismet/cismap/actions/raiseProgress.png"))));
-        final JProgressBar prb = new JProgressBar();
-        prb.setForeground(new Color(51, 153, 204));
-        prb.setBorderPainted(false);
-        prb.setIndeterminate(true);
-        getContentPane().add(prb);
-        setUndecorated(true);
-        final JComponent c = CismapBroker.getInstance().getMappingComponent();
-        pack();
-        setLocationRelativeTo(c);
     }
 }
