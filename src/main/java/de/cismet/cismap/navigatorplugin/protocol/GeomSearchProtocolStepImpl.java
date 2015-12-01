@@ -34,6 +34,9 @@ import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
 
+import de.cismet.commons.gui.protocol.ProtocolHandler;
+import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
+
 /**
  * DOCUMENT ME!
  *
@@ -44,6 +47,10 @@ public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtoco
         implements GeomSearchProtocolStep {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    public static ProtocolStepMetaInfo META_INFO = new ProtocolStepMetaInfo(
+            "GeomSearchProtocolStep",
+            "GeomSearchProtocolStep desc");
 
     private static GeomFromWktConverter GEOM_EWKT_CONVERTER = new GeomFromWktConverter();
 
@@ -102,6 +109,17 @@ public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtoco
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public GeomSearchProtocolStepConfiguration getConfiguration() {
+        return (GeomSearchProtocolStepConfiguration)ProtocolHandler.getInstance()
+                    .getProtocolStepConfiguration(META_INFO.getKey());
+    }
+
+    @Override
+    protected ProtocolStepMetaInfo createMetaInfo() {
+        return META_INFO;
+    }
 
     @Override
     public void initParameters() {

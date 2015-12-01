@@ -12,7 +12,15 @@
  */
 package de.cismet.cismap.navigatorplugin.protocol;
 
-import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.geom.Geometry;
+
+import de.cismet.cismap.commons.CrsTransformer;
+import de.cismet.cismap.commons.XBoundingBox;
+import de.cismet.cismap.commons.features.SearchFeature;
+import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
+import de.cismet.cismap.commons.raster.wms.simple.SimpleWMS;
+import de.cismet.cismap.commons.raster.wms.simple.SimpleWmsGetMapUrl;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 
@@ -24,9 +32,10 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
  */
 public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomSearchProtocolStep> {
 
+    //~ Instance fields --------------------------------------------------------
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private de.cismet.cismap.commons.gui.MappingComponent mappingComponent1;
     // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
@@ -39,20 +48,73 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
     }
 
     /**
-     * Creates new form GeomSearchProtocolStepPanel.
+     * Creates a new GeomSearchProtocolStepPanel object.
      *
      * @param  geomSearchProtocolStep  DOCUMENT ME!
      */
     public GeomSearchProtocolStepPanel(final GeomSearchProtocolStep geomSearchProtocolStep) {
+        this(geomSearchProtocolStep, true);
+    }
+
+    /**
+     * Creates new form GeomSearchProtocolStepPanel.
+     *
+     * @param  geomSearchProtocolStep  DOCUMENT ME!
+     * @param  showSearchGeometry      DOCUMENT ME!
+     */
+    public GeomSearchProtocolStepPanel(final GeomSearchProtocolStep geomSearchProtocolStep,
+            final boolean showSearchGeometry) {
         super(geomSearchProtocolStep);
         initComponents();
 
         if ((geomSearchProtocolStep != null) && (geomSearchProtocolStep.getGeometry() != null)) {
-            jTextArea1.setText(new WKTWriter().write(geomSearchProtocolStep.getGeometry()));
+            initMap(geomSearchProtocolStep.getGeometry(), mappingComponent1, showSearchGeometry);
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  geom                DOCUMENT ME!
+     * @param  map                 DOCUMENT ME!
+     * @param  showSearchGeometry  DOCUMENT ME!
+     */
+    public void initMap(final Geometry geom, final MappingComponent map, final boolean showSearchGeometry) {
+        final String srs = getProtocolStep().getConfiguration().getSrs();
+        final String wmsMapUrl = getProtocolStep().getConfiguration().getWmsMapUrl();
+        final double zoomFactor = getProtocolStep().getConfiguration().getZoomFactor();
+
+        final Geometry transformedGeom = CrsTransformer.transformToGivenCrs(geom, srs);
+
+        final XBoundingBox bbox = new XBoundingBox(transformedGeom.getEnvelope(), srs, true);
+        if (showSearchGeometry) {
+            bbox.setX1(bbox.getX1() - (zoomFactor * bbox.getWidth()));
+            bbox.setX2(bbox.getX2() + (zoomFactor * bbox.getWidth()));
+            bbox.setY1(bbox.getY1() - (zoomFactor * bbox.getHeight()));
+            bbox.setY2(bbox.getY2() + (zoomFactor * bbox.getHeight()));
+        }
+        final ActiveLayerModel mappingModel = new ActiveLayerModel();
+        mappingModel.setSrs(srs);
+        mappingModel.addHome(bbox);
+
+        final SimpleWMS swms = new SimpleWMS(new SimpleWmsGetMapUrl(wmsMapUrl));
+
+        mappingModel.addLayer(swms);
+
+        map.setMappingModel(mappingModel);
+        map.setInteracting(false);
+        map.setInteractionMode(MappingComponent.OVERVIEW);
+
+        if (showSearchGeometry) {
+            final SearchFeature searchFeature = new SearchFeature(transformedGeom, null);
+            map.getFeatureCollection().addFeature(searchFeature);
+        }
+
+        map.unlock();
+        map.gotoInitialBoundingBox();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
@@ -63,22 +125,18 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
     private void initComponents() {
         final java.awt.GridBagConstraints gridBagConstraints;
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        mappingComponent1 = new de.cismet.cismap.commons.gui.MappingComponent();
 
-        setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        setMinimumSize(new java.awt.Dimension(29, 150));
+        setPreferredSize(new java.awt.Dimension(300, 200));
         setLayout(new java.awt.GridBagLayout());
-
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
+        add(mappingComponent1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents
 }
