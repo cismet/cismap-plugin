@@ -169,9 +169,10 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
     public void initParameters() {
         super.initParameters();
 
-        final Set<MetaSearchProtocolStepSearchTopic> searchTopics = new HashSet<MetaSearchProtocolStepSearchTopic>();
+        final Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos =
+            new HashSet<MetaSearchProtocolStepSearchTopic>();
         for (final SearchTopic topic : MetaSearch.instance().getSelectedSearchTopics()) {
-            searchTopics.add(new MetaSearchProtocolStepSearchTopic(
+            searchTopicInfos.add(new MetaSearchProtocolStepSearchTopic(
                     topic.getKey(),
                     topic.getName(),
                     topic.getIconName()));
@@ -188,7 +189,7 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
         }
 
         this.searchObjects = searchObjects;
-        this.searchTopicInfos = searchTopics;
+        this.searchTopicInfos = searchTopicInfos;
     }
 
     @Override

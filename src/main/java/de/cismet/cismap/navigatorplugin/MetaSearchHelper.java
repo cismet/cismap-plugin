@@ -182,7 +182,8 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
                     @Override
                     public void searchDone(final List results) {
                         if (ProtocolHandler.getInstance().isRecordEnabled()) {
-                            final Collection<SearchTopic> searchTopics = MetaSearch.instance().getSearchTopics();
+                            final Collection<SearchTopic> searchTopics = MetaSearch.instance()
+                                        .getSelectedSearchTopics();
                             final CreateSearchGeometryListener createSearchGeometryListener =
                                 (CreateSearchGeometryListener)CismapBroker.getInstance().getMappingComponent()
                                         .getInputListener(CREATE_SEARCH_POLYGON);
