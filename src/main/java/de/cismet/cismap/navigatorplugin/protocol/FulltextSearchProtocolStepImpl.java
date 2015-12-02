@@ -115,6 +115,8 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
 
         this.searchText = fullTextSearch.getSearchText();
         this.caseSensitiveEnabled = fullTextSearch.isCaseSensitive();
+
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     /**
@@ -138,6 +140,8 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
 
         this.searchText = searchText;
         this.caseSensitiveEnabled = caseSensitiveEnabled;
+
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -152,7 +156,7 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
         super.initParameters();
         getGeometryProtocolStep().initParameters();
         getCidsServerSearchProtocolStep().initParameters();
-        searchTopicsProtocolStep.initParameters();
+        getSearchTopicsProtocolStep().initParameters();
 
         this.searchTopicInfos = getSearchTopicsProtocolStep().getSearchTopicInfos();
         this.searchResults = getCidsServerSearchProtocolStep().getSearchResults();
@@ -172,16 +176,20 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
         fullTextSearch.setGeometry(getGeometry());
 
         final Collection<String> validClassesFromStrings = new ArrayList<String>();
-        if (META_CLASS_CACHE_SERVICE != null) {
-            for (final SearchTopic searchTopic : getSearchTopicsProtocolStep().getSearchTopics()) {
-                for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
-                    final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
-                            searchClass.getCidsClass());
-                    validClassesFromStrings.add(metaClass.getKey().toString());
+        for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
+            if (getSearchTopicsProtocolStep().getSearchTopics().contains(searchTopic)) {
+                searchTopic.setSelected(true);
+                if (META_CLASS_CACHE_SERVICE != null) {
+                    for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
+                        final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
+                                searchClass.getCidsClass());
+                        validClassesFromStrings.add(metaClass.getKey().toString());
+                    }
                 }
+            } else {
+                searchTopic.setSelected(true);
             }
         }
-
         fullTextSearch.setValidClassesFromStrings(validClassesFromStrings);
 
         if (fullTextSearch instanceof SearchResultListenerProvider) {

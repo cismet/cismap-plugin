@@ -91,7 +91,7 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         lblIconBoth = new javax.swing.JLabel();
         lblTitle = new javax.swing.JLabel();
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
-                getProtocolStep());
+                ((FulltextSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep());
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
