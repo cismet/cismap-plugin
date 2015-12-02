@@ -39,9 +39,11 @@ public class GeoContextProtocolStepToolbarItem extends AbstractProtocolStepToolb
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String NAME = "";
-    private static final String TOOLTIP = "Geo-Kontext protokollieren";
+    private static final String TOOLTIP = org.openide.util.NbBundle.getMessage(
+            GeoContextProtocolStepPanel.class,
+            "GeoContextProtocolStepToolbarItem.tooltip");
     private static final ImageIcon ICON = new ImageIcon(GeoContextProtocolStepToolbarItem.class.getResource(
-                "/Sirius/navigator/resource/img/map.png"));
+                "/de/cismet/cismap/navigatorplugin/protocol/GeoContext.png"));
 
     //~ Constructors -----------------------------------------------------------
 
