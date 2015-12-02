@@ -33,14 +33,14 @@ public class SearchTopicsDialogModel {
     public static final String PROPERTY_SEARCHTEXT = "searchText";
     public static final String PROPERTY_CASESENSITIVE = "caseSensitiveEnabled";
     public static final String PROPERTY_SEARCHGEOMETRY = "searchGeometryEnabled";
-    public static final String PROPERTY_SEARCHCLASSESSTRING = "searchClassesString";
+    public static final String PROPERTY_SELECTEDSEARCHTOPICS = "selectedSearchTopics";
 
     //~ Instance fields --------------------------------------------------------
 
     private String searchText;
     private boolean caseSensitiveEnabled;
     private boolean searchGeometryEnabled;
-    private String searchClassesString;
+    private Collection<SearchTopic> selectedSearchTopics;
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -80,10 +80,10 @@ public class SearchTopicsDialogModel {
      *
      * @param  newValue  DOCUMENT ME!
      */
-    public void setSearchClassesString(final String newValue) {
-        final Object oldValue = this.searchClassesString;
-        this.searchClassesString = newValue;
-        propertyChangeSupport.firePropertyChange(PROPERTY_SEARCHCLASSESSTRING, oldValue, newValue);
+    public void setSelectedSearchTopics(final Collection<SearchTopic> newValue) {
+        final Object oldValue = this.selectedSearchTopics;
+        this.selectedSearchTopics = newValue;
+        propertyChangeSupport.firePropertyChange(PROPERTY_SELECTEDSEARCHTOPICS, oldValue, newValue);
     }
 
     /**

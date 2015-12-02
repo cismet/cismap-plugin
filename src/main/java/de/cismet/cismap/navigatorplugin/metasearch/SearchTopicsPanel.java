@@ -46,7 +46,7 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Set<SearchTopic> searchTopics;
+    private final Set<SearchTopic> searchTopics;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.Box.Filler gluFiller;
@@ -238,26 +238,6 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
                 checkbox.removeItemListener(itemListener);
             }
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String getSelectedClassesString() {
-        final StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        for (final Component component : getComponents()) {
-            if (component instanceof JCheckBox) {
-                final JCheckBox checkbox = (JCheckBox)component;
-                if (checkbox.isSelected()) {
-                    sb.append(first ? "" : ", ").append(checkbox.getText());
-                    first = false;
-                }
-            }
-        }
-        return sb.toString();
     }
 
     /**
