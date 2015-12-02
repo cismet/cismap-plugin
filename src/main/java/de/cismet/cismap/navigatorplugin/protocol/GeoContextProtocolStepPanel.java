@@ -74,12 +74,14 @@ public class GeoContextProtocolStepPanel extends AbstractProtocolStepPanel<GeoCo
                 GeoContextProtocolStepPanel.class,
                 "GeoContextProtocolStepPanel.lblTitle.text")); // NOI18N
 
-        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Sirius/navigator/resource/img/map.png"))); // NOI18N
+        lblIcon.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblIcon.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/de/cismet/cismap/navigatorplugin/protocol/GeoContext.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(
             lblIcon,
             org.openide.util.NbBundle.getMessage(
                 GeoContextProtocolStepPanel.class,
-                "GeoContextProtocolStepPanel.lblIcon.text"));                                                         // NOI18N
+                "GeoContextProtocolStepPanel.lblIcon.text"));                                          // NOI18N
 
         setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
