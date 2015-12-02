@@ -129,6 +129,8 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
 
         this.searchObjectNodes = searchObjectNodes;
         this.mode = searchListener.getMode();
+
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     /**
@@ -149,6 +151,7 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
         this.cidsServerSearchProtocolStep = new CidsServerSearchProtocolStepImpl(searchResults);
         this.geometryProtocolStep = new GeometryProtocolStepImpl(wkt);
         this.searchTopicsProtocolStep = new SearchTopicsProtocolStepImpl(searchTopicInfos);
+
         this.mode = mode;
         this.searchTopicInfos = searchTopicInfos;
         this.searchObjects = searchObjects;
@@ -165,8 +168,10 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
         }
 
         this.searchObjectNodes = searchObjectNodes;
-        this.wkt = geometryProtocolStep.getWkt();
+        this.wkt = getGeometryProtocolStep().getWkt();
         this.searchResults = getCidsServerSearchProtocolStep().getSearchResults();
+
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -212,7 +217,7 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
     @Override
     public void reExecuteSearch() {
         for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
-            searchTopic.setSelected(searchTopicsProtocolStep.getSearchTopics().contains(searchTopic));
+            searchTopic.setSelected(getSearchTopicsProtocolStep().getSearchTopics().contains(searchTopic));
         }
 
         final CreateSearchGeometryListener inputListener = (CreateSearchGeometryListener)CismapBroker
@@ -228,6 +233,6 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
 
     @Override
     public Geometry getGeometry() {
-        return geometryProtocolStep.getGeometry();
+        return getGeometryProtocolStep().getGeometry();
     }
 }
