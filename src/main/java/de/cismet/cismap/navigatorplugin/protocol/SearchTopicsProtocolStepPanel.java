@@ -8,6 +8,7 @@
 package de.cismet.cismap.navigatorplugin.protocol;
 
 import java.awt.Component;
+import java.awt.Dimension;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,26 +67,46 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
         super(searchTopicsProtocolStep);
         initComponents();
 
-        setSearchTopicsPanelVisible(false);
-
-        final List<MetaSearchProtocolStepSearchTopic> sortedTopics = new ArrayList<MetaSearchProtocolStepSearchTopic>();
+        final List<GeoSearchProtocolStepSearchTopic> sortedTopics = new ArrayList<GeoSearchProtocolStepSearchTopic>();
         if (searchTopicsProtocolStep != null) {
             sortedTopics.addAll(searchTopicsProtocolStep.getSearchTopicInfos());
         }
-        Collections.sort(sortedTopics, new Comparator<MetaSearchProtocolStepSearchTopic>() {
+        Collections.sort(sortedTopics, new Comparator<GeoSearchProtocolStepSearchTopic>() {
 
                 @Override
-                public int compare(final MetaSearchProtocolStepSearchTopic o1,
-                        final MetaSearchProtocolStepSearchTopic o2) {
+                public int compare(final GeoSearchProtocolStepSearchTopic o1,
+                        final GeoSearchProtocolStepSearchTopic o2) {
                     final String k1 = ((o1 == null) || (o1.getKey() == null)) ? "" : o1.getKey();
                     final String k2 = ((o2 == null) || (o2.getKey() == null)) ? "" : o2.getKey();
                     return k1.compareTo(k2);
                 }
             });
 
-        for (final MetaSearchProtocolStepSearchTopic topic : sortedTopics) {
-            ((DefaultListModel<MetaSearchProtocolStepSearchTopic>)jList1.getModel()).addElement(topic);
+        for (final GeoSearchProtocolStepSearchTopic topic : sortedTopics) {
+            ((DefaultListModel<GeoSearchProtocolStepSearchTopic>)jList1.getModel()).addElement(topic);
         }
+
+        if (jList1.getModel().getSize() > 0) {
+            final int maxSize = 10;
+            final JLabel dummy = (JLabel)
+                new TopicListCellRenderer().getListCellRendererComponent(
+                    jList1,
+                    jList1.getModel().getElementAt(0),
+                    0,
+                    false,
+                    false);
+            final int height;
+
+            if (jList1.getModel().getSize() > maxSize) {
+                height = 4 + (dummy.getPreferredSize().height * maxSize);
+            } else {
+                height = 4 + (dummy.getPreferredSize().height * jList1.getModel().getSize());
+            }
+
+            jScrollPane3.setPreferredSize(new Dimension((int)jScrollPane3.getPreferredSize().getWidth(), height));
+        }
+
+        setSearchTopicsPanelVisible(false);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -145,8 +166,7 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jList1.setModel(
-            new DefaultListModel<de.cismet.cismap.navigatorplugin.protocol.MetaSearchProtocolStepSearchTopic>());
+        jList1.setModel(new DefaultListModel<GeoSearchProtocolStepSearchTopic>());
         jList1.setCellRenderer(new TopicListCellRenderer());
         jScrollPane3.setViewportView(jList1);
 
@@ -161,7 +181,6 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jPanel2, gridBagConstraints);
 
@@ -266,7 +285,7 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
                 final int index,
                 final boolean isSelected,
                 final boolean cellHasFocus) {
-            final MetaSearchProtocolStepSearchTopic topic = (MetaSearchProtocolStepSearchTopic)value;
+            final GeoSearchProtocolStepSearchTopic topic = (GeoSearchProtocolStepSearchTopic)value;
             final JLabel component = (JLabel)super.getListCellRendererComponent(
                     list,
                     value,

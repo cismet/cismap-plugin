@@ -22,7 +22,7 @@ import Sirius.navigator.search.CidsServerSearchProtocolStep;
  */
 public interface FulltextSearchProtocolStep extends CidsServerSearchProtocolStep,
     SearchTopicsProtocolStep,
-    GeomSearchProtocolStep {
+    GeometryProtocolStep {
 
     //~ Methods ----------------------------------------------------------------
 

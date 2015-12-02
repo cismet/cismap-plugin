@@ -39,7 +39,7 @@ import de.cismet.cismap.commons.interaction.events.MapSearchEvent;
 
 import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
 import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
-import de.cismet.cismap.navigatorplugin.protocol.MetaSearchProtocolStepImpl;
+import de.cismet.cismap.navigatorplugin.protocol.GeoSearchProtocolStepImpl;
 
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 
@@ -189,7 +189,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
                                         .getInputListener(CREATE_SEARCH_POLYGON);
                             ProtocolHandler.getInstance()
                                     .recordStep(
-                                        new MetaSearchProtocolStepImpl(
+                                        new GeoSearchProtocolStepImpl(
                                             geoSearch,
                                             (MetaSearchCreateSearchGeometryListener)createSearchGeometryListener,
                                             searchTopics,

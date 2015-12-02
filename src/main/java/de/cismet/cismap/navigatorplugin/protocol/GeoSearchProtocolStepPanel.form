@@ -9,35 +9,35 @@
           <Image iconType="3" name="/images/pluginSearch.gif"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MetaSearchProtocolStepPanel.lblIconNone.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="GeoSearchProtocolStepPanel.lblIconNone.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MetaSearchProtocolStepPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="GeoSearchProtocolStepPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MetaSearchProtocolStepPanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="GeoSearchProtocolStepPanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MetaSearchProtocolStepPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="GeoSearchProtocolStepPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblTitle">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="MetaSearchProtocolStepPanel.lblTitle.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="GeoSearchProtocolStepPanel.lblTitle.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -59,7 +59,7 @@
   <SubComponents>
     <Component class="Sirius.navigator.search.CidsServerSearchProtocolStepPanel" name="cidsServerSearchProtocolStepPanel1">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(getProtocolStep())"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(((GeoSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep())"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -100,7 +100,7 @@
     <Component class="org.jdesktop.swingx.JXHyperlink" name="jXHyperlink1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/protocol/Bundle.properties" key="MetaSearchProtocolStepPanel.jXHyperlink1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/protocol/Bundle.properties" key="GeoSearchProtocolStepPanel.jXHyperlink1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -114,7 +114,7 @@
     </Component>
     <Component class="de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel" name="searchTopicsProtocolStepPanel1">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(getProtocolStep())"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(((GeoSearchProtocolStepImpl)getProtocolStep()).getSearchTopicsProtocolStep())"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -122,13 +122,13 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel" name="geomSearchProtocolStepPanel1">
+    <Component class="de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel" name="geomSearchProtocolStepPanel1">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel(getProtocolStep())"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel(((GeoSearchProtocolStepImpl)getProtocolStep()).getGeometryProtocolStep())"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="5" insetsBottom="5" insetsRight="5" anchor="10" weightX="1.0" weightY="1.0"/>
+          <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="5" insetsBottom="5" insetsRight="5" anchor="10" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>

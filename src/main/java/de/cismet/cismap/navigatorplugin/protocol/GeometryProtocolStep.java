@@ -12,11 +12,9 @@
  */
 package de.cismet.cismap.navigatorplugin.protocol;
 
-import Sirius.navigator.search.CidsServerSearchProtocolStep;
+import com.vividsolutions.jts.geom.Geometry;
 
-import Sirius.server.middleware.types.MetaObjectNode;
-
-import java.util.Collection;
+import de.cismet.commons.gui.protocol.ProtocolStep;
 
 /**
  * DOCUMENT ME!
@@ -24,9 +22,7 @@ import java.util.Collection;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public interface MetaSearchProtocolStep extends CidsServerSearchProtocolStep,
-    GeomSearchProtocolStep,
-    SearchTopicsProtocolStep {
+public interface GeometryProtocolStep extends ProtocolStep {
 
     //~ Methods ----------------------------------------------------------------
 
@@ -35,5 +31,5 @@ public interface MetaSearchProtocolStep extends CidsServerSearchProtocolStep,
      *
      * @return  DOCUMENT ME!
      */
-    Collection<MetaObjectNode> getSearchObjectNodes();
+    Geometry getGeometry();
 }
