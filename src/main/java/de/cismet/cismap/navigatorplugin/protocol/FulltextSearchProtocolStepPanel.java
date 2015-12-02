@@ -27,7 +27,7 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
-    private de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel geomSearchProtocolStepPanel1;
+    private de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel geometryProtocolStepPanel1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel3;
@@ -37,7 +37,7 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
     private javax.swing.JLabel lblIconGeom;
     private javax.swing.JLabel lblIconNone;
     private javax.swing.JLabel lblTitle;
-    private de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel searchTopicsPanel1;
+    private de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel searchTopicsProtocolStepPanel1;
     // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
@@ -61,7 +61,7 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         super(fulltextSearchProtocolStep);
         initComponents();
 
-        geomSearchProtocolStepPanel1.setVisible(fulltextSearchProtocolStep.getGeometry() != null);
+        geometryProtocolStepPanel1.setVisible(fulltextSearchProtocolStep.getGeometry() != null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -92,14 +92,14 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         lblTitle = new javax.swing.JLabel();
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
                 getProtocolStep());
-        geomSearchProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel(
-                getProtocolStep());
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jCheckBox1 = new javax.swing.JCheckBox();
-        searchTopicsPanel1 = new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(
-                getProtocolStep());
+        searchTopicsProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(
+                ((FulltextSearchProtocolStepImpl)getProtocolStep()).getSearchTopicsProtocolStep());
+        geometryProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel(
+                ((FulltextSearchProtocolStepImpl)getProtocolStep()).getGeometryProtocolStep());
 
         lblIconNone.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblIconNone.setIcon(new javax.swing.ImageIcon(
@@ -151,12 +151,6 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(cidsServerSearchProtocolStepPanel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(geomSearchProtocolStepPanel1, gridBagConstraints);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -198,18 +192,22 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(jPanel3, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(searchTopicsPanel1, gridBagConstraints);
+        add(jPanel3, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        add(searchTopicsProtocolStepPanel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        add(geometryProtocolStepPanel1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents
 }

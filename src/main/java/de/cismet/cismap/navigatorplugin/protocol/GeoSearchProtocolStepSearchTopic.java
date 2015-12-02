@@ -24,7 +24,7 @@ import lombok.Getter;
  * @version  $Revision$, $Date$
  */
 @Getter
-public class MetaSearchProtocolStepSearchTopic {
+public class GeoSearchProtocolStepSearchTopic {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -47,7 +47,7 @@ public class MetaSearchProtocolStepSearchTopic {
      * @param  iconName  DOCUMENT ME!
      */
     @JsonCreator
-    public MetaSearchProtocolStepSearchTopic(@JsonProperty("key") final String key,
+    public GeoSearchProtocolStepSearchTopic(@JsonProperty("key") final String key,
             @JsonProperty("name") final String name,
             @JsonProperty("iconName") final String iconName) {
         this.key = key;

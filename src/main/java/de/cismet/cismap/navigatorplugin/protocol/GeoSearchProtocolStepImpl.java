@@ -8,6 +8,7 @@
 package de.cismet.cismap.navigatorplugin.protocol;
 
 import Sirius.navigator.search.CidsServerSearchMetaObjectNodeWrapper;
+import Sirius.navigator.search.CidsServerSearchProtocolStepImpl;
 
 import Sirius.server.middleware.types.MetaObjectNode;
 
@@ -15,11 +16,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ import de.cismet.cismap.navigatorplugin.CidsBeansSearchFeature;
 import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
 import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
+import de.cismet.commons.gui.protocol.AbstractProtocolStep;
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
 
@@ -47,53 +50,71 @@ import static de.cismet.cismap.commons.gui.MappingComponent.CREATE_SEARCH_POLYGO
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl implements MetaSearchProtocolStep {
+public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements GeoSearchProtocolStep {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final ProtocolStepMetaInfo META_INFO = new ProtocolStepMetaInfo(
-            "MetaSearch",
-            "MetaSearch protocol step");
+            "GeoSearch",
+            "GeoSearchProtocolStep");
 
     //~ Instance fields --------------------------------------------------------
 
     @Getter
-    @JsonIgnore
-    private final Collection<MetaObjectNode> searchObjectNodes;
-
-    @Getter
-    @JsonIgnore
-    private final Collection<SearchTopic> searchTopics;
+    @JsonProperty(required = true)
+    protected String wkt;
 
     @Getter
     @JsonProperty(required = true)
-    private String mode;
+    private final String mode;
 
     @Getter
     @JsonProperty(required = true)
-    private Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos;
+    private List<CidsServerSearchMetaObjectNodeWrapper> searchResults;
+
+    @Getter
+    @JsonProperty(required = true)
+    private Set<GeoSearchProtocolStepSearchTopic> searchTopicInfos;
 
     @Getter
     @JsonProperty(required = true)
     private Collection<CidsServerSearchMetaObjectNodeWrapper> searchObjects;
+
+    @Getter
+    @JsonIgnore
+    private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
+
+    @Getter
+    @JsonIgnore
+    private final GeometryProtocolStepImpl geometryProtocolStep;
+
+    @Getter
+    @JsonIgnore
+    private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
+
+    @Getter
+    @JsonIgnore
+    private final List<MetaObjectNode> searchObjectNodes;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new GeoSearchProtocolStep object.
      *
-     * @param  search          DOCUMENT ME!
+     * @param  geoSearch       DOCUMENT ME!
      * @param  searchListener  DOCUMENT ME!
      * @param  searchTopics    DOCUMENT ME!
      * @param  resultNodes     DOCUMENT ME!
      */
-    public MetaSearchProtocolStepImpl(final GeoSearch search,
+    public GeoSearchProtocolStepImpl(final GeoSearch geoSearch,
             final MetaSearchCreateSearchGeometryListener searchListener,
             final Collection<SearchTopic> searchTopics,
-            final List resultNodes) {
-        super(search, search.getGeometry(), resultNodes);
+            final List<MetaObjectNode> resultNodes) {
+        this.cidsServerSearchProtocolStep = new CidsServerSearchProtocolStepImpl(geoSearch, resultNodes);
+        this.geometryProtocolStep = new GeometryProtocolStepImpl(geoSearch.getGeometry());
+        this.searchTopicsProtocolStep = new SearchTopicsProtocolStepImpl(searchTopics);
 
-        final Collection<MetaObjectNode> searchObjectNodes;
+        final List<MetaObjectNode> searchObjectNodes;
         if (searchListener.getSearchFeature() instanceof CidsBeansSearchFeature) {
             final CidsBeansSearchFeature cidsBeansSearchFeature = (CidsBeansSearchFeature)
                 searchListener.getSearchFeature();
@@ -108,7 +129,6 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
 
         this.searchObjectNodes = searchObjectNodes;
         this.mode = searchListener.getMode();
-        this.searchTopics = searchTopics;
     }
 
     /**
@@ -121,17 +141,19 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
      * @param  searchResults     DOCUMENT ME!
      */
     @JsonCreator
-    public MetaSearchProtocolStepImpl(@JsonProperty("wkt") final String wkt,
+    public GeoSearchProtocolStepImpl(@JsonProperty("wkt") final String wkt,
             @JsonProperty("mode") final String mode,
-            @JsonProperty("searchTopicInfos") final Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos,
+            @JsonProperty("searchTopicInfos") final Set<GeoSearchProtocolStepSearchTopic> searchTopicInfos,
             @JsonProperty("searchObjects") final Collection<CidsServerSearchMetaObjectNodeWrapper> searchObjects,
             @JsonProperty("searchResults") final List<CidsServerSearchMetaObjectNodeWrapper> searchResults) {
-        super(wkt, searchResults);
+        this.cidsServerSearchProtocolStep = new CidsServerSearchProtocolStepImpl(searchResults);
+        this.geometryProtocolStep = new GeometryProtocolStepImpl(wkt);
+        this.searchTopicsProtocolStep = new SearchTopicsProtocolStepImpl(searchTopicInfos);
         this.mode = mode;
         this.searchTopicInfos = searchTopicInfos;
         this.searchObjects = searchObjects;
 
-        final Collection<MetaObjectNode> searchObjectNodes = new ArrayList<MetaObjectNode>();
+        final List<MetaObjectNode> searchObjectNodes = new ArrayList<MetaObjectNode>();
         if (searchObjects != null) {
             for (final CidsServerSearchMetaObjectNodeWrapper searchObject : searchObjects) {
                 searchObjectNodes.add(new MetaObjectNode(
@@ -142,20 +164,9 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
             }
         }
 
-        final Set<String> searchTopicInfoKeys = new HashSet<String>();
-        for (final MetaSearchProtocolStepSearchTopic searchTopicInfo : searchTopicInfos) {
-            searchTopicInfoKeys.add(searchTopicInfo.getKey());
-        }
-
-        final Collection<SearchTopic> searchTopics = new ArrayList<SearchTopic>();
-        for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
-            if (searchTopicInfoKeys.contains(searchTopic.getKey())) {
-                searchTopics.add(searchTopic);
-            }
-        }
-
         this.searchObjectNodes = searchObjectNodes;
-        this.searchTopics = searchTopics;
+        this.wkt = geometryProtocolStep.getWkt();
+        this.searchResults = getCidsServerSearchProtocolStep().getSearchResults();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -168,15 +179,9 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
     @Override
     public void initParameters() {
         super.initParameters();
-
-        final Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos =
-            new HashSet<MetaSearchProtocolStepSearchTopic>();
-        for (final SearchTopic topic : MetaSearch.instance().getSelectedSearchTopics()) {
-            searchTopicInfos.add(new MetaSearchProtocolStepSearchTopic(
-                    topic.getKey(),
-                    topic.getName(),
-                    topic.getIconName()));
-        }
+        getGeometryProtocolStep().initParameters();
+        getCidsServerSearchProtocolStep().initParameters();
+        getSearchTopicsProtocolStep().initParameters();
 
         final Collection<CidsServerSearchMetaObjectNodeWrapper> searchObjects;
         if (getSearchObjectNodes() != null) {
@@ -189,17 +194,14 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
         }
 
         this.searchObjects = searchObjects;
-        this.searchTopicInfos = searchTopicInfos;
-    }
-
-    @Override
-    public GeoSearch getSearch() {
-        return (GeoSearch)super.getSearch();
+        this.wkt = getGeometryProtocolStep().getWkt();
+        this.searchResults = getCidsServerSearchProtocolStep().getSearchResults();
+        this.searchTopicInfos = getSearchTopicsProtocolStep().getSearchTopicInfos();
     }
 
     @Override
     public AbstractProtocolStepPanel visualize() {
-        return new MetaSearchProtocolStepPanel(this);
+        return new GeoSearchProtocolStepPanel(this);
     }
 
     @Override
@@ -210,12 +212,22 @@ public class MetaSearchProtocolStepImpl extends GeomSearchProtocolStepImpl imple
     @Override
     public void reExecuteSearch() {
         for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
-            searchTopic.setSelected(getSearchTopics().contains(searchTopic));
+            searchTopic.setSelected(searchTopicsProtocolStep.getSearchTopics().contains(searchTopic));
         }
 
         final CreateSearchGeometryListener inputListener = (CreateSearchGeometryListener)CismapBroker
                     .getInstance().getMappingComponent().getInputListener(CREATE_SEARCH_POLYGON);
         inputListener.setMode(getMode());
         inputListener.search(new SearchFeature(getGeometry(), CREATE_SEARCH_POLYGON));
+    }
+
+    @Override
+    public List<MetaObjectNode> getSearchResultNodes() {
+        return getCidsServerSearchProtocolStep().getSearchResultNodes();
+    }
+
+    @Override
+    public Geometry getGeometry() {
+        return geometryProtocolStep.getGeometry();
     }
 }

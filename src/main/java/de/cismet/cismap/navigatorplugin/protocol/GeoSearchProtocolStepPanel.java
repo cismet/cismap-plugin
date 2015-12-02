@@ -8,14 +8,18 @@
 package de.cismet.cismap.navigatorplugin.protocol;
 
 import Sirius.navigator.search.CidsServerSearchMetaObjectNodeWrapper;
+import Sirius.navigator.types.treenode.ObjectTreeNode;
 
 import Sirius.server.middleware.types.MetaObjectNode;
 
 import java.awt.Component;
+import java.awt.Dimension;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import javax.swing.JLabel;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 
@@ -25,11 +29,11 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaSearchProtocolStep> {
+public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSearchProtocolStep> {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
-    private de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel geomSearchProtocolStepPanel1;
+    private de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel geomSearchProtocolStepPanel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -47,11 +51,11 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
     /**
      * Creates a new GeoSearchProtocolStepPanel object.
      */
-    public MetaSearchProtocolStepPanel() {
-        this(new MetaSearchProtocolStepImpl(
+    public GeoSearchProtocolStepPanel() {
+        this(new GeoSearchProtocolStepImpl(
                 "",
                 "",
-                new HashSet<MetaSearchProtocolStepSearchTopic>(),
+                new HashSet<GeoSearchProtocolStepSearchTopic>(),
                 new ArrayList<CidsServerSearchMetaObjectNodeWrapper>(),
                 new ArrayList<CidsServerSearchMetaObjectNodeWrapper>()));
     }
@@ -61,9 +65,36 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
      *
      * @param  geoSearchProtocolStep  DOCUMENT ME!
      */
-    public MetaSearchProtocolStepPanel(final MetaSearchProtocolStep geoSearchProtocolStep) {
+    public GeoSearchProtocolStepPanel(final GeoSearchProtocolStep geoSearchProtocolStep) {
         super(geoSearchProtocolStep);
         initComponents();
+
+        if (!metaSearchProtocolStepPanelSearchObjectsTree1.getResultNodes().isEmpty()) {
+            final int maxSize = 10;
+
+            final JLabel dummy = (JLabel)metaSearchProtocolStepPanelSearchObjectsTree1.getCellRenderer()
+                        .getTreeCellRendererComponent(
+                                metaSearchProtocolStepPanelSearchObjectsTree1,
+                                new ObjectTreeNode(
+                                    (MetaObjectNode)metaSearchProtocolStepPanelSearchObjectsTree1.getResultNodes().get(
+                                        0)),
+                                false,
+                                false,
+                                false,
+                                0,
+                                false);
+            final int height;
+
+            if (metaSearchProtocolStepPanelSearchObjectsTree1.getResultNodes().size() > maxSize) {
+                height = 4 + (dummy.getPreferredSize().height * maxSize);
+            } else {
+                height = 4
+                            + (dummy.getPreferredSize().height
+                                * metaSearchProtocolStepPanelSearchObjectsTree1.getResultNodes().size());
+            }
+
+            jScrollPane2.setPreferredSize(new Dimension((int)jScrollPane2.getPreferredSize().getWidth(), height));
+        }
 
         setSearchObjectsPanelVisible(false);
     }
@@ -77,7 +108,7 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
      */
     private Collection<MetaObjectNode> getSearchObjectNodesList() {
         if (getProtocolStep() != null) {
-            final Collection<MetaObjectNode> searchObjectNodes = ((MetaSearchProtocolStep)getProtocolStep())
+            final Collection<MetaObjectNode> searchObjectNodes = ((GeoSearchProtocolStep)getProtocolStep())
                         .getSearchObjectNodes();
             if (searchObjectNodes != null) {
                 return searchObjectNodes;
@@ -111,7 +142,7 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
         jLabel4 = new javax.swing.JLabel();
         lblTitle = new javax.swing.JLabel();
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
-                getProtocolStep());
+                ((GeoSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep());
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         try {
@@ -122,41 +153,41 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
         }
         jXHyperlink1 = new org.jdesktop.swingx.JXHyperlink();
         searchTopicsProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(
-                getProtocolStep());
-        geomSearchProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.GeomSearchProtocolStepPanel(
-                getProtocolStep());
+                ((GeoSearchProtocolStepImpl)getProtocolStep()).getSearchTopicsProtocolStep());
+        geomSearchProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel(
+                ((GeoSearchProtocolStepImpl)getProtocolStep()).getGeometryProtocolStep());
 
         lblIconNone.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblIconNone.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearch.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(
             lblIconNone,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.lblIconNone.text"));                                           // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.lblIconNone.text"));                                            // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(
             jLabel2,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.jLabel2.text")); // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.jLabel2.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(
             jLabel3,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.jLabel3.text")); // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.jLabel3.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(
             jLabel4,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.jLabel4.text")); // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.jLabel4.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(
             lblTitle,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.lblTitle.text")); // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.lblTitle.text")); // NOI18N
 
         setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -190,8 +221,8 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
         org.openide.awt.Mnemonics.setLocalizedText(
             jXHyperlink1,
             org.openide.util.NbBundle.getMessage(
-                MetaSearchProtocolStepPanel.class,
-                "MetaSearchProtocolStepPanel.jXHyperlink1.text")); // NOI18N
+                GeoSearchProtocolStepPanel.class,
+                "GeoSearchProtocolStepPanel.jXHyperlink1.text")); // NOI18N
         jXHyperlink1.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -216,7 +247,6 @@ public class MetaSearchProtocolStepPanel extends AbstractProtocolStepPanel<MetaS
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(geomSearchProtocolStepPanel1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents
