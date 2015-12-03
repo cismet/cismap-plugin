@@ -233,7 +233,7 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void jSearchTextField1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSearchTextField1ActionPerformed
+    private void jSearchTextField1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jSearchTextField1ActionPerformed
         final String searchText = jSearchTextField1.getText();
 
         final Collection<String> searchTopics = MetaSearch.instance().getSelectedSearchClassesForQuery();
@@ -265,7 +265,7 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
 
             CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch);
         }
-    }//GEN-LAST:event_jSearchTextField1ActionPerformed
+    } //GEN-LAST:event_jSearchTextField1ActionPerformed
 
     @Override
     public String getSorterString() {
