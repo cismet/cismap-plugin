@@ -191,6 +191,7 @@ import de.cismet.lookupoptions.gui.OptionsDialog;
 
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.JnlpSystemPropertyHelper;
 import de.cismet.tools.JnlpTools;
 import de.cismet.tools.StaticDebuggingTools;
 
@@ -455,7 +456,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
 
         try {
-            final String ext = System.getProperty("directory.extension"); // NOI18N
+            final String ext = JnlpSystemPropertyHelper.getProperty("directory.extension"); // NOI18N
 
             System.out.println("SystemdirExtension=:" + ext); // NOI18N
 
