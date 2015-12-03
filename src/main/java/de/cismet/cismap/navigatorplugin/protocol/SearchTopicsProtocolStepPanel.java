@@ -7,6 +7,9 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin.protocol;
 
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+
 import java.awt.Component;
 import java.awt.Dimension;
 
@@ -166,7 +169,8 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jList1.setModel(new DefaultListModel<GeoSearchProtocolStepSearchTopic>());
+        jList1.setModel(
+            new DefaultListModel<de.cismet.cismap.navigatorplugin.protocol.GeoSearchProtocolStepSearchTopic>());
         jList1.setCellRenderer(new TopicListCellRenderer());
         jScrollPane3.setViewportView(jList1);
 
@@ -188,7 +192,7 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
             jXHyperlink2,
             org.openide.util.NbBundle.getMessage(
                 SearchTopicsProtocolStepPanel.class,
-                "SearchTopicsProtocolStepPanel.jXHyperlink2.text")); // NOI18N
+                "SearchTopicsProtocolStepPanel.jXHyperlink2.text_hide_multi")); // NOI18N
         jXHyperlink2.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -228,18 +232,56 @@ public class SearchTopicsProtocolStepPanel extends AbstractProtocolStepPanel<Sea
     private void setSearchTopicsPanelVisible(final boolean visible) {
         jPanel2.setVisible(visible);
 
+        final int size;
         if (getProtocolStep() != null) {
             if ((getProtocolStep().getSearchTopicInfos() == null)
                         || getProtocolStep().getSearchTopicInfos().isEmpty()) {
-                jXHyperlink2.setVisible(false);
+                size = 0;
             } else {
-                jXHyperlink2.setVisible(true);
-                if (jPanel2.isVisible()) {
-                    jXHyperlink2.setText(Integer.toString(getProtocolStep().getSearchTopicInfos().size())
-                                + " Suchthemen verbergen");
+                size = getProtocolStep().getSearchTopicInfos().size();
+            }
+
+            jXHyperlink2.setEnabled(size > 0);
+
+            if (size == 0) {
+                Mnemonics.setLocalizedText(
+                    jXHyperlink2,
+                    NbBundle.getMessage(
+                        SearchTopicsProtocolStepPanel.class,
+                        "SearchTopicsProtocolStepPanel.jXHyperlink2.text_empty"));
+            } else {
+                if (visible) {
+                    if (size > 1) {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink2,
+                            NbBundle.getMessage(
+                                SearchTopicsProtocolStepPanel.class,
+                                "SearchTopicsProtocolStepPanel.jXHyperlink2.text_hide_multi",
+                                String.valueOf(size)));
+                    } else {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink2,
+                            NbBundle.getMessage(
+                                SearchTopicsProtocolStepPanel.class,
+                                "SearchTopicsProtocolStepPanel.jXHyperlink2.text_hide_single",
+                                String.valueOf(size)));
+                    }
                 } else {
-                    jXHyperlink2.setText(Integer.toString(getProtocolStep().getSearchTopicInfos().size())
-                                + " Suchthemen anzeigen");
+                    if (size > 1) {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink2,
+                            NbBundle.getMessage(
+                                SearchTopicsProtocolStepPanel.class,
+                                "SearchTopicsProtocolStepPanel.jXHyperlink2.text_show_multi",
+                                String.valueOf(size)));
+                    } else {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink2,
+                            NbBundle.getMessage(
+                                SearchTopicsProtocolStepPanel.class,
+                                "SearchTopicsProtocolStepPanel.jXHyperlink2.text_show_single",
+                                String.valueOf(size)));
+                    }
                 }
             }
         }

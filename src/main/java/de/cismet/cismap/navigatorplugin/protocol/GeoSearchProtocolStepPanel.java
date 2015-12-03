@@ -12,6 +12,9 @@ import Sirius.navigator.types.treenode.ObjectTreeNode;
 
 import Sirius.server.middleware.types.MetaObjectNode;
 
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+
 import java.awt.Component;
 import java.awt.Dimension;
 
@@ -144,6 +147,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
                 ((GeoSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep());
         jPanel1 = new javax.swing.JPanel();
+        jXHyperlink1 = new org.jdesktop.swingx.JXHyperlink();
         jScrollPane2 = new javax.swing.JScrollPane();
         try {
             metaSearchProtocolStepPanelSearchObjectsTree1 =
@@ -151,7 +155,6 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         } catch (java.lang.Exception e1) {
             e1.printStackTrace();
         }
-        jXHyperlink1 = new org.jdesktop.swingx.JXHyperlink();
         searchTopicsProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.SearchTopicsProtocolStepPanel(
                 ((GeoSearchProtocolStepImpl)getProtocolStep()).getSearchTopicsProtocolStep());
         geomSearchProtocolStepPanel1 = new de.cismet.cismap.navigatorplugin.protocol.GeometryProtocolStepPanel(
@@ -192,7 +195,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
@@ -200,29 +203,11 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        metaSearchProtocolStepPanelSearchObjectsTree1.setResultNodes(getSearchObjectNodesList().toArray(
-                new MetaObjectNode[0]));
-        jScrollPane2.setViewportView(metaSearchProtocolStepPanelSearchObjectsTree1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(jPanel1, gridBagConstraints);
-
         org.openide.awt.Mnemonics.setLocalizedText(
             jXHyperlink1,
             org.openide.util.NbBundle.getMessage(
                 GeoSearchProtocolStepPanel.class,
-                "GeoSearchProtocolStepPanel.jXHyperlink1.text")); // NOI18N
+                "GeoSearchProtocolStepPanel.jXHyperlink1.text_hide_multi")); // NOI18N
         jXHyperlink1.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -232,11 +217,31 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
             });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        jPanel1.add(jXHyperlink1, gridBagConstraints);
+
+        metaSearchProtocolStepPanelSearchObjectsTree1.setResultNodes(getSearchObjectNodesList().toArray(
+                new MetaObjectNode[0]));
+        jScrollPane2.setViewportView(metaSearchProtocolStepPanelSearchObjectsTree1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jScrollPane2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(jXHyperlink1, gridBagConstraints);
+        add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -275,16 +280,57 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
     private void setSearchObjectsPanelVisible(final boolean visible) {
         jPanel1.setVisible(visible);
 
-        if ((getProtocolStep().getSearchObjectNodes() == null) || getProtocolStep().getSearchObjectNodes().isEmpty()) {
-            jXHyperlink1.setVisible(false);
-        } else {
-            jXHyperlink1.setVisible(true);
-            if (jPanel1.isVisible()) {
-                jXHyperlink1.setText(Integer.toString(getProtocolStep().getSearchObjectNodes().size())
-                            + " Suchobjekte verbergen");
+        final int size;
+        if (getProtocolStep() != null) {
+            if ((getProtocolStep().getSearchObjectNodes() == null)
+                        || getProtocolStep().getSearchObjectNodes().isEmpty()) {
+                size = 0;
             } else {
-                jXHyperlink1.setText(Integer.toString(getProtocolStep().getSearchObjectNodes().size())
-                            + " Suchobjekte anzeigen");
+                size = getProtocolStep().getSearchObjectNodes().size();
+            }
+
+            jXHyperlink1.setVisible(size > 0);
+
+            if (size == 0) {
+                Mnemonics.setLocalizedText(
+                    jXHyperlink1,
+                    NbBundle.getMessage(
+                        GeoSearchProtocolStepPanel.class,
+                        "GeoSearchProtocolStepPanel.jXHyperlink1.text_empty"));
+            } else {
+                if (visible) {
+                    if (size > 1) {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink1,
+                            NbBundle.getMessage(
+                                GeoSearchProtocolStepPanel.class,
+                                "GeoSearchProtocolStepPanel.jXHyperlink1.text_hide_multi",
+                                String.valueOf(size)));
+                    } else {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink1,
+                            NbBundle.getMessage(
+                                GeoSearchProtocolStepPanel.class,
+                                "GeoSearchProtocolStepPanel.jXHyperlink1.text_hide_single",
+                                String.valueOf(size)));
+                    }
+                } else {
+                    if (size > 1) {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink1,
+                            NbBundle.getMessage(
+                                GeoSearchProtocolStepPanel.class,
+                                "GeoSearchProtocolStepPanel.jXHyperlink1.text_show_multi",
+                                String.valueOf(size)));
+                    } else {
+                        Mnemonics.setLocalizedText(
+                            jXHyperlink1,
+                            NbBundle.getMessage(
+                                GeoSearchProtocolStepPanel.class,
+                                "GeoSearchProtocolStepPanel.jXHyperlink1.text_show_single",
+                                String.valueOf(size)));
+                    }
+                }
             }
         }
 

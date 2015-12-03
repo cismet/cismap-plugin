@@ -95,7 +95,7 @@
     <Component class="org.jdesktop.swingx.JXHyperlink" name="jXHyperlink2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="de/cismet/cismap/navigatorplugin/protocol/Bundle.properties" key="SearchTopicsProtocolStepPanel.jXHyperlink2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="de/cismet/cismap/navigatorplugin/protocol/Bundle.properties" key="SearchTopicsProtocolStepPanel.jXHyperlink2.text_hide_multi" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

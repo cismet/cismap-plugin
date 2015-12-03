@@ -24,7 +24,6 @@ import de.cismet.cismap.commons.raster.wms.simple.SimpleWMS;
 import de.cismet.cismap.commons.raster.wms.simple.SimpleWmsGetMapUrl;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
-import de.cismet.commons.gui.protocol.ProtocolHandler;
 
 /**
  * DOCUMENT ME!
@@ -82,7 +81,7 @@ public class GeometryProtocolStepPanel extends AbstractProtocolStepPanel<Geometr
      * @param  map                 DOCUMENT ME!
      * @param  showSearchGeometry  DOCUMENT ME!
      */
-    public void initMap(final Geometry geom, final MappingComponent map, final boolean showSearchGeometry) {
+    public final void initMap(final Geometry geom, final MappingComponent map, final boolean showSearchGeometry) {
         final GeometryProtocolStepConfiguration configuration = (GeometryProtocolStepConfiguration)getProtocolStep()
                     .getConfiguration();
         final String srs = configuration.getSrs();
@@ -148,6 +147,7 @@ public class GeometryProtocolStepPanel extends AbstractProtocolStepPanel<Geometr
             org.openide.util.NbBundle.getMessage(
                 GeometryProtocolStepPanel.class,
                 "GeometryProtocolStepPanel.jXHyperlink1.text")); // NOI18N
+        jXHyperlink1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jXHyperlink1.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -157,6 +157,7 @@ public class GeometryProtocolStepPanel extends AbstractProtocolStepPanel<Geometr
             });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
         add(jXHyperlink1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents

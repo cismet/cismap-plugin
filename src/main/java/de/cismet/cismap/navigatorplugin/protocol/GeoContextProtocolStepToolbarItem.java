@@ -43,7 +43,7 @@ public class GeoContextProtocolStepToolbarItem extends AbstractProtocolStepToolb
             GeoContextProtocolStepPanel.class,
             "GeoContextProtocolStepToolbarItem.tooltip");
     private static final ImageIcon ICON = new ImageIcon(GeoContextProtocolStepToolbarItem.class.getResource(
-                "/de/cismet/cismap/navigatorplugin/protocol/GeoContext.png"));
+                "/de/cismet/cismap/navigatorplugin/protocol/GeoContext_add.png"));
 
     //~ Constructors -----------------------------------------------------------
 
