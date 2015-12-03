@@ -38,7 +38,7 @@ public class GeometryProtocolStepConfiguration implements ProtocolStepConfigurat
     public static final String PROTOCOL_STEP_KEY = "GeometryProtocolStep";
 
     private static final String DEFAULT_WMS_MAP_URL =
-        "http://www3.demis.nl/wms/wms.asp?wms=WorldMap&&VERSION=1.1.0&REQUEST=GetMap&BBOX=<cismap:boundingBox>&WIDTH=<cismap:width>&HEIGHT=<cismap:height>&SRS=EPSG:4326&FORMAT=image/png&TRANSPARENT=TRUE&BGCOLOR=0xF0F0F0&EXCEPTIONS=application/vnd.ogc.se_xml&LAYERS=Ocean%20features,Airports,Spot%20elevations,Settlements,Cities,Borders,Trails,Roads,Highways,Railroads,Streams,Rivers,Inundated,Waterbodies,Coastlines,Builtup%20areas,Hillshading,Topography,Countries,Bathymetry&STYLES=";
+        "http://www3.demis.nl/wms/wms.asp?wms=WorldMap&&VERSION=1.1.0&REQUEST=GetMap&BBOX=<cismap:boundingBox>&WIDTH=<cismap:width>&HEIGHT=<cismap:height>&SRS=EPSG:4326&FORMAT=image/png&TRANSPARENT=TRUE&BGCOLOR=0xF0F0F0&EXCEPTIONS=application/vnd.ogc.se_xml&LAYERS=Bathymetry,Countries,Topography,Hillshading,Builtup%20areas,Coastlines,Waterbodies,Inundated,Rivers,Streams,Railroads,Highways,Roads,Trails,Borders,Cities,Settlements,Spot%20elevations,Airports,Ocean%20features&TYLES=";
 
     private static final String DEFAULT_SRS = "EPSG:4326";
     private static final double DEFAULT_ZOOM_FACTOR = 0.2;
