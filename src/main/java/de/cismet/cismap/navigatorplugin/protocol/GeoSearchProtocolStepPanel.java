@@ -220,7 +220,6 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(jXHyperlink1, gridBagConstraints);
 
         metaSearchProtocolStepPanelSearchObjectsTree1.setResultNodes(getSearchObjectNodesList().toArray(
@@ -233,6 +232,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(jScrollPane2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -269,7 +269,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
      * DOCUMENT ME!
      */
     private void toggleSearchObjectsPanelVisibility() {
-        setSearchObjectsPanelVisible(!jPanel1.isVisible());
+        setSearchObjectsPanelVisible(!jScrollPane2.isVisible());
     }
 
     /**
@@ -278,7 +278,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
      * @param  visible  DOCUMENT ME!
      */
     private void setSearchObjectsPanelVisible(final boolean visible) {
-        jPanel1.setVisible(visible);
+        jScrollPane2.setVisible(visible);
 
         final int size;
         if (getProtocolStep() != null) {
