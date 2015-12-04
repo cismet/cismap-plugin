@@ -289,7 +289,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
                 size = getProtocolStep().getSearchObjectNodes().size();
             }
 
-            jXHyperlink1.setVisible(size > 0);
+            jPanel1.setVisible(size > 0);
 
             if (size == 0) {
                 Mnemonics.setLocalizedText(
