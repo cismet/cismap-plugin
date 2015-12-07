@@ -9,12 +9,16 @@ package de.cismet.cismap.navigatorplugin.protocol;
 
 import Sirius.navigator.search.CidsSearchExecutor;
 import Sirius.navigator.search.CidsServerSearchMetaObjectNodeWrapper;
+import Sirius.navigator.search.CidsServerSearchProtocolStepImpl;
 
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import lombok.Getter;
 
@@ -22,7 +26,6 @@ import org.openide.util.Lookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +39,7 @@ import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
 import de.cismet.cismap.navigatorplugin.metasearch.SearchClass;
 import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
+import de.cismet.commons.gui.protocol.AbstractProtocolStep;
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
@@ -46,7 +50,7 @@ import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl implements FulltextSearchProtocolStep {
+public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep implements FulltextSearchProtocolStep {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,8 +66,8 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
     //~ Instance fields --------------------------------------------------------
 
     @Getter
-    @JsonIgnore
-    private final transient Collection<SearchTopic> searchTopics;
+    @JsonProperty(required = true)
+    protected String wkt;
 
     @Getter
     @JsonProperty(required = true)
@@ -75,7 +79,23 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
 
     @Getter
     @JsonProperty(required = true)
-    private Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos;
+    private List<CidsServerSearchMetaObjectNodeWrapper> searchResults;
+
+    @Getter
+    @JsonProperty(required = true)
+    private Set<GeoSearchProtocolStepSearchTopic> searchTopicInfos;
+
+    @Getter
+    @JsonIgnore
+    private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
+
+    @Getter
+    @JsonIgnore
+    private final GeometryProtocolStepImpl geometryProtocolStep;
+
+    @Getter
+    @JsonIgnore
+    private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -89,11 +109,14 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
     public FulltextSearchProtocolStepImpl(final FullTextSearch fullTextSearch,
             final Collection<SearchTopic> searchTopics,
             final List resultNodes) {
-        super(fullTextSearch, fullTextSearch.getGeometry(), resultNodes);
+        this.cidsServerSearchProtocolStep = new CidsServerSearchProtocolStepImpl(fullTextSearch, resultNodes);
+        this.geometryProtocolStep = new GeometryProtocolStepImpl(fullTextSearch.getGeometry());
+        this.searchTopicsProtocolStep = new SearchTopicsProtocolStepImpl(searchTopics);
 
         this.searchText = fullTextSearch.getSearchText();
         this.caseSensitiveEnabled = fullTextSearch.isCaseSensitive();
-        this.searchTopics = searchTopics;
+
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     /**
@@ -109,27 +132,16 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
     public FulltextSearchProtocolStepImpl(@JsonProperty("searchText") final String searchText,
             @JsonProperty("caseSensitiveEnabled") final boolean caseSensitiveEnabled,
             @JsonProperty("wkt") final String wkt,
-            @JsonProperty("searchTopicInfos") final Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos,
+            @JsonProperty("searchTopicInfos") final Set<GeoSearchProtocolStepSearchTopic> searchTopicInfos,
             @JsonProperty("searchResults") final List<CidsServerSearchMetaObjectNodeWrapper> searchResults) {
-        super(wkt, searchResults);
+        this.cidsServerSearchProtocolStep = new CidsServerSearchProtocolStepImpl(searchResults);
+        this.geometryProtocolStep = new GeometryProtocolStepImpl(wkt);
+        this.searchTopicsProtocolStep = new SearchTopicsProtocolStepImpl(searchTopicInfos);
 
         this.searchText = searchText;
         this.caseSensitiveEnabled = caseSensitiveEnabled;
-        this.searchTopicInfos = searchTopicInfos;
 
-        final Set<String> searchTopicInfoKeys = new HashSet<String>();
-        for (final MetaSearchProtocolStepSearchTopic searchTopicInfo : searchTopicInfos) {
-            searchTopicInfoKeys.add(searchTopicInfo.getKey());
-        }
-
-        final Collection<SearchTopic> searchTopics = new ArrayList<SearchTopic>();
-        for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
-            if (searchTopicInfoKeys.contains(searchTopic.getKey())) {
-                searchTopics.add(searchTopic);
-            }
-        }
-
-        this.searchTopics = searchTopics;
+        getCidsServerSearchProtocolStep().setReexecutor(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -142,17 +154,13 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
     @Override
     public void initParameters() {
         super.initParameters();
-        final Set<MetaSearchProtocolStepSearchTopic> searchTopicInfos =
-            new HashSet<MetaSearchProtocolStepSearchTopic>();
-        for (final SearchTopic topic
-                    : MetaSearch.instance().getSelectedSearchTopics()) {
-            searchTopicInfos.add(new MetaSearchProtocolStepSearchTopic(
-                    topic.getKey(),
-                    topic.getName(),
-                    topic.getIconName()));
-        }
+        getGeometryProtocolStep().initParameters();
+        getCidsServerSearchProtocolStep().initParameters();
+        getSearchTopicsProtocolStep().initParameters();
 
-        this.searchTopicInfos = searchTopicInfos;
+        this.searchTopicInfos = getSearchTopicsProtocolStep().getSearchTopicInfos();
+        this.searchResults = getCidsServerSearchProtocolStep().getSearchResults();
+        this.wkt = getGeometryProtocolStep().getWkt();
     }
 
     @Override
@@ -168,16 +176,20 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
         fullTextSearch.setGeometry(getGeometry());
 
         final Collection<String> validClassesFromStrings = new ArrayList<String>();
-        if (META_CLASS_CACHE_SERVICE != null) {
-            for (final SearchTopic searchTopic : getSearchTopics()) {
-                for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
-                    final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
-                            searchClass.getCidsClass());
-                    validClassesFromStrings.add(metaClass.getKey().toString());
+        for (final SearchTopic searchTopic : MetaSearch.instance().getSearchTopics()) {
+            if (getSearchTopicsProtocolStep().getSearchTopics().contains(searchTopic)) {
+                searchTopic.setSelected(true);
+                if (META_CLASS_CACHE_SERVICE != null) {
+                    for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
+                        final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
+                                searchClass.getCidsClass());
+                        validClassesFromStrings.add(metaClass.getKey().toString());
+                    }
                 }
+            } else {
+                searchTopic.setSelected(true);
             }
         }
-
         fullTextSearch.setValidClassesFromStrings(validClassesFromStrings);
 
         if (fullTextSearch instanceof SearchResultListenerProvider) {
@@ -203,5 +215,15 @@ public class FulltextSearchProtocolStepImpl extends GeomSearchProtocolStepImpl i
     @Override
     public AbstractProtocolStepPanel visualize() {
         return new FulltextSearchProtocolStepPanel(this);
+    }
+
+    @Override
+    public List<MetaObjectNode> getSearchResultNodes() {
+        return getCidsServerSearchProtocolStep().getSearchResultNodes();
+    }
+
+    @Override
+    public Geometry getGeometry() {
+        return getGeometryProtocolStep().getGeometry();
     }
 }

@@ -31,5 +31,5 @@ public interface SearchTopicsProtocolStep extends ProtocolStep {
      *
      * @return  DOCUMENT ME!
      */
-    Set<MetaSearchProtocolStepSearchTopic> getSearchTopicInfos();
+    Set<GeoSearchProtocolStepSearchTopic> getSearchTopicInfos();
 }

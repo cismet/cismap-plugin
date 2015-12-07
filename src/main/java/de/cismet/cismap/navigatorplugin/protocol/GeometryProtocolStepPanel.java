@@ -19,6 +19,7 @@ import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.simple.SimpleWMS;
 import de.cismet.cismap.commons.raster.wms.simple.SimpleWmsGetMapUrl;
 
@@ -30,11 +31,10 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomSearchProtocolStep> {
-
-    //~ Instance fields --------------------------------------------------------
+public class GeometryProtocolStepPanel extends AbstractProtocolStepPanel<GeometryProtocolStep> {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.jdesktop.swingx.JXHyperlink jXHyperlink1;
     private de.cismet.cismap.commons.gui.MappingComponent mappingComponent1;
     // End of variables declaration//GEN-END:variables
 
@@ -43,7 +43,7 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
     /**
      * Creates a new GeomSearchProtocolStepPanel object.
      */
-    public GeomSearchProtocolStepPanel() {
+    public GeometryProtocolStepPanel() {
         this(null);
     }
 
@@ -52,7 +52,7 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
      *
      * @param  geomSearchProtocolStep  DOCUMENT ME!
      */
-    public GeomSearchProtocolStepPanel(final GeomSearchProtocolStep geomSearchProtocolStep) {
+    public GeometryProtocolStepPanel(final GeometryProtocolStep geomSearchProtocolStep) {
         this(geomSearchProtocolStep, true);
     }
 
@@ -62,7 +62,7 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
      * @param  geomSearchProtocolStep  DOCUMENT ME!
      * @param  showSearchGeometry      DOCUMENT ME!
      */
-    public GeomSearchProtocolStepPanel(final GeomSearchProtocolStep geomSearchProtocolStep,
+    public GeometryProtocolStepPanel(final GeometryProtocolStep geomSearchProtocolStep,
             final boolean showSearchGeometry) {
         super(geomSearchProtocolStep);
         initComponents();
@@ -81,10 +81,12 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
      * @param  map                 DOCUMENT ME!
      * @param  showSearchGeometry  DOCUMENT ME!
      */
-    public void initMap(final Geometry geom, final MappingComponent map, final boolean showSearchGeometry) {
-        final String srs = getProtocolStep().getConfiguration().getSrs();
-        final String wmsMapUrl = getProtocolStep().getConfiguration().getWmsMapUrl();
-        final double zoomFactor = getProtocolStep().getConfiguration().getZoomFactor();
+    public final void initMap(final Geometry geom, final MappingComponent map, final boolean showSearchGeometry) {
+        final GeometryProtocolStepConfiguration configuration = (GeometryProtocolStepConfiguration)getProtocolStep()
+                    .getConfiguration();
+        final String srs = configuration.getSrs();
+        final String wmsMapUrl = configuration.getWmsMapUrl();
+        final double zoomFactor = configuration.getZoomFactor();
 
         final Geometry transformedGeom = CrsTransformer.transformToGivenCrs(geom, srs);
 
@@ -123,9 +125,10 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        final java.awt.GridBagConstraints gridBagConstraints;
+        java.awt.GridBagConstraints gridBagConstraints;
 
         mappingComponent1 = new de.cismet.cismap.commons.gui.MappingComponent();
+        jXHyperlink1 = new org.jdesktop.swingx.JXHyperlink();
 
         setMinimumSize(new java.awt.Dimension(29, 150));
         setPreferredSize(new java.awt.Dimension(300, 200));
@@ -136,7 +139,37 @@ public class GeomSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeomS
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 1);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(mappingComponent1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(
+            jXHyperlink1,
+            org.openide.util.NbBundle.getMessage(
+                GeometryProtocolStepPanel.class,
+                "GeometryProtocolStepPanel.jXHyperlink1.text")); // NOI18N
+        jXHyperlink1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        jXHyperlink1.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    jXHyperlink1ActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.weightx = 1.0;
+        add(jXHyperlink1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void jXHyperlink1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jXHyperlink1ActionPerformed
+        CismapBroker.getInstance()
+                .getMappingComponent()
+                .gotoBoundingBoxWithHistory(new XBoundingBox(getProtocolStep().getGeometry()));
+    }                                                                                //GEN-LAST:event_jXHyperlink1ActionPerformed
 }

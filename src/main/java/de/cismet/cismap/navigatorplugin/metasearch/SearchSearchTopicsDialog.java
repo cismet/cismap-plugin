@@ -533,7 +533,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
         @Override
         public void itemStateChanged(final ItemEvent e) {
-            model.setSearchClassesString(pnlSearchTopics.getSelectedClassesString());
+            EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        model.setSelectedSearchTopics(MetaSearch.instance().getSelectedSearchTopics());
+                    }
+                });
             enableSearchButton();
         }
 

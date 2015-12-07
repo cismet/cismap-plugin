@@ -68,11 +68,8 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
     public FulltextSearchToolbarItem() {
         initComponents();
 
-        final String searchTopicsString = SearchSearchTopicsDialog.instance()
-                    .getPnlSearchTopics()
-                    .getSelectedClassesString();
-        final Collection<String> searchTopics = MetaSearch.instance().getSelectedSearchClassesForQuery();
-        final String tooltipText = determineTooltipText(searchTopicsString);
+        final Collection<SearchTopic> searchTopics = MetaSearch.instance().getSelectedSearchTopics();
+        final String tooltipText = determineTooltipText(searchTopics);
         final String emptyText = determineEmptyText(searchTopics);
         jSearchTextField1.setEmptyText(emptyText);
         jSearchTextField1.setToolTipText(tooltipText);
@@ -90,17 +87,14 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
                     final String prop = evt.getPropertyName();
                     if (SearchTopicsDialogModel.PROPERTY_CASESENSITIVE.equals(prop)) {
                         final ImageIcon icon = determineSearchIcon(
-                                SearchSearchTopicsDialog.instance().getModel().isCaseSensitiveEnabled(),
-                                SearchSearchTopicsDialog.instance().getModel().isSearchGeometryEnabled());
+                                ((SearchTopicsDialogModel)evt.getSource()).isCaseSensitiveEnabled(),
+                                ((SearchTopicsDialogModel)evt.getSource()).isSearchGeometryEnabled());
                         jSearchTextField1.setSearchIcon(icon);
                         jSearchTextField1.repaint();
-                    } else if (SearchTopicsDialogModel.PROPERTY_SEARCHCLASSESSTRING.equals(prop)) {
-                        final String searchTopicsString = SearchSearchTopicsDialog.instance()
-                                    .getPnlSearchTopics()
-                                    .getSelectedClassesString();
-                        final Collection<String> searchTopics = MetaSearch.instance()
-                                    .getSelectedSearchClassesForQuery();
-                        final String tooltipText = determineTooltipText(searchTopicsString);
+                    } else if (SearchTopicsDialogModel.PROPERTY_SELECTEDSEARCHTOPICS.equals(prop)) {
+                        final Collection<SearchTopic> searchTopics = ((SearchTopicsDialogModel)evt.getSource())
+                                    .getSelectedSearchTopics();
+                        final String tooltipText = determineTooltipText(searchTopics);
                         final String emptyText = determineEmptyText(searchTopics);
                         jSearchTextField1.setEmptyText(emptyText);
                         jSearchTextField1.setToolTipText(tooltipText);
@@ -108,12 +102,12 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
                         jSearchTextField1.repaint();
                     } else if (SearchTopicsDialogModel.PROPERTY_SEARCHGEOMETRY.equals(prop)) {
                         final ImageIcon icon = determineSearchIcon(
-                                SearchSearchTopicsDialog.instance().getModel().isCaseSensitiveEnabled(),
-                                SearchSearchTopicsDialog.instance().getModel().isSearchGeometryEnabled());
+                                ((SearchTopicsDialogModel)evt.getSource()).isCaseSensitiveEnabled(),
+                                ((SearchTopicsDialogModel)evt.getSource()).isSearchGeometryEnabled());
                         jSearchTextField1.setSearchIcon(icon);
                         jSearchTextField1.repaint();
                     } else if (SearchTopicsDialogModel.PROPERTY_SEARCHTEXT.equals(prop)) {
-                        jSearchTextField1.setText((String)evt.getNewValue());
+                        jSearchTextField1.setText(((SearchTopicsDialogModel)evt.getSource()).getSearchText());
                         jSearchTextField1.repaint();
                     }
                 }
@@ -182,11 +176,23 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
     /**
      * DOCUMENT ME!
      *
-     * @param   searchTopicsString  DOCUMENT ME!
+     * @param   searchTopics  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    final String determineTooltipText(final String searchTopicsString) {
+    final String determineTooltipText(final Collection<SearchTopic> searchTopics) {
+        final StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for (final SearchTopic searchTopic : searchTopics) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(searchTopic.getName());
+        }
+        final String searchTopicsString = sb.toString();
+
         if (searchTopicsString.isEmpty()) {
             return org.openide.util.NbBundle.getMessage(
                     FulltextSearchToolbarItem.class,
@@ -205,7 +211,7 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
      *
      * @return  DOCUMENT ME!
      */
-    final String determineEmptyText(final Collection searchTopics) {
+    final String determineEmptyText(final Collection<SearchTopic> searchTopics) {
         if (searchTopics.isEmpty()) {
             return org.openide.util.NbBundle.getMessage(
                     FulltextSearchToolbarItem.class,

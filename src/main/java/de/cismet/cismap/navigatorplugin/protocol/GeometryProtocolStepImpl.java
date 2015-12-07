@@ -12,11 +12,6 @@
  */
 package de.cismet.cismap.navigatorplugin.protocol;
 
-import Sirius.navigator.search.CidsServerSearchMetaObjectNodeWrapper;
-import Sirius.navigator.search.CidsServerSearchProtocolStepImpl;
-
-import Sirius.server.middleware.types.MetaObjectNode;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,17 +19,16 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import lombok.Getter;
 
-import java.util.List;
-
-import de.cismet.cids.server.search.CidsServerSearch;
-
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
 
+import de.cismet.commons.gui.protocol.AbstractProtocolStep;
+import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 import de.cismet.commons.gui.protocol.ProtocolHandler;
+import de.cismet.commons.gui.protocol.ProtocolStepConfiguration;
 import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
 
 /**
@@ -43,14 +37,13 @@ import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtocolStepImpl
-        implements GeomSearchProtocolStep {
+public class GeometryProtocolStepImpl extends AbstractProtocolStep implements GeometryProtocolStep {
 
     //~ Static fields/initializers ---------------------------------------------
 
     public static ProtocolStepMetaInfo META_INFO = new ProtocolStepMetaInfo(
-            "GeomSearchProtocolStep",
-            "GeomSearchProtocolStep desc");
+            "Geometry",
+            "GeometryProtocolStep");
 
     private static GeomFromWktConverter GEOM_EWKT_CONVERTER = new GeomFromWktConverter();
 
@@ -69,13 +62,9 @@ public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtoco
     /**
      * Creates a new GeomSearchProtocolStep object.
      *
-     * @param  wkt            DOCUMENT ME!
-     * @param  searchResults  DOCUMENT ME!
+     * @param  wkt  DOCUMENT ME!
      */
-    public GeomSearchProtocolStepImpl(final String wkt,
-            final List<CidsServerSearchMetaObjectNodeWrapper> searchResults) {
-        super(searchResults);
-
+    public GeometryProtocolStepImpl(final String wkt) {
         this.wkt = wkt;
 
         Geometry geometry = null;
@@ -85,35 +74,24 @@ public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtoco
             } catch (final ConversionException ex) {
             }
         }
-//        try {
-//            geometry = new WKTReader().read(wkt);
-//        } catch (final ParseException ex) {
-//            geometry = null;
-//        }
         this.geometry = geometry;
     }
 
     /**
      * Creates a new GeomSearchProtocolStep object.
      *
-     * @param  search       DOCUMENT ME!
-     * @param  geometry     DOCUMENT ME!
-     * @param  resultNodes  DOCUMENT ME!
+     * @param  geometry  DOCUMENT ME!
      */
-    public GeomSearchProtocolStepImpl(final CidsServerSearch search,
-            final Geometry geometry,
-            final List<MetaObjectNode> resultNodes) {
-        super(search, resultNodes);
-
+    public GeometryProtocolStepImpl(final Geometry geometry) {
         this.geometry = geometry;
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public GeomSearchProtocolStepConfiguration getConfiguration() {
-        return (GeomSearchProtocolStepConfiguration)ProtocolHandler.getInstance()
-                    .getProtocolStepConfiguration(META_INFO.getKey());
+    public GeometryProtocolStepConfiguration getConfiguration() {
+        return (GeometryProtocolStepConfiguration)ProtocolHandler.getInstance()
+                    .getProtocolStepConfiguration(GeometryProtocolStepConfiguration.PROTOCOL_STEP_KEY);
     }
 
     @Override
@@ -132,9 +110,13 @@ public abstract class GeomSearchProtocolStepImpl extends CidsServerSearchProtoco
             } catch (ConversionException ex) {
             }
             this.wkt = wkt;
-//            this.wkt = new WKTWriter().write(geometry);
         } else {
             this.wkt = null;
         }
+    }
+
+    @Override
+    public AbstractProtocolStepPanel visualize() {
+        return new GeometryProtocolStepPanel(this);
     }
 }
