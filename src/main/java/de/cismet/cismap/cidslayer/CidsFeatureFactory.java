@@ -23,7 +23,6 @@ import com.vividsolutions.jts.io.WKBReader;
 
 import org.deegree.datatypes.Types;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -379,12 +378,13 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
 
         serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
         String[] orderByStrings = new String[0];
-        
+
         if (orderBy != null) {
             orderByStrings = new String[orderBy.length];
 
             for (int i = 0; i < orderBy.length; ++i) {
-                orderByStrings[i] = CidsLayer.getSQLName(layerInfo,  orderBy[i].getName()) + " " + (orderBy[i].isAscOrder() ? "asc" : "desc");
+                orderByStrings[i] = CidsLayer.getSQLName(layerInfo, orderBy[i].getName()) + " "
+                            + (orderBy[i].isAscOrder() ? "asc" : "desc");
             }
         }
         final boolean ignoreGeoLimitations = ((boundingBoxIncurrentCrs == null)

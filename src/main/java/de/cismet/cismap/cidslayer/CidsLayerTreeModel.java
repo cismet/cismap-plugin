@@ -65,7 +65,9 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
             for (final MetaClass clazz : mc) {
                 final Collection attributes = clazz.getAttributeByName("cidsLayer");
                 final Collection hidden = clazz.getAttributeByName("hidden");
-                if ((attributes == null) || attributes.isEmpty() || (hidden != null && !hidden.isEmpty() && hidden.toArray()[0].toString().equals("true"))) {
+                if ((attributes == null) || attributes.isEmpty()
+                            || ((hidden != null) && !hidden.isEmpty() && hidden.toArray()[0].toString().equals(
+                                    "true"))) {
                     continue;
                 }
                 final Collection folderAttributes = clazz.getAttributeByName("cidsLayerFolder");
