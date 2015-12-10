@@ -83,8 +83,8 @@ public abstract class AbstractExportMapAction extends AbstractAction {
      * @return  DOCUMENT ME!
      */
     Object[] getFutureImageFromMapViaHeadlessMapProvider() {
-        final PixelDPICalculator pixelDPICalculator = new PixelDPICalculator(getMapC().getHeight(),
-                getMapC().getWidth(),
+        final PixelDPICalculator pixelDPICalculator = new PixelDPICalculator(getMapC().getWidth(),
+                getMapC().getHeight(),
                 72);
         final HeadlessMapProvider headlessMapProvider = HeadlessMapProvider.createHeadlessMapProviderAndAddLayers(
                 getMapC());
