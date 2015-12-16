@@ -80,6 +80,34 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
                 SearchSearchTopicsDialog.instance().getModel().isSearchGeometryEnabled());
         jSearchTextField1.setSearchIcon(icon);
 
+        MetaSearch.instance().addMetaSearchListener(new MetaSearchListener() {
+
+                @Override
+                public void topicAdded(final MetaSearchListenerEvent event) {
+                    refreshSelectedSearchTopics();
+                }
+
+                @Override
+                public void topicsAdded(final MetaSearchListenerEvent event) {
+                    refreshSelectedSearchTopics();
+                }
+
+                @Override
+                public void topicRemoved(final MetaSearchListenerEvent event) {
+                    refreshSelectedSearchTopics();
+                }
+
+                @Override
+                public void topicsRemoved(final MetaSearchListenerEvent event) {
+                    refreshSelectedSearchTopics();
+                }
+
+                @Override
+                public void topicSelectionChanged(final MetaSearchListenerEvent event) {
+                    refreshSelectedSearchTopics();
+                }
+            });
+
         SearchSearchTopicsDialog.instance().getModel().addPropertyChangeListener(new PropertyChangeListener() {
 
                 @Override
@@ -90,15 +118,6 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
                                 ((SearchTopicsDialogModel)evt.getSource()).isCaseSensitiveEnabled(),
                                 ((SearchTopicsDialogModel)evt.getSource()).isSearchGeometryEnabled());
                         jSearchTextField1.setSearchIcon(icon);
-                        jSearchTextField1.repaint();
-                    } else if (SearchTopicsDialogModel.PROPERTY_SELECTEDSEARCHTOPICS.equals(prop)) {
-                        final Collection<SearchTopic> searchTopics = ((SearchTopicsDialogModel)evt.getSource())
-                                    .getSelectedSearchTopics();
-                        final String tooltipText = determineTooltipText(searchTopics);
-                        final String emptyText = determineEmptyText(searchTopics);
-                        jSearchTextField1.setEmptyText(emptyText);
-                        jSearchTextField1.setToolTipText(tooltipText);
-                        jSearchTextField1.setEnabled(!searchTopics.isEmpty());
                         jSearchTextField1.repaint();
                     } else if (SearchTopicsDialogModel.PROPERTY_SEARCHGEOMETRY.equals(prop)) {
                         final ImageIcon icon = determineSearchIcon(
@@ -115,6 +134,19 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void refreshSelectedSearchTopics() {
+        final Collection<SearchTopic> searchTopics = MetaSearch.instance().getSelectedSearchTopics();
+        final String tooltipText = determineTooltipText(searchTopics);
+        final String emptyText = determineEmptyText(searchTopics);
+        jSearchTextField1.setEmptyText(emptyText);
+        jSearchTextField1.setToolTipText(tooltipText);
+        jSearchTextField1.setEnabled(!searchTopics.isEmpty());
+        jSearchTextField1.repaint();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
