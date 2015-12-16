@@ -20,6 +20,7 @@ import org.jdom.Element;
 
 import org.openide.util.Lookup;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,8 +61,11 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Collection<SearchTopic> searchTopics;
-    private MetaClassCacheService metaClassCacheService;
+    private final Collection<SearchTopic> searchTopics = new LinkedList<SearchTopic>();
+    private final MetaClassCacheService metaClassCacheService;
+    private final Collection<MetaSearchListener> listeners = new ArrayList<MetaSearchListener>();
+    private final ListenerHandler listenerHandler = new ListenerHandler();
+    private final SearchTopicListener searchTopicListener = new SearchTopicListenerImpl();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,7 +73,6 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * Creates a new MetaSearch object.
      */
     private MetaSearch() {
-        searchTopics = new LinkedList<SearchTopic>();
         metaClassCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
     }
 
@@ -86,6 +89,24 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
 
         return instance;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listener  DOCUMENT ME!
+     */
+    public void addMetaSearchListener(final MetaSearchListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listener  DOCUMENT ME!
+     */
+    public void removeMetaSearchListener(final MetaSearchListener listener) {
+        listeners.remove(listener);
     }
 
     /**
@@ -240,9 +261,68 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
     }
 
+    /**
+     * DOCUMENT ME!
+     */
+    private void clearTopics() {
+        final Collection<SearchTopic> removedTopics = new ArrayList<SearchTopic>(searchTopics);
+        searchTopics.clear();
+        for (final SearchTopic topic : removedTopics) {
+            topic.removeSearchTopicListener(searchTopicListener);
+        }
+        listenerHandler.topicsRemoved(new MetaSearchListenerEvent(
+                this,
+                MetaSearchListenerEvent.TOPICS_REMOVED,
+                removedTopics));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  topic  DOCUMENT ME!
+     */
+    private void removeTopic(final SearchTopic topic) {
+        if (searchTopics.remove(topic)) {
+            listenerHandler.topicRemoved(new MetaSearchListenerEvent(
+                    this,
+                    MetaSearchListenerEvent.TOPIC_REMOVED,
+                    topic));
+            topic.removeSearchTopicListener(searchTopicListener);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  topic  DOCUMENT ME!
+     */
+    private void addTopic(final SearchTopic topic) {
+        if (searchTopics.add(topic)) {
+            topic.addSearchTopicListener(searchTopicListener);
+            listenerHandler.topicAdded(new MetaSearchListenerEvent(this, MetaSearchListenerEvent.TOPIC_ADDED, topic));
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  topics  DOCUMENT ME!
+     */
+    private void addTopics(final Collection<SearchTopic> topics) {
+        if (searchTopics.addAll(topics)) {
+            for (final SearchTopic topic : topics) {
+                topic.addSearchTopicListener(searchTopicListener);
+            }
+            listenerHandler.topicsAdded(new MetaSearchListenerEvent(
+                    this,
+                    MetaSearchListenerEvent.TOPICS_ADDED,
+                    topics));
+        }
+    }
+
     @Override
     public void masterConfigure(final Element parent) {
-        searchTopics = new LinkedList<SearchTopic>();
+        clearTopics();
         if (metaClassCacheService == null) {
             LOG.info(
                 "There is no MetaClassCacheService available. It's not possible to check if the current user is allowed to search for the specified classes.");
@@ -273,6 +353,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
                         + "' tags to specify search topics.");
             return;
         }
+
+        final Collection<SearchTopic> searchTopics = new ArrayList<SearchTopic>();
 
         for (final Element searchTopicElement : searchTopicElements) {
             final String name = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_NAME);
@@ -337,6 +419,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
                             + "' already exists or the user isn't allowed to read its classes. The search topic won't be added.");
             }
         }
+        addTopics(searchTopics);
     }
 
     @Override
@@ -381,5 +464,70 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
 
         return result;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    class ListenerHandler implements MetaSearchListener {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void topicAdded(final MetaSearchListenerEvent event) {
+            for (final MetaSearchListener listener : listeners) {
+                listener.topicAdded(event);
+            }
+        }
+
+        @Override
+        public void topicsAdded(final MetaSearchListenerEvent event) {
+            for (final MetaSearchListener listener : listeners) {
+                listener.topicsAdded(event);
+            }
+        }
+
+        @Override
+        public void topicRemoved(final MetaSearchListenerEvent event) {
+            for (final MetaSearchListener listener : listeners) {
+                listener.topicRemoved(event);
+            }
+        }
+
+        @Override
+        public void topicsRemoved(final MetaSearchListenerEvent event) {
+            for (final MetaSearchListener listener : listeners) {
+                listener.topicsRemoved(event);
+            }
+        }
+
+        @Override
+        public void topicSelectionChanged(final MetaSearchListenerEvent event) {
+            for (final MetaSearchListener listener : listeners) {
+                listener.topicSelectionChanged(event);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    class SearchTopicListenerImpl implements SearchTopicListener {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void selectionChanged(final SearchTopicListenerEvent event) {
+            listenerHandler.topicSelectionChanged(new MetaSearchListenerEvent(
+                    MetaSearch.this,
+                    MetaSearchListenerEvent.TOPIC_SELECTION_CHANGED,
+                    (SearchTopic)event.getSource()));
+        }
     }
 }
