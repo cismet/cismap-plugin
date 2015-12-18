@@ -17,8 +17,6 @@ import lombok.Getter;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import java.util.Collection;
-
 /**
  * DOCUMENT ME!
  *
@@ -33,14 +31,12 @@ public class SearchTopicsDialogModel {
     public static final String PROPERTY_SEARCHTEXT = "searchText";
     public static final String PROPERTY_CASESENSITIVE = "caseSensitiveEnabled";
     public static final String PROPERTY_SEARCHGEOMETRY = "searchGeometryEnabled";
-    public static final String PROPERTY_SEARCHCLASSESSTRING = "searchClassesString";
 
     //~ Instance fields --------------------------------------------------------
 
     private String searchText;
     private boolean caseSensitiveEnabled;
     private boolean searchGeometryEnabled;
-    private String searchClassesString;
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -73,17 +69,6 @@ public class SearchTopicsDialogModel {
         final Object oldValue = this.searchText;
         this.searchText = newValue;
         propertyChangeSupport.firePropertyChange(PROPERTY_SEARCHTEXT, oldValue, newValue);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  newValue  DOCUMENT ME!
-     */
-    public void setSearchClassesString(final String newValue) {
-        final Object oldValue = this.searchClassesString;
-        this.searchClassesString = newValue;
-        propertyChangeSupport.firePropertyChange(PROPERTY_SEARCHCLASSESSTRING, oldValue, newValue);
     }
 
     /**

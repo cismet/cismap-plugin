@@ -19,22 +19,34 @@ import org.jdom.Element;
 
 import org.openide.util.Lookup;
 
+import java.util.Collection;
+import java.util.List;
+
 import javax.swing.JButton;
 import javax.swing.JMenu;
 
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
 import de.cismet.cids.server.search.builtin.GeoSearch;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchCreateSearchGeometryListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.interaction.MapSearchListener;
 import de.cismet.cismap.commons.interaction.events.MapSearchEvent;
 
 import de.cismet.cismap.navigatorplugin.metasearch.MetaSearch;
+import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
+import de.cismet.cismap.navigatorplugin.protocol.GeoSearchProtocolStepImpl;
+
+import de.cismet.commons.gui.protocol.ProtocolHandler;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
+
+import static de.cismet.cismap.commons.gui.MappingComponent.CREATE_SEARCH_POLYGON;
 
 /**
  * DOCUMENT ME!
@@ -164,6 +176,28 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
 
         geoSearch.setGeometry(transformed);
         geoSearch.setValidClassesFromStrings(metaSearch.getSelectedSearchClassesForQuery());
+        if (geoSearch instanceof SearchResultListenerProvider) {
+            ((SearchResultListenerProvider)geoSearch).setSearchResultListener(new SearchResultListener() {
+
+                    @Override
+                    public void searchDone(final List results) {
+                        if (ProtocolHandler.getInstance().isRecordEnabled()) {
+                            final Collection<SearchTopic> searchTopics = MetaSearch.instance()
+                                        .getSelectedSearchTopics();
+                            final CreateSearchGeometryListener createSearchGeometryListener =
+                                (CreateSearchGeometryListener)CismapBroker.getInstance().getMappingComponent()
+                                        .getInputListener(CREATE_SEARCH_POLYGON);
+                            ProtocolHandler.getInstance()
+                                    .recordStep(
+                                        new GeoSearchProtocolStepImpl(
+                                            geoSearch,
+                                            (MetaSearchCreateSearchGeometryListener)createSearchGeometryListener,
+                                            searchTopics,
+                                            results));
+                        }
+                    }
+                });
+        }
         CidsSearchExecutor.searchAndDisplayResultsWithDialog(geoSearch);
     }
 

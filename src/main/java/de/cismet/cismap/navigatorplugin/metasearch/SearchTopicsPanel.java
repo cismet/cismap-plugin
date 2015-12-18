@@ -46,7 +46,7 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Set<SearchTopic> searchTopics;
+    private final Set<SearchTopic> searchTopics;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.Box.Filler gluFiller;
@@ -76,12 +76,21 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
      * @param  searchTopics  The search topics to display.
      */
     public void setSearchTopics(final Collection<SearchTopic> searchTopics) {
-        if ((searchTopics == null) || searchTopics.isEmpty()) {
-            return;
+        for (final Component component : getComponents()) {
+            if (component instanceof SearchTopicCheckBox) {
+                final SearchTopicCheckBox searchTopicCheckBox = (SearchTopicCheckBox)component;
+                searchTopicCheckBox.getSearchTopic().removeSearchTopicListener(searchTopicCheckBox);
+            }
         }
 
         this.searchTopics.clear();
         removeAll();
+
+        if ((searchTopics == null) || searchTopics.isEmpty()) {
+            revalidate();
+            return;
+        }
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Setting search topics: " + searchTopics);
         }
@@ -102,46 +111,11 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
             }
 
             final JLabel lblIcon = new JLabel(searchTopic.getIcon());
-            final JCheckBox chkSearchTopic = new JCheckBox(searchTopic.getName());
+            final SearchTopicCheckBox chkSearchTopic = new SearchTopicCheckBox(searchTopic);
+            searchTopic.addSearchTopicListener(chkSearchTopic);
 
             lblIcon.setToolTipText(searchTopic.getDescription());
             chkSearchTopic.setBackground(getBackground());
-            chkSearchTopic.setToolTipText(searchTopic.getDescription());
-            chkSearchTopic.setSelected(searchTopic.isSelected());
-
-            final ItemListener listener = new ItemListener() {
-
-                    @Override
-                    public void itemStateChanged(final ItemEvent e) {
-                        searchTopic.setSelected(!searchTopic.isSelected());
-                    }
-                };
-            chkSearchTopic.addItemListener(listener);
-            searchTopic.addPropertyChangeListener(new PropertyChangeListener() {
-
-                    @Override
-                    public void propertyChange(final PropertyChangeEvent evt) {
-                        boolean newValue = false;
-
-                        if (("selected".equalsIgnoreCase(evt.getPropertyName())
-                                        || "SwingSelectedKey".equalsIgnoreCase(evt.getPropertyName()))
-                                    && (evt.getNewValue() instanceof Boolean)) {
-                            newValue = (Boolean)evt.getNewValue();
-                        } else {
-                            LOG.warn("Caught a propertyChangeEvent '" + evt + "' which could not be interpreted.");
-                            return;
-                        }
-
-                        if (chkSearchTopic.isSelected() ^ newValue) {
-                            // If a SearchTopic is changed "outside" (e. g. via GeoSearch menu), this has to be
-                            // reflected here. The item listener has to be removed since it would be invoked while
-                            // setting chkSearchTopic's new value.
-                            chkSearchTopic.removeItemListener(listener);
-                            chkSearchTopic.setSelected(newValue);
-                            chkSearchTopic.addItemListener(listener);
-                        }
-                    }
-                });
 
             final Insets insetsIcon = new Insets(0, 7, 0, 2);
             final Insets insetsCheckbox = new Insets(0, 2, 0, 7);
@@ -238,26 +212,6 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
                 checkbox.removeItemListener(itemListener);
             }
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public String getSelectedClassesString() {
-        final StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        for (final Component component : getComponents()) {
-            if (component instanceof JCheckBox) {
-                final JCheckBox checkbox = (JCheckBox)component;
-                if (checkbox.isSelected()) {
-                    sb.append(first ? "" : ", ").append(checkbox.getText());
-                    first = false;
-                }
-            }
-        }
-        return sb.toString();
     }
 
     /**
@@ -360,4 +314,64 @@ public class SearchTopicsPanel extends javax.swing.JPanel {
             searchTopic.setSelected(false);
         }
     }                                                                                 //GEN-LAST:event_hypSelectNoneActionPerformed
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    class SearchTopicCheckBox extends JCheckBox implements SearchTopicListener {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final SearchTopic searchTopic;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new SearchTopicCheckBox object.
+         *
+         * @param  searchTopic  DOCUMENT ME!
+         */
+        public SearchTopicCheckBox(final SearchTopic searchTopic) {
+            super(searchTopic.getName());
+            this.searchTopic = searchTopic;
+            setToolTipText(searchTopic.getDescription());
+            setSelected(searchTopic.isSelected());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void selectionChanged(final SearchTopicListenerEvent event) {
+            final Object source = event.getSource();
+            if (source instanceof SearchTopic) {
+                final SearchTopic searchTopic = (SearchTopic)source;
+                if (searchTopic.equals(this.searchTopic)) {
+                    if (searchTopic.isSelected() != isSelected()) {
+                        setSelected(searchTopic.isSelected());
+                    }
+                }
+            }
+        }
+
+        @Override
+        protected void fireItemStateChanged(final ItemEvent event) {
+            super.fireItemStateChanged(event);
+            if (searchTopic.isSelected() != isSelected()) {
+                searchTopic.setSelected(isSelected());
+            }
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public SearchTopic getSearchTopic() {
+            return searchTopic;
+        }
+    }
 }
