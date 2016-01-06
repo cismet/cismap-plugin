@@ -45,9 +45,7 @@ public class SearchTopicsProtocolStepImpl extends AbstractProtocolStep implement
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter
-    @JsonIgnore
-    private final transient Collection<SearchTopic> searchTopics;
+    @Getter @JsonIgnore private final transient Collection<SearchTopic> searchTopics;
 
     @Getter
     @JsonProperty(required = true)
