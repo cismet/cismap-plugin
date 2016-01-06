@@ -58,10 +58,8 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
             "FullTextSearch",
             "FullTextSearch protocol step");
 
-    @Getter
-    @JsonIgnore
-    private static final transient MetaClassCacheService META_CLASS_CACHE_SERVICE = Lookup.getDefault()
-                .lookup(MetaClassCacheService.class);
+    @Getter @JsonIgnore private static final transient MetaClassCacheService META_CLASS_CACHE_SERVICE = Lookup
+                .getDefault().lookup(MetaClassCacheService.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -85,17 +83,11 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
     @JsonProperty(required = true)
     private Set<GeoSearchProtocolStepSearchTopic> searchTopicInfos;
 
-    @Getter
-    @JsonIgnore
-    private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
+    @Getter @JsonIgnore private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
 
-    @Getter
-    @JsonIgnore
-    private final GeometryProtocolStepImpl geometryProtocolStep;
+    @Getter @JsonIgnore private final GeometryProtocolStepImpl geometryProtocolStep;
 
-    @Getter
-    @JsonIgnore
-    private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
+    @Getter @JsonIgnore private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
 
     //~ Constructors -----------------------------------------------------------
 

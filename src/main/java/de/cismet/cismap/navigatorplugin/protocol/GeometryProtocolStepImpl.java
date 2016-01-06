@@ -53,9 +53,7 @@ public class GeometryProtocolStepImpl extends AbstractProtocolStep implements Ge
     @JsonProperty(required = true)
     protected String wkt;
 
-    @Getter
-    @JsonIgnore
-    private final transient Geometry geometry;
+    @Getter @JsonIgnore private final transient Geometry geometry;
 
     //~ Constructors -----------------------------------------------------------
 

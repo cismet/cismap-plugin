@@ -80,21 +80,13 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
     @JsonProperty(required = true)
     private Collection<CidsServerSearchMetaObjectNodeWrapper> searchObjects;
 
-    @Getter
-    @JsonIgnore
-    private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
+    @Getter @JsonIgnore private final CidsServerSearchProtocolStepImpl cidsServerSearchProtocolStep;
 
-    @Getter
-    @JsonIgnore
-    private final GeometryProtocolStepImpl geometryProtocolStep;
+    @Getter @JsonIgnore private final GeometryProtocolStepImpl geometryProtocolStep;
 
-    @Getter
-    @JsonIgnore
-    private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
+    @Getter @JsonIgnore private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
 
-    @Getter
-    @JsonIgnore
-    private final List<MetaObjectNode> searchObjectNodes;
+    @Getter @JsonIgnore private final List<MetaObjectNode> searchObjectNodes;
 
     //~ Constructors -----------------------------------------------------------
 

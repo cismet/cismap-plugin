@@ -301,7 +301,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "/images/miniForward.png"));                                                                             // NOI18N
     private javax.swing.ImageIcon current = new javax.swing.ImageIcon(getClass().getResource("/images/current.png"));    // NOI18N
     private javax.swing.ImageIcon logo = new javax.swing.ImageIcon(getClass().getResource("/images/cismetlogo16.png"));  // NOI18N
-    private boolean isInit = true;
     private String helpUrl;
     private String newsUrl;
     private AboutDialog about;
@@ -1047,7 +1046,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         configureApp(false);
 
         // configureActiveTabAfterVisibility();
-        isInit = false;
 
         for (final Scale s : mapC.getScales()) {
             if (s.getDenominator() > 0) {
@@ -1087,7 +1085,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void windowOpened(final WindowEvent e) {
-                        loadLayout(cismapDirectory + fs + standaloneLayoutName);
+                        loadLayout(cismapDirectory + fs + standaloneLayoutName, true);
                         removeWindowListener(loadLayoutWhenOpenedAdapter);
                     }
                 };
@@ -1102,7 +1100,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                         @Override
                         public void windowOpened(final WindowEvent e) {
-                            loadLayout(cismapDirectory + fs + pluginLayoutName);
+                            loadLayout(cismapDirectory + fs + pluginLayoutName, true);
                             ComponentRegistry.getRegistry()
                                     .getMainWindow()
                                     .removeWindowListener(loadLayoutWhenOpenedAdapter);
@@ -1111,7 +1109,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 ComponentRegistry.getRegistry().getMainWindow().addWindowListener(loadLayoutWhenOpenedAdapter);
             } else {
-                loadLayout(cismapDirectory + fs + pluginLayoutName);
+                loadLayout(cismapDirectory + fs + pluginLayoutName, true);
             }
         }
     }
@@ -3380,7 +3378,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             name = name.toLowerCase();
 
             if (name.endsWith(".layout")) {                                                          // NOI18N
-                loadLayout(name);
+                loadLayout(name, false);
             } else {
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
@@ -4422,9 +4420,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     /**
      * DOCUMENT ME!
      *
-     * @param  file  DOCUMENT ME!
+     * @param  file    DOCUMENT ME!
+     * @param  isInit  DOCUMENT ME!
      */
-    public void loadLayout(final String file) {
+    public void loadLayout(final String file, final boolean isInit) {
         setupDefaultLayout();
         if (log.isDebugEnabled()) {
             log.debug("Load Layout.. from " + file); // NOI18N
@@ -4434,7 +4433,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         if (layoutFile.exists()) {
             try {
-                loadLayout(new FileInputStream(layoutFile));
+                loadLayout(new FileInputStream(layoutFile), isInit);
             } catch (FileNotFoundException e) {
                 log.error("Layout file not found", e);
             }
@@ -4471,8 +4470,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * DOCUMENT ME!
      *
      * @param  layoutInput  DOCUMENT ME!
+     * @param  isInit       DOCUMENT ME!
      */
-    public void loadLayout(final InputStream layoutInput) {
+    public void loadLayout(final InputStream layoutInput, final boolean isInit) {
         if (layoutInput != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Layout File exists"); // NOI18N

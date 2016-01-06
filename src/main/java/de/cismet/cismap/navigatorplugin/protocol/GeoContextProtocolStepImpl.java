@@ -39,9 +39,7 @@ public class GeoContextProtocolStepImpl extends AbstractProtocolStep implements 
     @JsonProperty(required = true)
     protected String wkt;
 
-    @Getter
-    @JsonIgnore
-    private final GeometryProtocolStepImpl geometryProtocolStep;
+    @Getter @JsonIgnore private final GeometryProtocolStepImpl geometryProtocolStep;
 
     //~ Constructors -----------------------------------------------------------
 
