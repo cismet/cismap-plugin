@@ -101,8 +101,34 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         pnlButtons.add(pnlSearchCancel);
         pnlButtons.add(btnClose);
 
+        final MetaSearchListener metaSearchListener = new MetaSearchAdapter() {
+
+                @Override
+                public void topicAdded(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicsAdded(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicRemoved(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicsRemoved(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+            };
+
+        MetaSearch.instance().addMetaSearchListener(metaSearchListener);
+
+        refreshSearchTopics();
+
         final EnableSearchListener listener = new EnableSearchListener();
-        pnlSearchTopics.setSearchTopics(MetaSearch.instance().getSearchTopics());
         pnlSearchTopics.registerItemListener(listener);
         txtSearchParameter.getDocument().addDocumentListener(listener);
         chkHere.addItemListener(listener);
@@ -116,6 +142,14 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void refreshSearchTopics() {
+        pnlSearchTopics.setSearchTopics(MetaSearch.instance().getSearchTopics());
+        pack();
+    }
 
     /**
      * DOCUMENT ME!
@@ -533,13 +567,6 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
         @Override
         public void itemStateChanged(final ItemEvent e) {
-            EventQueue.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        model.setSelectedSearchTopics(MetaSearch.instance().getSelectedSearchTopics());
-                    }
-                });
             enableSearchButton();
         }
 
