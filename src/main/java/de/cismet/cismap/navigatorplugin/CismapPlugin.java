@@ -301,8 +301,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "/images/miniForward.png"));                                                                             // NOI18N
     private javax.swing.ImageIcon current = new javax.swing.ImageIcon(getClass().getResource("/images/current.png"));    // NOI18N
     private javax.swing.ImageIcon logo = new javax.swing.ImageIcon(getClass().getResource("/images/cismetlogo16.png"));  // NOI18N
-    private String helpUrl;
-    private String newsUrl;
+    private String helpUrl = null;
+    private String newsUrl = null;
     private AboutDialog about;
     private OverviewComponent overviewComponent = null;
     private Dimension oldWindowDimension = new Dimension(-1, -1);
@@ -4240,8 +4240,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             newsUrl = news_url_element.getText();
         } catch (Throwable t) {
-            log.error("Error while loading the help urls (" + prefs.getChildren() + ")", t); // NOI18N
+            log.error("Error while loading the help urls (" + prefs.getChildren() + "), disabling menu items", t); // NOI18N
         }
+
+        // enable or disable help urls
+        this.mniOnlineHelp.setEnabled(helpUrl != null);
+        this.mniNews.setEnabled(newsUrl != null);
+        this.menHelp.setEnabled(this.mniOnlineHelp.isEnabled() && this.mniNews.isEnabled());
 
         windows2skip = new ArrayList<String>();
 
