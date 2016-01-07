@@ -21,6 +21,7 @@ import Sirius.navigator.types.iterator.SingleAttributeIterator;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
+import Sirius.navigator.ui.LayoutedContainer;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
@@ -225,6 +226,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     HistoryModelListener,
     FeatureCollectionListener {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    public static final String DEFAULT_LOCAL_LAYOUT = "/defaultCismap.layout";
+
     //~ Enums ------------------------------------------------------------------
 
     /**
@@ -277,7 +282,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final StringViewMap viewMap = new StringViewMap();
     private final Map<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
-    private ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
+    private final ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
+    private final ResetLayoutMethod resetLayoutMethod = new ResetLayoutMethod();
     private final Map<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
     private final List<JMenuItem> menues = new ArrayList<JMenuItem>();
@@ -1000,6 +1006,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 mniClose.setVisible(false);
                 pluginMethods.put(showObjectsMethod.getId(), showObjectsMethod);
+                pluginMethods.put(resetLayoutMethod.getId(), resetLayoutMethod);
 
                 // TODO What the hell is this?
                 this.context.getMetadata().addMetaNodeSelectionListener(new NodeChangeListener());
@@ -3610,7 +3617,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniResetWindowLayoutActionPerformed(final java.awt.event.ActionEvent evt) {
-        setupDefaultLayout();
+        this.loadLayout(DEFAULT_LOCAL_LAYOUT, true);
     }
 
     /**
@@ -4434,30 +4441,62 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             log.debug("Load Layout.. from " + file); // NOI18N
         }
 
-        final File layoutFile = new File(file);
+        File layoutFile = null;
+        boolean layoutExists;
+        InputStream layoutFileInputStream = null;
+        if (isInit && file.equals(DEFAULT_LOCAL_LAYOUT)
+                    && (this.getClass().getResource(DEFAULT_LOCAL_LAYOUT) != null)) {
+            if (log.isDebugEnabled()) {
+                log.debug("loading default layout from local layout file '" + DEFAULT_LOCAL_LAYOUT + "'");
+            }
 
-        if (layoutFile.exists()) {
+            layoutFileInputStream = this.getClass().getResourceAsStream(DEFAULT_LOCAL_LAYOUT);
+            layoutExists = true;
+        } else {
+            layoutFile = new File(file);
+            layoutExists = layoutFile.exists();
+        }
+
+        if (layoutExists) {
             try {
-                loadLayout(new FileInputStream(layoutFile), isInit);
+                if (layoutFileInputStream == null) {
+                    layoutFileInputStream = new FileInputStream(layoutFile);
+                }
+
+                loadLayout(layoutFileInputStream, isInit);
             } catch (FileNotFoundException e) {
-                log.error("Layout file not found", e);
+                log.error("Layout File '" + file + "' not found", e);
+                JOptionPane.showMessageDialog(
+                    StaticSwingTools.getParentFrame(mapC),
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.title"), // NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
             }
         } else {
             if (isInit) {
-                log.fatal("File does not exist --> default layout (init)"); // NOI18N
-                EventQueue.invokeLater(new Runnable() {
+                log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
+                if (isInit && (this.getClass().getResource(LayoutedContainer.DEFAULT_LOCAL_LAYOUT) != null)) {
+                    // reset to saved local layout file in custom res.jar
+                    this.loadLayout(DEFAULT_LOCAL_LAYOUT, isInit);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
-                            // setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
-                            setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
-                        }
-                    });
+                            @Override
+                            public void run() {
+                                // UGLY WINNING --> Gefixed durch IDW Version 1.5
+                                // setupDefaultLayout();
+                                // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
+                                setupDefaultLayout();
+                                // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                            }
+                        });
+                }
             } else {
-                log.fatal("File does not exist)");                               // NOI18N
+                log.error("File '" + file + "' does not exist)");                // NOI18N
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
@@ -5274,6 +5313,26 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     log.error("Error in WizardMode:", t);                        // NOI18N
                 }
             }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private class ResetLayoutMethod implements PluginMethod {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String getId() {
+            return this.getClass().getName();
+        }
+
+        @Override
+        public void invoke() throws Exception {
+            CismapPlugin.this.loadLayout(DEFAULT_LOCAL_LAYOUT, true);
         }
     }
 
