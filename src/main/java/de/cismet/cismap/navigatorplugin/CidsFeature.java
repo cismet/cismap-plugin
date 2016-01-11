@@ -906,7 +906,9 @@ public class CidsFeature implements XStyledFeature,
                     && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
                 final String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length()); // NOI18N
-                LOG.fatal("attrField" + attrField);                                                                    // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("FeatureSupportingRasterService:attrField:" + attrField);                                // NOI18N
+                }
                 final String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {

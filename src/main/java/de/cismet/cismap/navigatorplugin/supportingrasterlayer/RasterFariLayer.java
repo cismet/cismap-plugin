@@ -23,8 +23,7 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-@Deprecated
-public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
+public class RasterFariLayer extends SimpleFeatureSupportingRasterLayer {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -38,7 +37,7 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
      *
      * @param  s  DOCUMENT ME!
      */
-    public CustomPlanLayer(final CustomPlanLayer s) {
+    public RasterFariLayer(final RasterFariLayer s) {
         super(s);
         url = s.url;
         if (log.isDebugEnabled()) {
@@ -50,11 +49,11 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
      *
      * @param  url  DOCUMENT ME!
      */
-    public CustomPlanLayer(final SimpleFeatureSupporterRasterServiceUrl url) {
+    public RasterFariLayer(final SimpleFeatureSupporterRasterServiceUrl url) {
         super(url);
         this.url = url;
         if (log.isDebugEnabled()) {
-            log.debug("New CustomPlanLayer"); // NOI18N
+            log.debug("New RastaFariLayer"); // NOI18N
         }
     }
 
@@ -64,7 +63,9 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
     public void retrieve(final boolean forced) {
         try {
             url.setFilter(getLayerString());
-            log.fatal(url);
+            if (log.isDebugEnabled()) {
+                log.debug("FeaturesupportingRasterServiceRequest:" + url);
+            }
             super.retrieve(forced);
         } catch (Exception e) {
             log.error("No FeatureSupportingRasterService .-(", e); // NOI18N
@@ -78,7 +79,6 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
      */
     private String getLayerString() {
         String ret = ""; // NOI18N
-        final int objectCounter = 0;
         int inObjectCounter = 0;
 
         final FeatureCollection fc = CismapBroker.getInstance().getMappingComponent().getFeatureCollection();
@@ -89,13 +89,10 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
                 final RasterLayerSupportedFeature rlsf = (RasterLayerSupportedFeature)f;
                 if ((rlsf.getSupportingRasterService() != null) && rlsf.getSupportingRasterService().equals(this)) {
                     if (inObjectCounter == 0) {
-                        ret += "&layers=";                   // NOI18N
+                        ret += "&LAYERS=";                   // NOI18N
                     }
                     ret += rlsf.getSpecialLayerName() + ","; // NOI18N
                     inObjectCounter++;
-                    if (inObjectCounter == 3) {
-                        inObjectCounter = 0;
-                    }
                 }
             }
         }
@@ -110,6 +107,6 @@ public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
 
     @Override
     public Object clone() {
-        return new CustomPlanLayer(this);
+        return new RasterFariLayer(this);
     }
 }
