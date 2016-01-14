@@ -58,7 +58,7 @@ import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String> {
+public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String> {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -90,6 +90,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
         this.layerInfo = cff.layerInfo;
         this.geometryType = cff.geometryType;
         this.maxArea = cff.maxArea;
+        this.layerProperties = cff.layerProperties;
     }
 
     /**
@@ -388,7 +389,7 @@ class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String
             }
         }
         final boolean ignoreGeoLimitations = ((boundingBoxIncurrentCrs == null)
-                ? true : envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)));
+                ? true : envelope == null || envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)));
 
         // if the hole envelope of the layer should be requested, the coordinate limitation is not required
         if ((boundingBoxIncurrentCrs != null)

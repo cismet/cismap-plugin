@@ -53,6 +53,7 @@ import de.cismet.cismap.commons.features.PermissionProvider;
 import de.cismet.cismap.commons.features.SLDStyledFeature;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableRuleSet;
+import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.PSticky;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -150,6 +151,49 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             return null;
         }
     }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public void setMetaObject(MetaObject metaObject) {
+        this.metaObject = metaObject;
+        
+        syncWithBean();
+    }
+    
+    /**
+     * fills the feature with the properties from its cids bean
+     */
+    public void syncWithBean() {
+        CidsBean bean = metaObject.getBean();
+        final HashMap<String, Object> props = new HashMap<String, Object>();
+
+        for (final String propName : bean.getPropertyNames()) {
+            props.put(propName, bean.getProperty(propName));
+            
+            if (propName.equals(layerInfo.getIdField())) {
+                setId((Integer)bean.getProperty(propName));
+            }
+        }
+        
+        setProperties(props);
+    }
+
+    @Override
+    public FeatureAnnotationSymbol getPointAnnotationSymbol() {
+        if ((styles == null) || styles.isEmpty()) {
+            if (getLayerProperties() != null && getLayerProperties().getAttributeTableRuleSet() != null) {
+                return getLayerProperties().getAttributeTableRuleSet().getPointAnnotationSymbol(this);
+            } else {
+                return this.getStyle().getPointSymbol();
+            }
+        } else {
+            return null;
+        }
+    }
+    
 
     @Override
     protected org.deegree.feature.Feature getDeegreeFeature() {
