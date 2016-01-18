@@ -92,6 +92,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.net.URI;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -229,6 +230,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String DEFAULT_LOCAL_LAYOUT = "/defaultCismap.layout";
+    private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE = "/defaultCismap_" + System.getProperty("user.language")
+                + ".layout";
+    private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY = "/defaultCismap_"
+                + System.getProperty("user.language") + "_" + System.getProperty("user.country")
+                + ".layout";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -4444,13 +4450,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         File layoutFile = null;
         boolean layoutExists;
         InputStream layoutFileInputStream = null;
-        if (isInit && file.equals(DEFAULT_LOCAL_LAYOUT)
-                    && (this.getClass().getResource(DEFAULT_LOCAL_LAYOUT) != null)) {
+        final String defaultLayout = this.getInternationalizedDefaultLayout();
+        if (isInit && (file.equals(DEFAULT_LOCAL_LAYOUT) || file.equals(defaultLayout))
+                    && (this.getClass().getResource(defaultLayout) != null)) {
             if (log.isDebugEnabled()) {
-                log.debug("loading default layout from local layout file '" + DEFAULT_LOCAL_LAYOUT + "'");
+                log.debug("loading default layout from local layout file '" + defaultLayout + "'");
             }
 
-            layoutFileInputStream = this.getClass().getResourceAsStream(DEFAULT_LOCAL_LAYOUT);
+            layoutFileInputStream = this.getClass().getResourceAsStream(defaultLayout);
             layoutExists = true;
         } else {
             layoutFile = new File(file);
@@ -4479,9 +4486,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         } else {
             if (isInit) {
                 log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
-                if (isInit && (this.getClass().getResource(LayoutedContainer.DEFAULT_LOCAL_LAYOUT) != null)) {
+                if (isInit && (defaultLayout != null)) {
                     // reset to saved local layout file in custom res.jar
-                    this.loadLayout(DEFAULT_LOCAL_LAYOUT, isInit);
+                    this.loadLayout(defaultLayout, isInit);
                 } else {
                     EventQueue.invokeLater(new Runnable() {
 
@@ -4508,6 +4515,43 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     JOptionPane.INFORMATION_MESSAGE);
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    protected String getInternationalizedDefaultLayout() {
+        URL defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY);
+        if (defaultLayoutUrl == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY
+                            + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE + "'");
+            }
+        } else {
+            return DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY;
+        }
+
+        defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE);
+        if (defaultLayoutUrl == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE
+                            + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT + "'");
+            }
+        } else {
+            return DEFAULT_LOCAL_LAYOUT_LANGUAGE;
+        }
+
+        defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT);
+        if (defaultLayoutUrl == null) {
+            log.warn("default layout file '" + DEFAULT_LOCAL_LAYOUT
+                        + "' not found, giving up!");
+        } else {
+            return DEFAULT_LOCAL_LAYOUT;
+        }
+
+        return null;
     }
 
     /**
