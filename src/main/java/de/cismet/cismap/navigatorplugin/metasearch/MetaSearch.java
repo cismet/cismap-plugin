@@ -8,6 +8,7 @@
 package de.cismet.cismap.navigatorplugin.metasearch;
 
 import Sirius.navigator.connection.SessionManager;
+import Sirius.navigator.exception.ConnectionException;
 
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.newuser.User;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import org.jdom.Element;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
     private static final String CONF_SEARCHTOPIC_ATTR_KEY = "key";
     private static final String CONF_SEARCHTOPIC_ATTR_ICON = "icon";
     private static final String CONF_SEARCHTOPIC_ATTR_SELECTED = "selected";
+    private static final String CONF_SEARCHTOPIC_ATTR_CHECKACTIONTAG = "check-action-tag";
     private static final String CONF_SEARCHCLASS = "searchClass";
     private static final String CONF_SEARCHCLASS_ATTR_DOMAIN = "domain";
     private static final String CONF_SEARCHCLASS_ATTR_CIDSCLASS = "cidsClass";
@@ -362,6 +365,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
             final String key = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_KEY);
             final String icon = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_ICON);
             final String selected = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_SELECTED);
+            final String checkActionTag = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_CHECKACTIONTAG);
 
             if ((name == null) || (name.trim().length() == 0)) {
                 LOG.info("There is a search topic without a valid name. Description: '" + description + "', key: '"
@@ -412,7 +416,29 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
                 }
             }
 
-            if (!searchTopics.contains(searchTopic) && !searchTopic.getSearchClasses().isEmpty()) {
+            final String actionTag = "st://" + key;
+
+            boolean isEnabled = true;
+            if ((checkActionTag != null) && (checkActionTag.trim().length() > 0)) {
+                try {
+                    final boolean actionCheck = SessionManager.getConnection()
+                                .hasConfigAttr(SessionManager.getSession().getUser(), actionTag);
+                    if (("enable".equalsIgnoreCase(checkActionTag) || "1".equalsIgnoreCase(checkActionTag))) {
+                        isEnabled = actionCheck;
+                    } else if (("disable".equalsIgnoreCase(checkActionTag) || "0".equalsIgnoreCase(checkActionTag))) {
+                        isEnabled = !actionCheck;
+                    } else {
+                        LOG.warn(CONF_SEARCHTOPIC_ATTR_CHECKACTIONTAG + " neither enable nor disable: " + actionTag
+                                    + ". searchtopic is disabled.");
+                        isEnabled = false;
+                    }
+                } catch (ConnectionException ex) {
+                    LOG.warn("could not check action tag " + actionTag + ". searchtopic is disabled.", ex);
+                    isEnabled = false;
+                }
+            }
+
+            if (isEnabled && !searchTopics.contains(searchTopic) && !searchTopic.getSearchClasses().isEmpty()) {
                 searchTopics.add(searchTopic);
             } else {
                 LOG.info("Search topic '" + searchTopic.getName()
