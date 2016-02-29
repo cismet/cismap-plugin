@@ -155,7 +155,9 @@ public class GeoSearchProtocolStepImpl extends AbstractProtocolStep implements G
                         searchObject.getDomain(),
                         searchObject.getObjectId(),
                         searchObject.getClassId(),
-                        searchObject.getName()));
+                        searchObject.getName(),
+                        null,
+                        null)); // TODO: Check4CashedGeomAndLightweightJson
             }
         }
 

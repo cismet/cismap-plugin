@@ -5542,6 +5542,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                     for (final DefaultMetaTreeNode node : nodes) {
                                         final MetaObjectNode mon = ((ObjectTreeNode)node).getMetaObjectNode();
+                                        // TODO: Check4CashedGeomAndLightweightJson
                                         MetaObject mo = mon.getObject();
 
                                         if (mo == null) {
