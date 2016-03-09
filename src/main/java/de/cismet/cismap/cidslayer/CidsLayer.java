@@ -20,6 +20,8 @@ import org.deegree.style.se.unevaluated.Style;
 
 import org.jdom.Element;
 
+import org.openide.util.Exceptions;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -157,6 +159,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         symbol.setSweetSpotY(0.9d);
         defaultLayerProperties.getStyle().setPointSymbol(symbol);
         defaultLayerProperties.setFeatureService(this);
+        defaultLayerProperties.setIdExpression("id", LayerProperties.EXPRESSIONTYPE_PROPERTYNAME);
 
         return defaultLayerProperties;
     }
@@ -330,9 +333,17 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
     @Override
     public String decoratePropertyName(final String name) {
-        final CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+        try {
+            initAndWait();
 
-        return getSQLName(info, name);
+            final CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+
+            return getSQLName(info, name);
+        } catch (Exception ex) {
+            LOG.error("Error while decorating property name", ex);
+        }
+
+        return name;
     }
 
     /**

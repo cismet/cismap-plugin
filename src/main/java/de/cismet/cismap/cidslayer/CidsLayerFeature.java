@@ -14,6 +14,7 @@ package de.cismet.cismap.cidslayer;
 import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
 
+import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
@@ -42,12 +43,15 @@ import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
 import de.cismet.cids.editors.DefaultBindableReferenceCombo;
 
+import de.cismet.cids.navigator.utils.ClassCacheMultiple;
+
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.cidslayer.StationInfo;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.WorldToScreenTransform;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.features.ModifiableFeature;
 import de.cismet.cismap.commons.features.PermissionProvider;
 import de.cismet.cismap.commons.features.SLDStyledFeature;
@@ -58,6 +62,8 @@ import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.PSticky;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.cismap.linearreferencing.FeatureRegistry;
+import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
 import de.cismet.cismap.linearreferencing.TableStationEditor;
 
@@ -151,40 +157,40 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             return null;
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @param  metaObject  DOCUMENT ME!
      */
-    public void setMetaObject(MetaObject metaObject) {
+    public void setMetaObject(final MetaObject metaObject) {
         this.metaObject = metaObject;
-        
+
         syncWithBean();
     }
-    
+
     /**
-     * fills the feature with the properties from its cids bean
+     * fills the feature with the properties from its cids bean.
      */
     public void syncWithBean() {
-        CidsBean bean = metaObject.getBean();
+        final CidsBean bean = metaObject.getBean();
         final HashMap<String, Object> props = new HashMap<String, Object>();
 
         for (final String propName : bean.getPropertyNames()) {
             props.put(propName, bean.getProperty(propName));
-            
+
             if (propName.equals(layerInfo.getIdField())) {
                 setId((Integer)bean.getProperty(propName));
             }
         }
-        
+
         setProperties(props);
     }
 
     @Override
     public FeatureAnnotationSymbol getPointAnnotationSymbol() {
         if ((styles == null) || styles.isEmpty()) {
-            if (getLayerProperties() != null && getLayerProperties().getAttributeTableRuleSet() != null) {
+            if ((getLayerProperties() != null) && (getLayerProperties().getAttributeTableRuleSet() != null)) {
                 return getLayerProperties().getAttributeTableRuleSet().getPointAnnotationSymbol(this);
             } else {
                 return this.getStyle().getPointSymbol();
@@ -193,7 +199,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             return null;
         }
     }
-    
 
     @Override
     protected org.deegree.feature.Feature getDeegreeFeature() {
@@ -287,9 +292,12 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
                                     if (st == null) {
                                         final String colName = layerInfo.getColumnPropertyNames()[i];
+                                        final String statField = colName.substring(0, colName.indexOf("."));
                                         final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                     .getProperty(colName.substring(0, colName.indexOf(".")));
                                         st = new TableLinearReferencedLineEditor(statInfo.getRouteTable());
+                                        st.setOtherLinesFrom(metaClass.getTableName());
+                                        st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
                                         st.setCidsBean(bean);
                                         st.addPropertyChangeListener(propListener);
                                         backgroundColor = st.getLineColor();
@@ -307,9 +315,12 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                         stations = new HashMap<String, DisposableCidsBeanStore>();
                                     }
                                     final String colName = layerInfo.getColumnPropertyNames()[i];
+                                    final String statField = colName.substring(0, colName.indexOf("."));
                                     final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                 .getProperty(colName.substring(0, colName.indexOf(".")));
                                     final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable());
+                                    st.setOtherLinesFrom(metaClass.getTableName());
+                                    st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
                                     st.setCidsBean(bean);
                                     st.addPropertyChangeListener(propListener);
 //                                        backgroundColor = st.getLineColor();
@@ -429,7 +440,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     @Override
-    public void saveChanges() throws Exception {
+    public FeatureServiceFeature saveChanges() throws Exception {
         final Map<String, Object> propertyMap = super.getProperties();
         final CidsBean bean = getMetaObject().getBean();
         final String[] cols = layerInfo.getColumnNames();
@@ -441,7 +452,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         for (int i = 0; i < cols.length; ++i) {
             colMap.put(cols[i], props[i]);
         }
+        
+        //to ensure that the geometries are set properly
+        if (stations != null) {
+            for (final String key : stations.keySet()) {
+                final DisposableCidsBeanStore editor = stations.get(key);
 
+                if (editor instanceof TableLinearReferencedLineEditor) {
+                    ((TableLinearReferencedLineEditor)editor).recreateGeometry();
+                }
+            }
+        }
+        
         for (final String key : propertyMap.keySet()) {
             if (hasAdditionalFields && (ruleSet.getIndexOfAdditionalFieldName(key) != Integer.MIN_VALUE)) {
                 // additional fields cannot be saved
@@ -451,18 +473,28 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 // nothing to do. the id should not be changed
             } else if (layerInfo.isPrimitive(key)) {
                 bean.setProperty(colMap.get(key), propertyMap.get(key));
-            } else if (layerInfo.getGeoField().equals(key) && (colMap.get(key) != null)) {
-                if (layerInfo.isReferenceToCidsClass(key) && (bean.getProperty(key) == null)) {
-                    // create a new object. Mostly, a new instance of geom is created
-                    final String colName = colMap.get(key);
-                    final CidsBean newGeoObject = getMetaClass(layerInfo.getReferencedCidsClass(key)).getEmptyInstance()
-                                .getBean();
-                    bean.setProperty(colName.substring(0, colName.indexOf(".")), newGeoObject);
+            } else if ((layerInfo.getGeoField() != null) && layerInfo.getGeoField().equals(key)
+                        && (colMap.get(key) != null)) {
+                final String colName = colMap.get(key);
+                if (
+                    bean.getMetaObject().getAttributeByFieldName(
+                                colMap.get(key).substring(0, colMap.get(key).indexOf("."))).getMai()
+                            .getForeignKeyClassId()
+                            == layerInfo.getReferencedCidsClass(key)) {
+                    // there must be a direct reference to the geom table
+                    if (layerInfo.isReferenceToCidsClass(key) && (bean.getProperty(key) == null)) {
+                        // create a new object. Mostly, a new instance of geom is created
+                        final CidsBean newGeoObject = getMetaClass(layerInfo.getReferencedCidsClass(key))
+                                    .getEmptyInstance().getBean();
+                        bean.setProperty(colName.substring(0, colName.indexOf(".")), newGeoObject);
+                    }
+                    Geometry geom = getGeometry();
+                    if (geom != null) {
+                        geom = CrsTransformer.transformToDefaultCrs(geom);
+                        geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+                    }
+                    bean.setProperty(colMap.get(key), geom);
                 }
-                Geometry geom = getGeometry();
-                geom = CrsTransformer.transformToDefaultCrs(geom);
-                geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
-                bean.setProperty(colMap.get(key), geom);
             } else if (layerInfo.isCatalogue(key)) {
                 if (getCatalogueCombo(key) != null) {
                     bean.setProperty(colMap.get(key), getCatalogueCombo(key).getSelectedItem());
@@ -485,7 +517,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         }
                     }
                 } else {
-                    if (stations != null) {
+                    if (stations != null && stations.get(key) != null) {
                         final DisposableCidsBeanStore store = stations.get(key);
                         bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
                             store.getCidsBean());
@@ -499,7 +531,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 if (propKey == null) {
                     propKey = key;
                 }
-//                bean.setProperty(propKey, propertyMap.get(key));
+                bean.setProperty(propKey, propertyMap.get(key));
             }
         }
 //LOG.error(bean.getMOString());
@@ -507,6 +539,47 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         setId(savedBean.getMetaObject().getID());
         setProperty("id", savedBean.getMetaObject().getID());
         metaObject = savedBean.getMetaObject();
+        final FeatureServiceFeature feature = reloadFeature();
+
+        if (feature != null) {
+            return feature;
+        } else {
+            return this;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private FeatureServiceFeature reloadFeature() {
+        try {
+            String idField = "id";
+            final String[] colNames = layerInfo.getColumnNames();
+
+            for (int i = 0; i < colNames.length; ++i) {
+                if (colNames[i].equalsIgnoreCase("id")) {
+                    idField = layerInfo.getSqlColumnNames()[i];
+                    break;
+                }
+            }
+
+            final String query = idField + " = " + getId();
+            final List<FeatureServiceFeature> features = getLayerProperties().getFeatureService()
+                        .getFeatureFactory()
+                        .createFeatures(query, null, null, 0, 1, null);
+
+            if (features.size() == 1) {
+                setProperties(features.get(0).getProperties());
+
+                return features.get(0);
+            }
+        } catch (Exception e) {
+            LOG.error("Error while reloading feature from server", e);
+        }
+
+        return null;
     }
 
     @Override
@@ -552,18 +625,208 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      */
     private MetaObject getMetaObject() throws ConnectionException {
         if (metaObject == null) {
-            metaObject = SessionManager.getConnection()
-                        .getMetaObject(SessionManager.getSession().getUser(),
-                                CidsLayerFeature.this.getId(),
-                                metaClass.getID(),
-                                SessionManager.getSession().getUser().getDomain());
-
-            if (metaObject == null) {
+            if (CidsLayerFeature.this.getId() < 0) {
+                // This is a new Object
                 metaObject = metaClass.getEmptyInstance();
+
+                copyFeaturePropertiesToMetaObject();
+            } else {
+                metaObject = SessionManager.getConnection()
+                            .getMetaObject(SessionManager.getSession().getUser(),
+                                    CidsLayerFeature.this.getId(),
+                                    metaClass.getID(),
+                                    SessionManager.getSession().getUser().getDomain());
+
+                if (metaObject == null) {
+                    metaObject = metaClass.getEmptyInstance();
+                }
             }
         }
 
         return metaObject;
+    }
+
+    /**
+     * Copies all properties of the feature into the bean. This is required, if the feautre is new, so that no cids bean
+     * exists on the server.
+     */
+    private void copyFeaturePropertiesToMetaObject() {
+        final CidsBean bean = metaObject.getBean();
+        final Map<Integer, CidsBean> stationLines = new HashMap<Integer, CidsBean>();
+
+        try {
+            for (final String colName : layerInfo.getColumnNames()) {
+                if (layerInfo.isCatalogue(colName)) {
+                    final Object propValue = getProperty(colName);
+
+                    if (propValue != null) {
+                        final MemberAttributeInfo attr = getMemberAttribute(colName);
+
+                        if (attr != null) {
+                            final int foereignKeyClass = attr.getForeignKeyClassId();
+                            final CidsBean catval = getCatalogueElement(metaClass.getDomain(),
+                                    foereignKeyClass,
+                                    String.valueOf(propValue));
+                            bean.setProperty(colName, catval);
+                        }
+                    }
+                } else if (layerInfo.isStation(colName)) {
+                    final StationInfo info = layerInfo.getStationInfo(colName);
+                    final Double value = (Double)getProperty(colName);
+                    final Object routeNameObject = getProperty(info.getRoutePropertyName());
+
+                    if ((value == null) || (routeNameObject == null)) {
+                        // station bean cannot be created
+                        continue;
+                    }
+
+                    if (info.isStationLine()) {
+                        CidsBean firstStation = stationLines.get(info.getLineId());
+
+                        if (firstStation == null) {
+                            final LinearReferencingHelper helper = FeatureRegistry.getInstance()
+                                        .getLinearReferencingSolver();
+                            final CidsBean secondStation = createStationBean(info, value);
+                            CidsBean line = null;
+
+                            if (info.isFromStation()) {
+                                line = helper.createLineBeanFromStationBean(secondStation, firstStation);
+                            } else {
+                                line = helper.createLineBeanFromStationBean(firstStation, secondStation);
+                            }
+
+                            bean.setProperty(colName, line);
+                        } else {
+                            firstStation = createStationBean(info, value);
+                            stationLines.put(info.getLineId(), firstStation);
+                        }
+                    } else {
+                        bean.setProperty(colName, createStationBean(info, value));
+                    }
+                } else if (layerInfo.isPrimitive(colName)) {
+                    bean.setProperty(colName, getProperty(colName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error while setting bean properties", e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   info   DOCUMENT ME!
+     * @param   value  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CidsBean createStationBean(final StationInfo info, final Double value) {
+        final String routeClass = info.getRouteTable();
+        final Object routeNameObject = getProperty(info.getRoutePropertyName());
+        final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
+        final String[] allDomains = helper.getAllUsedDomains();
+        final String routeNameProperty = helper.getRouteNamePropertyFromRouteByClassName(routeClass);
+        CidsBean routeBean = null;
+
+        for (final String domain : allDomains) {
+            routeBean = getRouteBean(domain, routeClass, routeNameProperty, routeNameObject);
+            if (routeBean != null) {
+                break;
+            }
+        }
+
+        return helper.createStationBeanFromRouteBean(routeBean, value);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   attrName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private MemberAttributeInfo getMemberAttribute(final String attrName) {
+        final HashMap attrMap = metaClass.getMemberAttributeInfos();
+
+        for (final Object key : attrMap.keySet()) {
+            final Object attrInfoObject = attrMap.get(key);
+
+            if (attrInfoObject instanceof MemberAttributeInfo) {
+                final MemberAttributeInfo attr = (MemberAttributeInfo)attrInfoObject;
+
+                if (attr.getName().equals(attrName)) {
+                    return attr;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain   DOCUMENT ME!
+     * @param   classId  DOCUMENT ME!
+     * @param   value    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CidsBean getCatalogueElement(final String domain, final int classId, final String value) {
+        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, classId);
+
+        final String query = "select " + mc.getID() + ", " + mc.getPrimaryKey() + " from " + mc.getTableName(); // NOI18N
+
+        try {
+            final MetaObject[] mos = SessionManager.getConnection()
+                        .getMetaObjectByQuery(SessionManager.getSession().getUser(), query);
+
+            if ((mos != null) && (mos.length > 0)) {
+                for (final MetaObject object : mos) {
+                    if (object.getBean().toString().equals(value)) {
+                        return object.getBean();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot load catalogue data", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   domain             DOCUMENT ME!
+     * @param   routeTable         DOCUMENT ME!
+     * @param   routeNameProperty  DOCUMENT ME!
+     * @param   routeName          DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private CidsBean getRouteBean(final String domain,
+            final String routeTable,
+            final String routeNameProperty,
+            final Object routeName) {
+        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, routeTable);
+
+        final String route = ((routeName instanceof String) ? ("'" + routeName + "'") : String.valueOf(routeName));
+        String query = "select " + mc.getID() + ", " + mc.getPrimaryKey() + " from " + mc.getTableName(); // NOI18N
+        query += " where " + routeNameProperty + "=" + route;
+
+        try {
+            final MetaObject[] mos = SessionManager.getConnection()
+                        .getMetaObjectByQuery(SessionManager.getSession().getUser(), query);
+
+            if ((mos != null) && (mos.length > 0)) {
+                return mos[0].getBean();
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot load catalogue data", e);
+        }
+
+        return null;
     }
 
     @Override
@@ -646,6 +909,31 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      */
     public Color getBackgroundColor() {
         return backgroundColor;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof CidsLayerFeature) {
+            final CidsLayerFeature other = (CidsLayerFeature)obj;
+
+            if ((getId() != -1) || (other.getId() != -1)) {
+                return metaClass.getTableName().equals(other.metaClass.getTableName()) && (getId() == other.getId());
+            } else {
+                return obj == other;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = (83 * hash) + this.getId();
+        hash = (83 * hash)
+                    + (((this.metaClass != null) && (metaClass.getTableName() != null))
+                        ? this.metaClass.getTableName().hashCode() : 0);
+        return hash;
     }
 
     /**

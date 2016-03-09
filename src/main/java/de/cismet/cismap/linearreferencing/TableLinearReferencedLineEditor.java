@@ -57,6 +57,8 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     private List<PropertyChangeListener> propListener = new ArrayList<PropertyChangeListener>();
     private String valueProperty;
     private String routeName;
+    private String otherLinesFrom;
+    private String otherLinesQuery;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -77,8 +79,14 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
         if (cidsBean != null) {
             fromStation = new TableStationEditor(true, cidsBean, routeName);
-            fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
             toStation = new TableStationEditor(true, cidsBean, routeName);
+            if (otherLinesFrom != null && otherLinesQuery != null) {
+                fromStation.setOtherLinesFrom(otherLinesFrom);
+                fromStation.setOtherLinesQuery(otherLinesQuery);
+                toStation.setOtherLinesFrom(otherLinesFrom);
+                toStation.setOtherLinesQuery(otherLinesQuery);
+            }
+            fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
             toStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, false));
             lineFeature = FeatureRegistry.getInstance()
                         .addLinearReferencedLineFeature(
@@ -135,7 +143,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     /**
      * DOCUMENT ME!
      */
-    private void recreateGeometry() {
+    public void recreateGeometry() {
         if ((fromStation != null) && (toStation != null)) {
             final double from = (Double)fromStation.getValue();
             final double to = (Double)toStation.getValue();
@@ -222,5 +230,33 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         final CidsBean geomBean = linearReferencedHelper.getGeomBeanFromLineBean(cidsBean);
 
         return geomBean.getProperty("geo_field");
+    }
+
+    /**
+     * @return the otherLinesFrom
+     */
+    public String getOtherLinesFrom() {
+        return otherLinesFrom;
+    }
+
+    /**
+     * @param otherLinesFrom the otherLinesFrom to set
+     */
+    public void setOtherLinesFrom(String otherLinesFrom) {
+        this.otherLinesFrom = otherLinesFrom;
+    }
+
+    /**
+     * @return the otherLinesQuery
+     */
+    public String getOtherLinesQuery() {
+        return otherLinesQuery;
+    }
+
+    /**
+     * @param otherLinesQuery the otherLinesQuery to set
+     */
+    public void setOtherLinesQuery(String otherLinesQuery) {
+        this.otherLinesQuery = otherLinesQuery;
     }
 }

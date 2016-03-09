@@ -80,7 +80,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     private boolean isBeanChangeLocked = false;
     private boolean changedSinceDrop = false;
     private LinearReferencedPointFeatureListener featureListener;
-    private LinearReferencingHelper linearReferencingHelper = FeatureRegistry.getInstance()
+    private final LinearReferencingHelper linearReferencingHelper = FeatureRegistry.getInstance()
                 .getLinearReferencingSolver();
     private boolean line;
     private boolean fromStation = false;
@@ -88,7 +88,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     private LinearReferencedLineEditor dialogLineEditor;
     private StationEditor dialogStationEditor;
     private String routeTable;
-    private WindowListener dialogCleanupListener = new WindowAdapter() {
+    private String otherLinesFrom;
+    private String otherLinesQuery;
+    private final WindowListener dialogCleanupListener = new WindowAdapter() {
 
             @Override
             public void windowClosed(final WindowEvent e) {
@@ -203,6 +205,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         this.lineBean = lineBean;
         this.routeTable = routeTable;
         initComponents();
+//        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 0.0d, 0.01d));
 
         initSpinnerListener();
         initFeatureListener();
@@ -284,9 +287,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         butExpand = new javax.swing.JButton();
 
         diaExp.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        diaExp.setTitle(org.openide.util.NbBundle.getMessage(
-                TableStationEditor.class,
-                "TableStationEditor.diaExp.title")); // NOI18N
+        diaExp.setTitle(org.openide.util.NbBundle.getMessage(TableStationEditor.class, "TableStationEditor.diaExp.title")); // NOI18N
         diaExp.getContentPane().setLayout(new java.awt.GridBagLayout());
 
         dialogPanel.setLayout(new java.awt.BorderLayout());
@@ -307,7 +308,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         setLayout(new java.awt.GridBagLayout());
 
         jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 0.0d, 1.0d));
-        jSpinner1.setEditor(new javax.swing.JSpinner.NumberEditor(jSpinner1, "###"));
+        jSpinner1.setEditor(new javax.swing.JSpinner.NumberEditor(jSpinner1, "###.##"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -316,28 +317,24 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         gridBagConstraints.weighty = 1.0;
         add(jSpinner1, gridBagConstraints);
 
-        butExpand.setText(org.openide.util.NbBundle.getMessage(
-                TableStationEditor.class,
-                "TableStationEditor.butExpand.text")); // NOI18N
+        butExpand.setText(org.openide.util.NbBundle.getMessage(TableStationEditor.class, "TableStationEditor.butExpand.text")); // NOI18N
         butExpand.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    butExpandActionPerformed(evt);
-                }
-            });
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                butExpandActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         add(butExpand, gridBagConstraints);
-    } // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butExpandActionPerformed
+    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butExpandActionPerformed
         final View w = getParentView(this);
 
         if (w != null) {
@@ -349,6 +346,10 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             if (line) {
                 dialogLineEditor = new LinearReferencedLineEditor(true);
                 dialogLineEditor.setRouteCombo(true);
+                if (otherLinesFrom != null && otherLinesQuery != null) {
+                    dialogLineEditor.setOtherLinesEnabled(true);
+                    dialogLineEditor.setOtherLinesQueryAddition(otherLinesFrom, otherLinesQuery);
+                }
                 // se.setDrawingFeaturesEnabled(false);
                 dialogLineEditor.setCidsBean(lineBean);
                 jPanel1.add(dialogLineEditor);
@@ -397,7 +398,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
         diaExp.setAlwaysOnTop(true);
         diaExp.setVisible(true);
-    } //GEN-LAST:event_butExpandActionPerformed
+    }//GEN-LAST:event_butExpandActionPerformed
 
     @Override
     public CidsBean getCidsBean() {
@@ -569,6 +570,12 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         }
     }
 
+    @Override
+    public void setEnabled(final boolean enabled) {
+        jSpinner1.setEnabled(enabled);
+        butExpand.setEnabled(enabled);
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -605,7 +612,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
                 @Override
                 public void focusGained(final FocusEvent fe) {
-                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(getFeature());
+//                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(getFeature());
                 }
             });
     }
@@ -732,7 +739,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                         .getTextField().getFormatter();
             final String text = ((JSpinner.DefaultEditor)jSpinner1.getEditor()).getTextField().getText();
             if (!text.isEmpty()) {
-                final Double d = new Double(text);
+                final Double d = new Double(text.replace(',', '.'));
                 setPointValue(d);
             }
         } finally {
@@ -765,7 +772,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         }
 
         if (!isSpinnerChangeLocked()) {
-            jSpinner1.setValue(Math.round(value));
+            jSpinner1.setValue(value);
         }
     }
 
@@ -796,7 +803,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         if (!isFeatureChangeLocked()) {
             final LinearReferencedPointFeature pointFeature = getFeature();
             if (pointFeature != null) {
-                pointFeature.setInfoFormat(new DecimalFormat("###"));
+                pointFeature.setInfoFormat(new DecimalFormat("###.00"));
                 pointFeature.moveToPosition(value);
             } else {
                 if (LOG.isDebugEnabled()) {
@@ -841,7 +848,8 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 //                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(getFeature());
                 }
                 if (!isBeanChangeLocked()) {
-                    linearReferencingHelper.setLinearValueToStationBean((double)Math.round(value), pointBean);
+//                    linearReferencingHelper.setLinearValueToStationBean((double)Math.round(value), pointBean);
+                    linearReferencingHelper.setLinearValueToStationBean(value, pointBean);
                 }
             } catch (Exception ex) {
                 if (LOG.isDebugEnabled()) {
@@ -939,5 +947,33 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     private void setInited(final boolean inited) {
         this.inited = inited;
+    }
+
+    /**
+     * @return the otherLinesFrom
+     */
+    public String getOtherLinesFrom() {
+        return otherLinesFrom;
+    }
+
+    /**
+     * @param otherLinesFrom the otherLinesFrom to set
+     */
+    public void setOtherLinesFrom(String otherLinesFrom) {
+        this.otherLinesFrom = otherLinesFrom;
+    }
+
+    /**
+     * @return the otherLinesQuery
+     */
+    public String getOtherLinesQuery() {
+        return otherLinesQuery;
+    }
+
+    /**
+     * @param otherLinesQuery the otherLinesQuery to set
+     */
+    public void setOtherLinesQuery(String otherLinesQuery) {
+        this.otherLinesQuery = otherLinesQuery;
     }
 }

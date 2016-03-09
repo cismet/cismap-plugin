@@ -389,7 +389,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             }
         }
         final boolean ignoreGeoLimitations = ((boundingBoxIncurrentCrs == null)
-                ? true : envelope == null || envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid)));
+                ? true : ((envelope == null) || envelope.coveredBy(boundingBoxIncurrentCrs.getGeometry(srid))));
 
         // if the hole envelope of the layer should be requested, the coordinate limitation is not required
         if ((boundingBoxIncurrentCrs != null)
@@ -547,7 +547,6 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
      *
      * @return  the envelope
      */
-    @Override
     public Geometry getEnvelope() {
         return envelope;
     }

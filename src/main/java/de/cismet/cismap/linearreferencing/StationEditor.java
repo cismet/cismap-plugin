@@ -132,6 +132,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
                 .getLinearReferencingSolver();
     private String routeName;
     private CidsBeanStore cidsBeanStore;
+    private boolean allowDoubleValues = true;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton badGeomButton;
@@ -717,7 +718,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      * @param  value  DOCUMENT ME!
      */
     private void setValueToLabel(final double value) {
-        getPointValueLabel().setText(Long.toString(Math.round(value)));
+        getPointValueLabel().setText(Double.toString(round(value)));
     }
 
     /**
@@ -740,7 +741,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         }
 
         if (!isSpinnerChangeLocked()) {
-            getValueSpinner().setValue(Math.round(value));
+            getValueSpinner().setValue(round(value));
         }
     }
 
@@ -753,7 +754,11 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         if (!isFeatureChangeLocked()) {
             final LinearReferencedPointFeature pointFeature = getFeature();
             if (pointFeature != null) {
-                pointFeature.setInfoFormat(new DecimalFormat("###"));
+                if (allowDoubleValues) {
+                    pointFeature.setInfoFormat(new DecimalFormat("###.00"));
+                } else {
+                    pointFeature.setInfoFormat(new DecimalFormat("###"));
+                }
                 pointFeature.moveToPosition(value);
             } else {
                 if (LOG.isDebugEnabled()) {
@@ -806,7 +811,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
                     if (!isBeanChangeLocked()) {
                         FEATURE_REGISTRY.getInstance()
                                 .getLinearReferencingSolver()
-                                .setLinearValueToStationBean((double)Math.round(value), pointBean);
+                                .setLinearValueToStationBean(round(value), pointBean);
                     }
                 } catch (Exception ex) {
                     if (LOG.isDebugEnabled()) {
@@ -821,6 +826,14 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         }
     }
 
+    private double round(double value) {
+        if (allowDoubleValues) {
+            return value;
+        } else {
+            return Math.round(value);
+        }
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -1305,27 +1318,27 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_splitButtonActionPerformed
+    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_splitButtonActionPerformed
         splitPoint();
-    }                                                                               //GEN-LAST:event_splitButtonActionPerformed
+    }//GEN-LAST:event_splitButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomButtonActionPerformed
+    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomButtonActionPerformed
         switchBadGeomVisibility();
-    }                                                                                 //GEN-LAST:event_badGeomButtonActionPerformed
+    }//GEN-LAST:event_badGeomButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomCorrectButtonActionPerformed
+    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomCorrectButtonActionPerformed
         correctBadGeomCorrect();
-    }                                                                                        //GEN-LAST:event_badGeomCorrectButtonActionPerformed
+    }//GEN-LAST:event_badGeomCorrectButtonActionPerformed
 
     /**
      * DOCUMENT ME!

@@ -204,6 +204,25 @@ public interface LinearReferencingHelper extends LinearReferencingSingletonInsta
     /**
      * DOCUMENT ME!
      *
+     * @param   route  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    String getRouteNamePropertyFromRouteByClassName(String route);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   fromStation  DOCUMENT ME!
+     * @param   toStation    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    CidsBean createLineBeanFromStationBean(CidsBean fromStation, CidsBean toStation);
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     String[] getAllUsedDomains();

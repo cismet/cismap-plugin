@@ -62,7 +62,7 @@
           <SpinnerModel initial="0.0" maximum="0.0" minimum="0.0" numberType="java.lang.Double" stepSize="1.0" type="number"/>
         </Property>
         <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.editors.SpinnerEditorEditor">
-          <SpinnerEditor format="###" type="3"/>
+          <SpinnerEditor format="###.##" type="3"/>
         </Property>
       </Properties>
       <Constraints>
