@@ -80,7 +80,7 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         if (cidsBean != null) {
             fromStation = new TableStationEditor(true, cidsBean, routeName);
             toStation = new TableStationEditor(true, cidsBean, routeName);
-            if (otherLinesFrom != null && otherLinesQuery != null) {
+            if ((otherLinesFrom != null) && (otherLinesQuery != null)) {
                 fromStation.setOtherLinesFrom(otherLinesFrom);
                 fromStation.setOtherLinesQuery(otherLinesQuery);
                 toStation.setOtherLinesFrom(otherLinesFrom);
@@ -233,30 +233,38 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     }
 
     /**
-     * @return the otherLinesFrom
+     * DOCUMENT ME!
+     *
+     * @return  the otherLinesFrom
      */
     public String getOtherLinesFrom() {
         return otherLinesFrom;
     }
 
     /**
-     * @param otherLinesFrom the otherLinesFrom to set
+     * DOCUMENT ME!
+     *
+     * @param  otherLinesFrom  the otherLinesFrom to set
      */
-    public void setOtherLinesFrom(String otherLinesFrom) {
+    public void setOtherLinesFrom(final String otherLinesFrom) {
         this.otherLinesFrom = otherLinesFrom;
     }
 
     /**
-     * @return the otherLinesQuery
+     * DOCUMENT ME!
+     *
+     * @return  the otherLinesQuery
      */
     public String getOtherLinesQuery() {
         return otherLinesQuery;
     }
 
     /**
-     * @param otherLinesQuery the otherLinesQuery to set
+     * DOCUMENT ME!
+     *
+     * @param  otherLinesQuery  the otherLinesQuery to set
      */
-    public void setOtherLinesQuery(String otherLinesQuery) {
+    public void setOtherLinesQuery(final String otherLinesQuery) {
         this.otherLinesQuery = otherLinesQuery;
     }
 }

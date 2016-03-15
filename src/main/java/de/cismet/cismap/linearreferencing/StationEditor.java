@@ -826,14 +826,21 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         }
     }
 
-    private double round(double value) {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   value  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private double round(final double value) {
         if (allowDoubleValues) {
             return value;
         } else {
             return Math.round(value);
         }
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -1318,27 +1325,27 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_splitButtonActionPerformed
+    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_splitButtonActionPerformed
         splitPoint();
-    }//GEN-LAST:event_splitButtonActionPerformed
+    }                                                                               //GEN-LAST:event_splitButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomButtonActionPerformed
+    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomButtonActionPerformed
         switchBadGeomVisibility();
-    }//GEN-LAST:event_badGeomButtonActionPerformed
+    }                                                                                 //GEN-LAST:event_badGeomButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomCorrectButtonActionPerformed
+    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomCorrectButtonActionPerformed
         correctBadGeomCorrect();
-    }//GEN-LAST:event_badGeomCorrectButtonActionPerformed
+    }                                                                                        //GEN-LAST:event_badGeomCorrectButtonActionPerformed
 
     /**
      * DOCUMENT ME!

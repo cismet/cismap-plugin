@@ -452,8 +452,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         for (int i = 0; i < cols.length; ++i) {
             colMap.put(cols[i], props[i]);
         }
-        
-        //to ensure that the geometries are set properly
+
+        // to ensure that the geometries are set properly
         if (stations != null) {
             for (final String key : stations.keySet()) {
                 final DisposableCidsBeanStore editor = stations.get(key);
@@ -463,7 +463,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 }
             }
         }
-        
+
         for (final String key : propertyMap.keySet()) {
             if (hasAdditionalFields && (ruleSet.getIndexOfAdditionalFieldName(key) != Integer.MIN_VALUE)) {
                 // additional fields cannot be saved
@@ -517,7 +517,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         }
                     }
                 } else {
-                    if (stations != null && stations.get(key) != null) {
+                    if ((stations != null) && (stations.get(key) != null)) {
                         final DisposableCidsBeanStore store = stations.get(key);
                         bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
                             store.getCidsBean());

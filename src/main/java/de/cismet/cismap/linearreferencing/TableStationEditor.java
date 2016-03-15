@@ -287,7 +287,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         butExpand = new javax.swing.JButton();
 
         diaExp.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        diaExp.setTitle(org.openide.util.NbBundle.getMessage(TableStationEditor.class, "TableStationEditor.diaExp.title")); // NOI18N
+        diaExp.setTitle(org.openide.util.NbBundle.getMessage(
+                TableStationEditor.class,
+                "TableStationEditor.diaExp.title")); // NOI18N
         diaExp.getContentPane().setLayout(new java.awt.GridBagLayout());
 
         dialogPanel.setLayout(new java.awt.BorderLayout());
@@ -317,24 +319,28 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         gridBagConstraints.weighty = 1.0;
         add(jSpinner1, gridBagConstraints);
 
-        butExpand.setText(org.openide.util.NbBundle.getMessage(TableStationEditor.class, "TableStationEditor.butExpand.text")); // NOI18N
+        butExpand.setText(org.openide.util.NbBundle.getMessage(
+                TableStationEditor.class,
+                "TableStationEditor.butExpand.text")); // NOI18N
         butExpand.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                butExpandActionPerformed(evt);
-            }
-        });
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    butExpandActionPerformed(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         add(butExpand, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
+    } // </editor-fold>//GEN-END:initComponents
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butExpandActionPerformed
+    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butExpandActionPerformed
         final View w = getParentView(this);
 
         if (w != null) {
@@ -346,7 +352,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             if (line) {
                 dialogLineEditor = new LinearReferencedLineEditor(true);
                 dialogLineEditor.setRouteCombo(true);
-                if (otherLinesFrom != null && otherLinesQuery != null) {
+                if ((otherLinesFrom != null) && (otherLinesQuery != null)) {
                     dialogLineEditor.setOtherLinesEnabled(true);
                     dialogLineEditor.setOtherLinesQueryAddition(otherLinesFrom, otherLinesQuery);
                 }
@@ -398,7 +404,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
         diaExp.setAlwaysOnTop(true);
         diaExp.setVisible(true);
-    }//GEN-LAST:event_butExpandActionPerformed
+    } //GEN-LAST:event_butExpandActionPerformed
 
     @Override
     public CidsBean getCidsBean() {
@@ -950,30 +956,38 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     }
 
     /**
-     * @return the otherLinesFrom
+     * DOCUMENT ME!
+     *
+     * @return  the otherLinesFrom
      */
     public String getOtherLinesFrom() {
         return otherLinesFrom;
     }
 
     /**
-     * @param otherLinesFrom the otherLinesFrom to set
+     * DOCUMENT ME!
+     *
+     * @param  otherLinesFrom  the otherLinesFrom to set
      */
-    public void setOtherLinesFrom(String otherLinesFrom) {
+    public void setOtherLinesFrom(final String otherLinesFrom) {
         this.otherLinesFrom = otherLinesFrom;
     }
 
     /**
-     * @return the otherLinesQuery
+     * DOCUMENT ME!
+     *
+     * @return  the otherLinesQuery
      */
     public String getOtherLinesQuery() {
         return otherLinesQuery;
     }
 
     /**
-     * @param otherLinesQuery the otherLinesQuery to set
+     * DOCUMENT ME!
+     *
+     * @param  otherLinesQuery  the otherLinesQuery to set
      */
-    public void setOtherLinesQuery(String otherLinesQuery) {
+    public void setOtherLinesQuery(final String otherLinesQuery) {
         this.otherLinesQuery = otherLinesQuery;
     }
 }
