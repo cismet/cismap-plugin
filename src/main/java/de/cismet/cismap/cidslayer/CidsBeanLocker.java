@@ -28,6 +28,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
+import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
 /**
  * Can be used to lock cids beans. It will be assumed that the cids system contains a cids class with the name cs_locks
@@ -44,9 +45,9 @@ public class CidsBeanLocker {
 
     private static final Logger LOG = Logger.getLogger(CidsBeanLocker.class);
     private static final String LOCK_QUERY = "SELECT DISTINCT %1$s, %2$s "
-                + " FROM %3$s WHERE class_id = %4$s and (object_id = %5$s or object_id is null) and user_string <> '%6$s';";
+                + " FROM %3$s WHERE class_id = %4$s and (object_id = %5$s or object_id is null);";
     private static final String LOCK_MC_QUERY = "SELECT DISTINCT %1$s, %2$s "
-                + " FROM %3$s WHERE class_id = %4$s and user_string <> '%5$s' limit 1;";
+                + " FROM %3$s WHERE class_id = %4$s limit 1;";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -57,14 +58,16 @@ public class CidsBeanLocker {
     /**
      * Locks the given bean.
      *
-     * @param   bean  the cids bean to lock
+     * @param   bean                         the cids bean to lock
+     * @param   multiLockForSameUserAllowed  DOCUMENT ME!
      *
      * @return  the lock bean. This bean can be used to unlock the given bean
      *
      * @throws  LockAlreadyExistsException  if the given bean is already locked
      * @throws  Exception                   DOCUMENT ME!
      */
-    public CidsBean lock(final CidsBean bean) throws LockAlreadyExistsException, Exception {
+    public CidsBean lock(final CidsBean bean, final boolean multiLockForSameUserAllowed)
+            throws LockAlreadyExistsException, Exception {
         try {
             final MetaClass lockMc = getLockMetaClassForBean(bean.getMetaObject().getDomain());
             final String userString = NbBundle.getMessage(
@@ -79,16 +82,26 @@ public class CidsBeanLocker {
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
                     bean.getMetaObject().getMetaClass().getID(),
-                    bean.getMetaObject().getID(),
-                    userString);
+                    bean.getMetaObject().getID());
             final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
 
             if ((mos != null) && (mos.length > 0)) {
-                final LockAlreadyExistsException ex = new LockAlreadyExistsException(
-                        "The lock does already exists",
-                        String.valueOf(mos[0].getBean().getProperty("user_string")));
+                if ((mos[0].getBean().getProperty("user_string") == null)
+                            && mos[0].getBean().getProperty("user_string").equals(userString)) {
+                    if (!multiLockForSameUserAllowed) {
+                        final LockAlreadyExistsException ex = new LockFromSameUserAlreadyExistsException(
+                                "The lock does already exists",
+                                String.valueOf(mos[0].getBean().getProperty("user_string")));
 
-                throw ex;
+                        throw ex;
+                    }
+                } else {
+                    final LockAlreadyExistsException ex = new LockAlreadyExistsException(
+                            "The lock does already exists",
+                            String.valueOf(mos[0].getBean().getProperty("user_string")));
+
+                    throw ex;
+                }
             }
 
             // create lock
@@ -110,14 +123,16 @@ public class CidsBeanLocker {
     /**
      * Locks all beans of the given meta class.
      *
-     * @param   mc  the meta class to lock
+     * @param   mc                           the meta class to lock
+     * @param   multiLockForSameUserAllowed  DOCUMENT ME!
      *
      * @return  the lock bean. This bean can be used to unlock the given meta class
      *
      * @throws  LockAlreadyExistsException  if at least one bean of the given meta class is already locked
      * @throws  Exception                   DOCUMENT ME!
      */
-    public CidsBean lock(final MetaClass mc) throws LockAlreadyExistsException, Exception {
+    public CidsBean lock(final MetaClass mc, final boolean multiLockForSameUserAllowed)
+            throws LockAlreadyExistsException, Exception {
         try {
             final MetaClass lockMc = getLockMetaClassForBean(mc.getDomain());
             final String userString = NbBundle.getMessage(
@@ -131,16 +146,26 @@ public class CidsBeanLocker {
                     lockMc.getID(),
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
-                    mc.getID(),
-                    userString);
+                    mc.getID());
             final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
 
             if ((mos != null) && (mos.length > 0)) {
-                final LockAlreadyExistsException ex = new LockAlreadyExistsException(
-                        "The lock does already exists",
-                        String.valueOf(mos[0].getBean().getProperty("user_string")));
+                if ((mos[0].getBean().getProperty("user_string") == null)
+                            && mos[0].getBean().getProperty("user_string").equals(userString)) {
+                    if (!multiLockForSameUserAllowed) {
+                        final LockAlreadyExistsException ex = new LockFromSameUserAlreadyExistsException(
+                                "The lock does already exists",
+                                String.valueOf(mos[0].getBean().getProperty("user_string")));
 
-                throw ex;
+                        throw ex;
+                    }
+                } else {
+                    final LockAlreadyExistsException ex = new LockAlreadyExistsException(
+                            "The lock does already exists",
+                            String.valueOf(mos[0].getBean().getProperty("user_string")));
+
+                    throw ex;
+                }
             }
 
             // create lock

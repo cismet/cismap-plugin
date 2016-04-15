@@ -61,11 +61,13 @@ import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.PSticky;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.commons.util.SelectionManager;
 
 import de.cismet.cismap.linearreferencing.FeatureRegistry;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
 import de.cismet.cismap.linearreferencing.TableStationEditor;
+import java.util.Collections;
 
 /**
  * DOCUMENT ME!
@@ -339,7 +341,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         backupProperties = (HashMap)super.getProperties().clone();
                         CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                         CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
-                        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(this);
+                        SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
 //                        backgroundColor = new Color(255, 91, 0);
                     }
                 } else {
@@ -347,7 +349,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     backupProperties = (HashMap)super.getProperties().clone();
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
-                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().select(this);
+                    SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
                     backgroundColor = new Color(255, 91, 0);
                 }
 

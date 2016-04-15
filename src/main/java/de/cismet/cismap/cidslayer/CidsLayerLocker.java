@@ -32,22 +32,24 @@ public class CidsLayerLocker extends CidsBeanLocker implements FeatureLockingInt
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object lock(final Feature feature) throws LockAlreadyExistsException, Exception {
+    public Object lock(final Feature feature, final boolean multiLockForSameUserAllowed)
+            throws LockAlreadyExistsException, Exception {
         if (feature instanceof CidsLayerFeature) {
             final CidsLayerFeature cidsLayerFeature = (CidsLayerFeature)feature;
 
-            return lock(cidsLayerFeature.getBean());
+            return lock(cidsLayerFeature.getBean(), multiLockForSameUserAllowed);
         }
 
         throw new IllegalArgumentException("Only CidsLayerFeature are supported");
     }
 
     @Override
-    public Object lock(final AbstractFeatureService service) throws LockAlreadyExistsException, Exception {
+    public Object lock(final AbstractFeatureService service, final boolean multiLockForSameUserAllowed)
+            throws LockAlreadyExistsException, Exception {
         if (service instanceof CidsLayer) {
             final CidsLayer layer = (CidsLayer)service;
 
-            return lock(layer.getMetaClass());
+            return lock(layer.getMetaClass(), multiLockForSameUserAllowed);
         }
 
         throw new IllegalArgumentException("Only CidsLayerFeature are supported");

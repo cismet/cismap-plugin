@@ -31,6 +31,8 @@ import javax.swing.ImageIcon;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cids.search.QuerySearchMethod;
+
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
 import de.cismet.cismap.commons.CrsTransformer;
@@ -328,7 +330,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
     @Override
     public boolean isEditable() {
-        return true;
+        if ((metaClass != null) && (metaClass.getPermissions() != null)) {
+            return metaClass.getPermissions().hasWritePermission(SessionManager.getSession().getUser());
+        } else {
+            // At the moment, this method is only used in the attributeTable and the FeatureInfoPanel.
+            // If the hasWritePermission method cannot be invoked, true should be retuned, because the
+            // individual objects will also be checked, before they can be changed
+            return true;
+        }
     }
 
     @Override
@@ -344,6 +353,43 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         }
 
         return name;
+    }
+
+    @Override
+    public boolean decorateLater() {
+        return true;
+    }
+
+    @Override
+    public String decorateQuery(final String query) {
+        final char TEXT_DELIMITER = '\'';
+        final StringBuilder decoratedQuery = new StringBuilder(query);
+        boolean inDelimiter = false;
+        final StringBuilder lastWord = new StringBuilder();
+
+        for (int i = 0; i < decoratedQuery.length(); ++i) {
+            final char currentCharacter = decoratedQuery.charAt(i);
+            if (!inDelimiter
+                        && (Character.isAlphabetic(currentCharacter) || Character.isDigit(currentCharacter)
+                            || (currentCharacter == '_'))) {
+                lastWord.append(currentCharacter);
+            } else if (!inDelimiter && (lastWord.length() > 0)) {
+                final String decoratedName = decoratePropertyName(lastWord.toString());
+                if (!lastWord.toString().equals(decoratedName) && (currentCharacter != '(')) {
+                    decoratedQuery.replace(i - lastWord.length(), i, decoratedName);
+                    i += decoratedName.length() - lastWord.length();
+                }
+                lastWord.setLength(0);
+            } else {
+                lastWord.setLength(0);
+            }
+
+            if (currentCharacter == TEXT_DELIMITER) {
+                inDelimiter = !inDelimiter;
+            }
+        }
+
+        return decoratedQuery.toString();
     }
 
     /**
