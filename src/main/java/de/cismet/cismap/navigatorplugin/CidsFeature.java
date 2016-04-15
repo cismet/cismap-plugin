@@ -46,12 +46,13 @@ import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
 
 import de.cismet.cismap.commons.Refreshable;
 import de.cismet.cismap.commons.features.Bufferable;
-import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.FeatureRenderer;
+import de.cismet.cismap.commons.features.FeatureRendererAwareFeature;
 import de.cismet.cismap.commons.features.Highlightable;
+import de.cismet.cismap.commons.features.InfoNodeAwareFeature;
 import de.cismet.cismap.commons.features.PureFeatureGroup;
 import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
 import de.cismet.cismap.commons.features.XStyledFeature;
@@ -74,7 +75,9 @@ public class CidsFeature implements XStyledFeature,
     Bufferable,
     RasterLayerSupportedFeature,
     FeatureGroup,
-    CidsBeanActionsProvider {
+    CidsBeanActionsProvider,
+    InfoNodeAwareFeature,
+    FeatureRendererAwareFeature {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -110,6 +113,7 @@ public class CidsFeature implements XStyledFeature,
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
+    private boolean infoNodeEnabled = true;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -284,6 +288,8 @@ public class CidsFeature implements XStyledFeature,
                     cf.setParentFeature(this); // first we had fg here ;-)
                     cf.setMyAttributeStringInParentFeature(renderFeature);
                     fg.addFeature(cf);
+                    // sub features should not show their InfoNode Panel
+                    cf.setInfoNodeEnabled(false);
                 }
                 fg.setParentFeature(this);
                 fg.setMyAttributeStringInParentFeature(renderFeature);
@@ -293,8 +299,11 @@ public class CidsFeature implements XStyledFeature,
                 final CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature, rootRenderer);
                 cf.setParentFeature(this);
                 cf.setMyAttributeStringInParentFeature(renderFeature);
+                // sub features should not show their InfoNode Panel
+                cf.setInfoNodeEnabled(false);
                 result = cf;
             }
+
             if (result.getGeometry() != null) {
                 // ok case
                 subFeatures.add(result);
@@ -709,6 +718,7 @@ public class CidsFeature implements XStyledFeature,
         if (LOG.isDebugEnabled()) {
             LOG.debug("getInfoComponent"); // NOI18N
         }
+
         if (parentFeatureRenderer != null) {
             return parentFeatureRenderer.getInfoComponent(refresh, this);
         } else if (featureRenderer != null) {
@@ -896,7 +906,9 @@ public class CidsFeature implements XStyledFeature,
                     && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
                 final String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length()); // NOI18N
-                LOG.fatal("attrField" + attrField);                                                                    // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("FeatureSupportingRasterService:attrField:" + attrField);                                // NOI18N
+                }
                 final String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {
@@ -1044,6 +1056,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public FeatureRenderer getFeatureRenderer() {
         return featureRenderer;
     }
@@ -1053,6 +1066,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public SubFeatureAwareFeatureRenderer getParentFeatureRenderer() {
         return parentFeatureRenderer;
     }
@@ -1065,5 +1079,19 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public Collection<CidsBeanAction> getActions() {
         return cidsBeanActions;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  infoNodeEnabled  the infoComponentDisabled to set
+     */
+    public void setInfoNodeEnabled(final boolean infoNodeEnabled) {
+        this.infoNodeEnabled = infoNodeEnabled;
+    }
+
+    @Override
+    public boolean hasInfoNode() {
+        return infoNodeEnabled;
     }
 }

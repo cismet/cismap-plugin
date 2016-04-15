@@ -21,6 +21,7 @@ import Sirius.navigator.types.iterator.SingleAttributeIterator;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
+import Sirius.navigator.ui.LayoutedContainer;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
@@ -93,6 +94,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.net.URI;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,6 +159,7 @@ import de.cismet.cismap.commons.gui.infowidgets.LayerInfo;
 import de.cismet.cismap.commons.gui.infowidgets.Legend;
 import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
+import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
@@ -192,6 +195,7 @@ import de.cismet.lookupoptions.gui.OptionsDialog;
 
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.JnlpSystemPropertyHelper;
 import de.cismet.tools.JnlpTools;
 import de.cismet.tools.StaticDebuggingTools;
 
@@ -224,6 +228,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     StatusListener,
     HistoryModelListener,
     FeatureCollectionListener {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    public static final String DEFAULT_LOCAL_LAYOUT = "/defaultCismap.layout";
+    private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE = "/defaultCismap_" + System.getProperty("user.language")
+                + ".layout";
+    private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY = "/defaultCismap_"
+                + System.getProperty("user.language") + "_" + System.getProperty("user.country")
+                + ".layout";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -277,7 +290,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final StringViewMap viewMap = new StringViewMap();
     private final Map<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
-    private ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
+    private final ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
+    private final ResetLayoutMethod resetLayoutMethod = new ResetLayoutMethod();
     private final Map<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
     private final List<JMenuItem> menues = new ArrayList<JMenuItem>();
@@ -301,9 +315,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "/images/miniForward.png"));                                                                             // NOI18N
     private javax.swing.ImageIcon current = new javax.swing.ImageIcon(getClass().getResource("/images/current.png"));    // NOI18N
     private javax.swing.ImageIcon logo = new javax.swing.ImageIcon(getClass().getResource("/images/cismetlogo16.png"));  // NOI18N
-    private boolean isInit = true;
-    private String helpUrl;
-    private String newsUrl;
+    private String helpUrl = null;
+    private String newsUrl = null;
     private AboutDialog about;
     private OverviewComponent overviewComponent = null;
     private Dimension oldWindowDimension = new Dimension(-1, -1);
@@ -349,6 +362,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator14;
     private javax.swing.JSeparator jSeparator15;
@@ -390,6 +404,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniLoadConfig;
     private javax.swing.JMenuItem mniLoadConfigFromServer;
     private javax.swing.JMenuItem mniLoadLayout;
+    private javax.swing.JMenuItem mniLoadShape;
     private javax.swing.JMenuItem mniMap;
     private javax.swing.JMenuItem mniMapToFile;
     private javax.swing.JMenuItem mniNews;
@@ -454,7 +469,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         }
 
         try {
-            final String ext = System.getProperty("directory.extension"); // NOI18N
+            final String ext = JnlpSystemPropertyHelper.getProperty("directory.extension"); // NOI18N
 
             System.out.println("SystemdirExtension=:" + ext); // NOI18N
 
@@ -999,6 +1014,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 mniClose.setVisible(false);
                 pluginMethods.put(showObjectsMethod.getId(), showObjectsMethod);
+                pluginMethods.put(resetLayoutMethod.getId(), resetLayoutMethod);
 
                 // TODO What the hell is this?
                 this.context.getMetadata().addMetaNodeSelectionListener(new NodeChangeListener());
@@ -1045,7 +1061,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         configureApp(false);
 
         // configureActiveTabAfterVisibility();
-        isInit = false;
 
         for (final Scale s : mapC.getScales()) {
             if (s.getDenominator() > 0) {
@@ -1085,7 +1100,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void windowOpened(final WindowEvent e) {
-                        loadLayout(cismapDirectory + fs + standaloneLayoutName);
+                        loadLayout(cismapDirectory + fs + standaloneLayoutName, true);
                         removeWindowListener(loadLayoutWhenOpenedAdapter);
                     }
                 };
@@ -1100,7 +1115,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                         @Override
                         public void windowOpened(final WindowEvent e) {
-                            loadLayout(cismapDirectory + fs + pluginLayoutName);
+                            loadLayout(cismapDirectory + fs + pluginLayoutName, true);
                             ComponentRegistry.getRegistry()
                                     .getMainWindow()
                                     .removeWindowListener(loadLayoutWhenOpenedAdapter);
@@ -1109,7 +1124,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 ComponentRegistry.getRegistry().getMainWindow().addWindowListener(loadLayoutWhenOpenedAdapter);
             } else {
-                loadLayout(cismapDirectory + fs + pluginLayoutName);
+                loadLayout(cismapDirectory + fs + pluginLayoutName, true);
             }
         }
     }
@@ -1502,6 +1517,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniSaveLayout = new javax.swing.JMenuItem();
         mniLoadLayout = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
+        mniLoadShape = new javax.swing.JMenuItem();
+        jSeparator12 = new javax.swing.JPopupMenu.Separator();
         mniClipboard = new javax.swing.JMenuItem();
         mniMapToFile = new javax.swing.JMenuItem();
         mniGeoLinkClipboard = new javax.swing.JMenuItem();
@@ -2201,6 +2218,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menFile.add(mniLoadLayout);
         menFile.add(jSeparator9);
 
+        mniLoadShape.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icon-importfile.png"))); // NOI18N
+        mniLoadShape.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadShape.text"));                                                             // NOI18N
+        mniLoadShape.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniLoadShape.toolTipText",
+                new Object[] {}));                                                                              // NOI18N
+        mniLoadShape.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniLoadShapeActionPerformed(evt);
+                }
+            });
+        menFile.add(mniLoadShape);
+        menFile.add(jSeparator12);
+
         mniClipboard.setAction(new ExportMapToClipboardAction());
         mniClipboard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_C,
@@ -2896,6 +2931,48 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
+    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadShapeActionPerformed
+        JFileChooser fc;
+
+        try {
+            fc = new JFileChooser(cismapDirectory);
+        } catch (Exception bug) {
+            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
+            fc = new JFileChooser(cismapDirectory, new RestrictedFileSystemView());
+        }
+
+        fc.setFileFilter(new FileFilter() {
+
+                @Override
+                public boolean accept(final File f) {
+                    return f.isDirectory()
+                                || f.getName().toLowerCase().endsWith(".shp"); // NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return org.openide.util.NbBundle.getMessage(
+                            CismapPlugin.class,
+                            "CismapPlugin.mniLoadShapeActionPerformed.FileFiltergetDescription.return"); // NOI18N
+                }
+            });
+
+        final int state = fc.showOpenDialog(this);
+
+        if (state == JFileChooser.APPROVE_OPTION) {
+            final File file = fc.getSelectedFile();
+            final String name = file.getAbsolutePath();
+
+            final ActiveLayerModel model = (ActiveLayerModel)mapC.getMappingModel();
+            LayerDropUtils.handleFiles(Collections.nCopies(1, file), model, 0, this);
+        }
+    } //GEN-LAST:event_mniLoadShapeActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
     private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {
         log.info("REDO"); // NOI18N
 
@@ -3316,7 +3393,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             name = name.toLowerCase();
 
             if (name.endsWith(".layout")) {                                                          // NOI18N
-                loadLayout(name);
+                loadLayout(name, false);
             } else {
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
@@ -3548,7 +3625,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniResetWindowLayoutActionPerformed(final java.awt.event.ActionEvent evt) {
-        setupDefaultLayout();
+        this.loadLayout(DEFAULT_LOCAL_LAYOUT, true);
     }
 
     /**
@@ -4178,8 +4255,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             newsUrl = news_url_element.getText();
         } catch (Throwable t) {
-            log.error("Error while loading the help urls (" + prefs.getChildren() + ")", t); // NOI18N
+            log.error("Error while loading the help urls (" + prefs.getChildren() + "), disabling menu items", t); // NOI18N
         }
+
+        // enable or disable help urls
+        this.mniOnlineHelp.setEnabled(helpUrl != null);
+        this.mniNews.setEnabled(newsUrl != null);
+        this.menHelp.setEnabled(this.mniOnlineHelp.isEnabled() && this.mniNews.isEnabled());
 
         windows2skip = new ArrayList<String>();
 
@@ -4358,38 +4440,72 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     /**
      * DOCUMENT ME!
      *
-     * @param  file  DOCUMENT ME!
+     * @param  file    DOCUMENT ME!
+     * @param  isInit  DOCUMENT ME!
      */
-    public void loadLayout(final String file) {
+    public void loadLayout(final String file, final boolean isInit) {
         setupDefaultLayout();
         if (log.isDebugEnabled()) {
             log.debug("Load Layout.. from " + file); // NOI18N
         }
 
-        final File layoutFile = new File(file);
+        File layoutFile = null;
+        boolean layoutExists;
+        InputStream layoutFileInputStream = null;
+        final String defaultLayout = this.getInternationalizedDefaultLayout();
+        if (isInit && (file.equals(DEFAULT_LOCAL_LAYOUT) || file.equals(defaultLayout))
+                    && (this.getClass().getResource(defaultLayout) != null)) {
+            if (log.isDebugEnabled()) {
+                log.debug("loading default layout from local layout file '" + defaultLayout + "'");
+            }
 
-        if (layoutFile.exists()) {
+            layoutFileInputStream = this.getClass().getResourceAsStream(defaultLayout);
+            layoutExists = true;
+        } else {
+            layoutFile = new File(file);
+            layoutExists = layoutFile.exists();
+        }
+
+        if (layoutExists) {
             try {
-                loadLayout(new FileInputStream(layoutFile));
+                if (layoutFileInputStream == null) {
+                    layoutFileInputStream = new FileInputStream(layoutFile);
+                }
+
+                loadLayout(layoutFileInputStream, isInit);
             } catch (FileNotFoundException e) {
-                log.error("Layout file not found", e);
+                log.error("Layout File '" + file + "' not found", e);
+                JOptionPane.showMessageDialog(
+                    StaticSwingTools.getParentFrame(mapC),
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
+                    org.openide.util.NbBundle.getMessage(
+                        CismapPlugin.class,
+                        "CismapPlugin.loadLayout(String).JOptionPane.title"), // NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
             }
         } else {
             if (isInit) {
-                log.fatal("File does not exist --> default layout (init)"); // NOI18N
-                EventQueue.invokeLater(new Runnable() {
+                log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
+                if (isInit && (defaultLayout != null)) {
+                    // reset to saved local layout file in custom res.jar
+                    this.loadLayout(defaultLayout, isInit);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
-                            // setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
-                            setupDefaultLayout();
-                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
-                        }
-                    });
+                            @Override
+                            public void run() {
+                                // UGLY WINNING --> Gefixed durch IDW Version 1.5
+                                // setupDefaultLayout();
+                                // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
+                                setupDefaultLayout();
+                                // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                            }
+                        });
+                }
             } else {
-                log.fatal("File does not exist)");                               // NOI18N
+                log.error("File '" + file + "' does not exist)");                // NOI18N
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
@@ -4406,9 +4522,47 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     /**
      * DOCUMENT ME!
      *
-     * @param  layoutInput  DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
-    public void loadLayout(final InputStream layoutInput) {
+    protected String getInternationalizedDefaultLayout() {
+        URL defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY);
+        if (defaultLayoutUrl == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY
+                            + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE + "'");
+            }
+        } else {
+            return DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY;
+        }
+
+        defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE);
+        if (defaultLayoutUrl == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE
+                            + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT + "'");
+            }
+        } else {
+            return DEFAULT_LOCAL_LAYOUT_LANGUAGE;
+        }
+
+        defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT);
+        if (defaultLayoutUrl == null) {
+            log.warn("default layout file '" + DEFAULT_LOCAL_LAYOUT
+                        + "' not found, giving up!");
+        } else {
+            return DEFAULT_LOCAL_LAYOUT;
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  layoutInput  DOCUMENT ME!
+     * @param  isInit       DOCUMENT ME!
+     */
+    public void loadLayout(final InputStream layoutInput, final boolean isInit) {
         if (layoutInput != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Layout File exists"); // NOI18N
@@ -5211,6 +5365,26 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     /**
      * DOCUMENT ME!
      *
+     * @version  $Revision$, $Date$
+     */
+    private class ResetLayoutMethod implements PluginMethod {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String getId() {
+            return this.getClass().getName();
+        }
+
+        @Override
+        public void invoke() throws Exception {
+            CismapPlugin.this.loadLayout(DEFAULT_LOCAL_LAYOUT, true);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @author   $author$
      * @version  $Revision$, $Date$
      */
@@ -5370,6 +5544,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                     for (final DefaultMetaTreeNode node : nodes) {
                                         final MetaObjectNode mon = ((ObjectTreeNode)node).getMetaObjectNode();
+                                        // TODO: Check4CashedGeomAndLightweightJson
                                         MetaObject mo = mon.getObject();
 
                                         if (mo == null) {
