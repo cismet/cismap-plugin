@@ -26,6 +26,7 @@ import java.util.List;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedLineFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
@@ -59,16 +60,24 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     private String routeName;
     private String otherLinesFrom;
     private String otherLinesQuery;
+    private FeatureServiceFeature parentFeature;
+    private String stationProperty;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new TableLinearReferencedLineEditor object.
      *
-     * @param  routeName  DOCUMENT ME!
+     * @param  routeName        DOCUMENT ME!
+     * @param  parentFeature    DOCUMENT ME!
+     * @param  stationProperty  DOCUMENT ME!
      */
-    public TableLinearReferencedLineEditor(final String routeName) {
+    public TableLinearReferencedLineEditor(final String routeName,
+            final FeatureServiceFeature parentFeature,
+            final String stationProperty) {
         this.routeName = routeName;
+        this.parentFeature = parentFeature;
+        this.stationProperty = stationProperty;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -78,8 +87,8 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
         this.cidsBean = cidsBean;
 
         if (cidsBean != null) {
-            fromStation = new TableStationEditor(true, cidsBean, routeName);
-            toStation = new TableStationEditor(true, cidsBean, routeName);
+            fromStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
+            toStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
             if ((otherLinesFrom != null) && (otherLinesQuery != null)) {
                 fromStation.setOtherLinesFrom(otherLinesFrom);
                 fromStation.setOtherLinesQuery(otherLinesQuery);
@@ -266,5 +275,41 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
      */
     public void setOtherLinesQuery(final String otherLinesQuery) {
         this.otherLinesQuery = otherLinesQuery;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the parentFeature
+     */
+    public FeatureServiceFeature getParentFeature() {
+        return parentFeature;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  parentFeature  the parentFeature to set
+     */
+    public void setParentFeature(final FeatureServiceFeature parentFeature) {
+        this.parentFeature = parentFeature;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the stationProperty
+     */
+    public String getStationProperty() {
+        return stationProperty;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  stationProperty  the stationProperty to set
+     */
+    public void setStationProperty(final String stationProperty) {
+        this.stationProperty = stationProperty;
     }
 }

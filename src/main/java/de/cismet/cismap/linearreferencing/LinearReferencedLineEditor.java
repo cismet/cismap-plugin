@@ -17,6 +17,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
+
 import org.openide.util.NbBundle;
 
 import java.awt.CardLayout;
@@ -191,6 +194,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private LinePropertyChangeListener linePropertyChangeListener = new LinePropertyChangeListener();
     private boolean routeCombo = false;
     private boolean allowDoubleValues = true;
+    private boolean routesComboInitialised = false;
+    private String routeMetaClassName;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnFromBadGeom;
@@ -234,18 +239,21 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
     /**
      * Creates a new LinearReferencedLineEditor object.
+     *
+     * @param  routeMetaClassName  DOCUMENT ME!
      */
-    public LinearReferencedLineEditor() {
-        this(true);
+    public LinearReferencedLineEditor(final String routeMetaClassName) {
+        this(true, routeMetaClassName);
     }
 
     /**
      * Creates a new LinearReferencedLineEditor object.
      *
-     * @param  isEditable  DOCUMENT ME!
+     * @param  isEditable          DOCUMENT ME!
+     * @param  routeMetaClassName  DOCUMENT ME!
      */
-    public LinearReferencedLineEditor(final boolean isEditable) {
-        this(isEditable, isEditable);
+    public LinearReferencedLineEditor(final boolean isEditable, final String routeMetaClassName) {
+        this(isEditable, isEditable, false, routeMetaClassName);
     }
 
     /**
@@ -253,10 +261,33 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      *
      * @param  isEditable                DOCUMENT ME!
      * @param  isDrawingFeaturesEnabled  DOCUMENT ME!
+     * @param  routeCombo                DOCUMENT ME!
+     * @param  routeMetaClassName        DOCUMENT ME!
      */
-    public LinearReferencedLineEditor(final boolean isEditable, final boolean isDrawingFeaturesEnabled) {
+    public LinearReferencedLineEditor(final boolean isEditable,
+            final boolean isDrawingFeaturesEnabled,
+            final boolean routeCombo,
+            final String routeMetaClassName) {
+        this.routeCombo = routeCombo;
+        this.routeMetaClassName = routeMetaClassName;
         initComponents();
+        final String routeNamePropertyName = linearReferencingHelper.getRouteNamePropertyFromRouteByClassName(
+                routeMetaClassName);
+        AutoCompleteDecorator.decorate(cbPossibleRoute, new ObjectToStringConverter() {
 
+                @Override
+                public String getPreferredStringForItem(final Object o) {
+                    if (o instanceof CidsLayerFeature) {
+                        return (String)((CidsLayerFeature)o).getProperty(routeNamePropertyName);
+                    } else {
+                        if (o == null) {
+                            return "";
+                        } else {
+                            return o.toString();
+                        }
+                    }
+                }
+            });
         setEditable(isEditable);
         setDrawingFeaturesEnabled(isDrawingFeaturesEnabled);
 
@@ -897,7 +928,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 cleanOtherLinesPanel();
                 for (final MetaObject moOtherLine : mosOtherLines) {
                     final CidsBean otherLineBean = moOtherLine.getBean();
-                    final LinearReferencedLineRenderer renderer = new LinearReferencedLineRenderer();
+                    final LinearReferencedLineRenderer renderer = new LinearReferencedLineRenderer(routeMetaClassName);
                     renderer.setMergeParentLineEditor(this);
                     renderer.setCidsBean(otherLineBean);
                     renderer.updateSplitMergeControls(FROM);
@@ -908,7 +939,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 cleanOtherLinesPanel();
                 Collections.sort(otherLines, new OtherLinesComparator());
                 for (final CidsBean otherLineBean : otherLines) {
-                    final LinearReferencedLineRenderer renderer = new LinearReferencedLineRenderer();
+                    final LinearReferencedLineRenderer renderer = new LinearReferencedLineRenderer(routeMetaClassName);
                     renderer.setMergeParentLineEditor(this);
                     renderer.setCidsBean(otherLineBean);
                     renderer.updateSplitMergeControls(FROM);
@@ -1321,6 +1352,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             }
             case add: {
                 if (routeCombo) {
+                    fillRoutesCombo();
                     ((CardLayout)getLayout()).show(this, "addFeature");
                 } else {
                     ((CardLayout)getLayout()).show(this, "add");
@@ -2658,16 +2690,36 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             return;
         }
         showCard(Card.add);
+
+        fillRoutesCombo();
+    } //GEN-LAST:event_panLineMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLinePointsMouseClicked
+        panLineMouseClicked(evt);
+    }                                                                             //GEN-LAST:event_panLinePointsMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void fillRoutesCombo() {
+        if (!routeCombo) {
+            return;
+        }
         final List<Feature> selectedRoutes = getPossibleRoutes();
 
         if (!selectedRoutes.isEmpty()) {
             cbPossibleRoute.setModel(new DefaultComboBoxModel(selectedRoutes.toArray()));
-        } else {
+        } else if (!routesComboInitialised) {
+            routesComboInitialised = true;
             cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
-            final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, true);
-            final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
-                        .getMetaObject()
-                        .getMetaClass();
+            final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
+                    linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
+                    routeMetaClassName);
             final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 
             final CidsLayer layer = new CidsLayer(routeMc);
@@ -2721,16 +2773,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 LOG.error("Error while retrieving features", e);
             }
         }
-    } //GEN-LAST:event_panLineMouseClicked
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLinePointsMouseClicked
-        panLineMouseClicked(evt);
-    }                                                                             //GEN-LAST:event_panLinePointsMouseClicked
+    }
 
     /**
      * DOCUMENT ME!
@@ -2742,10 +2785,9 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
         final List<PFeature> featureList = sl.getAllSelectedPFeatures();
         final List<Feature> possibleRoutes = new ArrayList<Feature>();
-        final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, true);
-        final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
-                    .getMetaObject()
-                    .getMetaClass();
+        final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
+                linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
+                routeMetaClassName);
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();
@@ -2832,7 +2874,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 if (externalOthersEditor != null) {
                     return;
                 }
-                externalOthersEditor = new LinearReferencedLineEditor();
+                externalOthersEditor = new LinearReferencedLineEditor(routeMetaClassName);
                 externalOthersEditor.setOtherLines(otherLines);
                 externalOthersEditor.setOtherLinesEnabled(isOtherLinesEnabled);
                 externalOthersEditor.setOtherLinesQueryAddition(otherLinesFromQueryPart, otherLinesWhereQueryPart);
@@ -3311,9 +3353,9 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                                 final CidsBean station = linearReferencingHelper.getStationBeanFromLineBean(
                                         cidsBean,
                                         true);
-                                final MetaClass routeMc = linearReferencingHelper.getRouteBeanFromStationBean(station)
-                                            .getMetaObject()
-                                            .getMetaClass();
+                                final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
+                                        linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
+                                        routeMetaClassName);
 
                                 if (routeBean.getMetaObject().getMetaClass().equals(routeMc)) {
                                     if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {

@@ -153,7 +153,9 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                         // create station
                         final CidsBean stationBean = linHelper.createStationBeanFromRouteBean(routeObject.getBean(),
                                 (Double)feature.getProperty(info.getFromField()));
-                        final TableStationEditor editor = new TableStationEditor(info.getLinRefReferenceName());
+                        final TableStationEditor editor = new TableStationEditor(info.getLinRefReferenceName(),
+                                feature,
+                                info.getSrcLinRefJoinField());
                         editor.setCidsBean(stationBean);
                         editor.addPropertyChangeListener(feature.getPropertyChangeListener());
                         feature.setStationEditor(getColumnName(), editor);
@@ -171,7 +173,9 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                             toStation);
 
                         final TableLinearReferencedLineEditor st = new TableLinearReferencedLineEditor(
-                                info.getLinRefReferenceName());
+                                info.getLinRefReferenceName(),
+                                feature,
+                                info.getSrcLinRefJoinField());
                         st.setCidsBean(lineBean);
 
                         final TableStationEditor fromEditor = st.getFromStation();

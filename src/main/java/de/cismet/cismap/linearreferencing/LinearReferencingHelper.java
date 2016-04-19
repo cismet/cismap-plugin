@@ -223,9 +223,11 @@ public interface LinearReferencingHelper extends LinearReferencingSingletonInsta
     /**
      * DOCUMENT ME!
      *
+     * @param   routeTable  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
-    String[] getAllUsedDomains();
+    String[] getDomainOfRouteTable(String routeTable);
 
     /**
      * DOCUMENT ME!

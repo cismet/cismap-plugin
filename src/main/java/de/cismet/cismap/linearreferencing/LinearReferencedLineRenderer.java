@@ -35,17 +35,20 @@ public class LinearReferencedLineRenderer extends LinearReferencedLineEditor {
 
     /**
      * Creates a new LinearReferencedLineRenderer object.
+     *
+     * @param  routeMetaClassname  DOCUMENT ME!
      */
-    public LinearReferencedLineRenderer() {
-        super(false);
+    public LinearReferencedLineRenderer(final String routeMetaClassname) {
+        super(false, routeMetaClassname);
     }
 
     /**
      * Creates a new LinearReferencedLineRenderer object.
      *
      * @param  isDrawingFeaturesEnabled  DOCUMENT ME!
+     * @param  routeMetaClassname        DOCUMENT ME!
      */
-    public LinearReferencedLineRenderer(final boolean isDrawingFeaturesEnabled) {
-        super(false, isDrawingFeaturesEnabled);
+    public LinearReferencedLineRenderer(final boolean isDrawingFeaturesEnabled, final String routeMetaClassname) {
+        super(false, isDrawingFeaturesEnabled, false, routeMetaClassname);
     }
 }

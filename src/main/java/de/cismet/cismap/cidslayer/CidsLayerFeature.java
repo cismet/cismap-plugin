@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,6 @@ import de.cismet.cismap.linearreferencing.FeatureRegistry;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
 import de.cismet.cismap.linearreferencing.TableStationEditor;
-import java.util.Collections;
 
 /**
  * DOCUMENT ME!
@@ -297,7 +297,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                         final String statField = colName.substring(0, colName.indexOf("."));
                                         final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                     .getProperty(colName.substring(0, colName.indexOf(".")));
-                                        st = new TableLinearReferencedLineEditor(statInfo.getRouteTable());
+                                        st = new TableLinearReferencedLineEditor(statInfo.getRouteTable(),
+                                                this,
+                                                statInfo.getRoutePropertyName());
                                         st.setOtherLinesFrom(metaClass.getTableName());
                                         st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
                                         st.setCidsBean(bean);
@@ -320,7 +322,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                     final String statField = colName.substring(0, colName.indexOf("."));
                                     final CidsBean bean = (CidsBean)getMetaObject().getBean()
                                                 .getProperty(colName.substring(0, colName.indexOf(".")));
-                                    final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable());
+                                    final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable(),
+                                            this,
+                                            statInfo.getRoutePropertyName());
                                     st.setOtherLinesFrom(metaClass.getTableName());
                                     st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
                                     st.setCidsBean(bean);
@@ -726,16 +730,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final String routeClass = info.getRouteTable();
         final Object routeNameObject = getProperty(info.getRoutePropertyName());
         final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
-        final String[] allDomains = helper.getAllUsedDomains();
+        final String domain = helper.getDomainOfRouteTable(routeClass)[0];
         final String routeNameProperty = helper.getRouteNamePropertyFromRouteByClassName(routeClass);
         CidsBean routeBean = null;
 
-        for (final String domain : allDomains) {
-            routeBean = getRouteBean(domain, routeClass, routeNameProperty, routeNameObject);
-            if (routeBean != null) {
-                break;
-            }
-        }
+        routeBean = getRouteBean(domain, routeClass, routeNameProperty, routeNameObject);
 
         return helper.createStationBeanFromRouteBean(routeBean, value);
     }

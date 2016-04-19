@@ -16,6 +16,9 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
+
 import org.openide.util.NbBundle;
 
 import java.awt.CardLayout;
@@ -36,7 +39,9 @@ import java.text.ParseException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -56,7 +61,9 @@ import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
 import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
+import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cismap.cidslayer.CidsLayer;
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
 import de.cismet.cismap.commons.Crs;
@@ -66,13 +73,18 @@ import de.cismet.cismap.commons.features.DefaultStyledFeature;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableTransferHandler;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeatureListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.interaction.CrsChangeListener;
 import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
+import de.cismet.cismap.commons.retrieval.RetrievalEvent;
+import de.cismet.cismap.commons.retrieval.RetrievalListener;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -133,11 +145,17 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private String routeName;
     private CidsBeanStore cidsBeanStore;
     private boolean allowDoubleValues = true;
+    private boolean routeCombo = false;
+    private boolean routesComboInitialised = false;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton badGeomButton;
     private javax.swing.JButton badGeomCorrectButton;
+    private javax.swing.JButton butApply;
+    private javax.swing.JButton butCancel;
+    private javax.swing.JComboBox cbPossibleRoute;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -146,6 +164,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private javax.swing.JLabel lblPointValue;
     private javax.swing.JLabel lblRoute;
     private javax.swing.JPanel panAdd;
+    private javax.swing.JPanel panAddFromFeature;
     private javax.swing.JPanel panEdit;
     private javax.swing.JPanel panError;
     private javax.swing.JButton splitButton;
@@ -160,7 +179,17 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      * @param  routeName  DOCUMENT ME!
      */
     public StationEditor(final String routeName) {
-        this(true, routeName);
+        this(true, routeName, false);
+    }
+
+    /**
+     * Creates a new StationEditor object.
+     *
+     * @param  routeName   DOCUMENT ME!
+     * @param  routeCombo  DOCUMENT ME!
+     */
+    public StationEditor(final String routeName, final boolean routeCombo) {
+        this(true, routeName, routeCombo);
     }
 
     /**
@@ -168,10 +197,29 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @param  isEditable  DOCUMENT ME!
      * @param  routeName   DOCUMENT ME!
+     * @param  routeCombo  DOCUMENT ME!
      */
-    protected StationEditor(final boolean isEditable, final String routeName) {
+    public StationEditor(final boolean isEditable, final String routeName, final boolean routeCombo) {
         this.routeName = routeName;
+        this.routeCombo = routeCombo;
         initComponents();
+        final String routeNamePropertyName = linearReferencingHelper.getRouteNamePropertyFromRouteByClassName(
+                routeName);
+        AutoCompleteDecorator.decorate(cbPossibleRoute, new ObjectToStringConverter() {
+
+                @Override
+                public String getPreferredStringForItem(final Object o) {
+                    if (o instanceof CidsLayerFeature) {
+                        return (String)((CidsLayerFeature)o).getProperty(routeNamePropertyName);
+                    } else {
+                        if (o == null) {
+                            return "";
+                        } else {
+                            return o.toString();
+                        }
+                    }
+                }
+            });
 
         setEditable(isEditable);
         if (isEditable) {
@@ -600,7 +648,12 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
                 break;
             }
             case add: {
-                ((CardLayout)getLayout()).show(this, "add");
+                if (routeCombo) {
+                    fillRoutesCombo();
+                    ((CardLayout)getLayout()).show(this, "addFeature");
+                } else {
+                    ((CardLayout)getLayout()).show(this, "add");
+                }
                 break;
             }
             case error: {
@@ -1148,6 +1201,11 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         jLabel3 = new javax.swing.JLabel();
         panError = new javax.swing.JPanel();
         lblError = new javax.swing.JLabel();
+        panAddFromFeature = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        cbPossibleRoute = new javax.swing.JComboBox();
+        butApply = new javax.swing.JButton();
+        butCancel = new javax.swing.JButton();
 
         setEnabled(false);
         setOpaque(false);
@@ -1318,6 +1376,70 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         panError.add(lblError, new java.awt.GridBagConstraints());
 
         add(panError, "error");
+
+        panAddFromFeature.setOpaque(false);
+        panAddFromFeature.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(StationEditor.class, "StationEditor.jLabel4.text_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        panAddFromFeature.add(jLabel4, gridBagConstraints);
+
+        cbPossibleRoute.setModel(new javax.swing.DefaultComboBoxModel(
+                new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbPossibleRoute.setPreferredSize(new java.awt.Dimension(300, 20));
+        cbPossibleRoute.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    cbPossibleRouteActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        panAddFromFeature.add(cbPossibleRoute, gridBagConstraints);
+
+        butApply.setText(org.openide.util.NbBundle.getMessage(
+                StationEditor.class,
+                "StationEditor.butApply.text",
+                new Object[] {})); // NOI18N
+        butApply.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    butApplyActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        panAddFromFeature.add(butApply, gridBagConstraints);
+
+        butCancel.setText(org.openide.util.NbBundle.getMessage(
+                StationEditor.class,
+                "StationEditor.butCancel.text",
+                new Object[] {})); // NOI18N
+        butCancel.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    butCancelActionPerformed(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        panAddFromFeature.add(butCancel, gridBagConstraints);
+
+        add(panAddFromFeature, "addFeature");
     } // </editor-fold>//GEN-END:initComponents
 
     /**
@@ -1346,6 +1468,168 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomCorrectButtonActionPerformed
         correctBadGeomCorrect();
     }                                                                                        //GEN-LAST:event_badGeomCorrectButtonActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
+        // TODO add your handling code here:
+    } //GEN-LAST:event_cbPossibleRouteActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butApplyActionPerformed
+        if (isEditable()) {
+            if (cbPossibleRoute.getSelectedItem() instanceof CidsLayerFeature) {
+                final CidsLayerFeature f = (CidsLayerFeature)cbPossibleRoute.getSelectedItem();
+                CidsBean routeBean = null;
+                if (((CidsLayerFeature)f).getBean().getMetaObject().getMetaClass().getTableName().equalsIgnoreCase(
+                                routeName)) {
+                    if ((getDropBehavior() == null)
+                                || getDropBehavior().checkForAdding(routeBean)) {
+                        routeBean = ((CidsLayerFeature)f).getBean();
+                        setChangedSinceDrop(false);
+                    }
+                    double value = 0d;
+
+                    if (isFirstStationInCurrentBB()) {
+                        value = getPointInCurrentBB(routeBean);
+                    }
+                    if (cidsBean != null) {
+                        FEATURE_REGISTRY.removeStationFeature(cidsBean);
+                    }
+                    final CidsBean newStationBean = FEATURE_REGISTRY.getInstance()
+                                .getLinearReferencingSolver()
+                                .createStationBeanFromRouteBean(routeBean, value);
+
+                    if (cidsBeanStore != null) {
+                        cidsBeanStore.setCidsBean(newStationBean);
+                    }
+
+                    setCidsBean(newStationBean);
+                    if (isAutoZoomActivated) {
+                        zoomToFeatureCollection(getZoomFeatures());
+                    }
+                    return;
+                }
+            }
+        }
+    } //GEN-LAST:event_butApplyActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butCancelActionPerformed
+        showCard(Card.edit);
+    }                                                                             //GEN-LAST:event_butCancelActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void fillRoutesCombo() {
+        if (!routeCombo) {
+            return;
+        }
+        final List<Feature> selectedRoutes = getPossibleRoutes();
+
+        if (!selectedRoutes.isEmpty()) {
+            cbPossibleRoute.setModel(new DefaultComboBoxModel(selectedRoutes.toArray()));
+        } else if (!routesComboInitialised) {
+            routesComboInitialised = true;
+            cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
+            final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
+                    linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
+                    routeName);
+            final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
+
+            final CidsLayer layer = new CidsLayer(routeMc);
+            try {
+                layer.setBoundingBox(mc.getCurrentBoundingBox());
+                layer.addRetrievalListener(new RetrievalListener() {
+
+                        @Override
+                        public void retrievalStarted(final RetrievalEvent e) {
+                        }
+
+                        @Override
+                        public void retrievalProgress(final RetrievalEvent e) {
+                        }
+
+                        @Override
+                        public void retrievalComplete(final RetrievalEvent e) {
+                            if (!e.isInitialisationEvent()) {
+                                complete((List)e.getRetrievedObject());
+                            }
+                        }
+
+                        @Override
+                        public void retrievalAborted(final RetrievalEvent e) {
+                            complete((List)e.getRetrievedObject());
+                        }
+
+                        @Override
+                        public void retrievalError(final RetrievalEvent e) {
+                            complete((List)e.getRetrievedObject());
+                        }
+
+                        private void complete(final List features) {
+                            final List<Feature> routes = new ArrayList<Feature>();
+
+                            if (features instanceof List) {
+                                final List fl = (List)features;
+
+                                for (final Object o : fl) {
+                                    if (o instanceof Feature) {
+                                        routes.add((Feature)o);
+                                    }
+                                }
+                            }
+                            cbPossibleRoute.setModel(new DefaultComboBoxModel(routes.toArray()));
+                        }
+                    });
+
+                layer.retrieve(true);
+            } catch (Exception e) {
+                LOG.error("Error while retrieving features", e);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public List<Feature> getPossibleRoutes() {
+        final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
+        final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
+        final List<PFeature> featureList = sl.getAllSelectedPFeatures();
+        final List<Feature> possibleRoutes = new ArrayList<Feature>();
+        final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
+                linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
+                routeName);
+
+        for (final PFeature f : featureList) {
+            final Feature selectedFeature = f.getFeature();
+
+            if (selectedFeature instanceof CidsLayerFeature) {
+                final CidsLayerFeature clFeature = (CidsLayerFeature)selectedFeature;
+
+                if (routeMc.equals(clFeature.getBean().getMetaObject().getMetaClass())) {
+                    possibleRoutes.add(selectedFeature);
+                }
+            }
+        }
+
+        return possibleRoutes;
+    }
 
     /**
      * DOCUMENT ME!

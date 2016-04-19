@@ -48,7 +48,7 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
         final List<AbstractFeatureService> validLinRefClasses = new ArrayList<AbstractFeatureService>();
         final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
 
-        for (final String domain : helper.getAllUsedDomains()) {
+        for (final String domain : helper.getDomainOfRouteTable(null)) {
             try {
                 final MetaClass[] classes = SessionManager.getProxy().getClasses(domain);
 
