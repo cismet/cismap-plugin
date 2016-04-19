@@ -53,7 +53,7 @@ public class SelectInAttributeTableSearchMethod implements QuerySearchMethod {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Logger LOG = Logger.getLogger(RestrictInAttributeTableSearchMethod.class);
+    private static final Logger LOG = Logger.getLogger(SelectInAttributeTableSearchMethod.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -196,7 +196,7 @@ public class SelectInAttributeTableSearchMethod implements QuerySearchMethod {
                 }
 
                 if ((features != null) && (layer instanceof AbstractFeatureService)) {
-                    table.setSelection(features);
+                    table.applySelection(this, features, true);
                 }
             } catch (Exception e) {
                 LOG.error("Error while selecting features", e);

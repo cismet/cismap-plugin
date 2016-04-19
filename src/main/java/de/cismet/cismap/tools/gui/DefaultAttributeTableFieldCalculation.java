@@ -45,7 +45,7 @@ public class DefaultAttributeTableFieldCalculation implements AttributeTableFiel
                 attribute,
                 featureList);
 
-        dialog.setSize(450, 500);
+        dialog.setSize(470, 500);
         StaticSwingTools.showDialog(dialog);
 
         return dialog.isCalculationStarted();

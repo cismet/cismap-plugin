@@ -20,11 +20,14 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -32,8 +35,6 @@ import java.awt.event.MouseEvent;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
-import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,8 +54,10 @@ import javax.script.ScriptEngineManager;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -101,28 +104,23 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     private static final String RECEIVE_CATALOGUE_QUERY = "SELECT DISTINCT %1$s, %2$s FROM %3$s;";
 
     static {
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction(".left", "left()"));
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseInt", "Integer"));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".x", "x") {
+
+                {
+                    startWithSpace = false;
+                }
+            });
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("+", "++"));
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("+"));
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction(".right", "right()"));
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseDouble", "Double"));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("="));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".y", "y") {
+
+                {
+                    startWithSpace = false;
+                }
+            });
+        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction(".left", "left()"));
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("-"));
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".length", "length") {
-
-                {
-                    startWithSpace = false;
-                }
-            });
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Boolean", "Boolean"));
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("*"));
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".area", "area") {
-
-                {
-                    startWithSpace = false;
-                }
-            });
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("String", "String"));
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("/"));
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("()") {
 
                 {
@@ -146,8 +144,47 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     }
                 }
             });
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".length", "length") {
+
+                {
+                    startWithSpace = false;
+                }
+            });
+        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction(".right", "right()"));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("*"));
         SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Math.round", "Round"));
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("%"));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".area", "area") {
+
+                {
+                    startWithSpace = false;
+                }
+            });
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".length", "count") {
+
+                {
+                    startWithSpace = false;
+                }
+            });
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("/"));
+        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseInt", "Integer"));
+//        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseDouble", "Double"));
+//        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Boolean", "Boolean"));
+//        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("String", "String"));
+//        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("%"));
+    }
+
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private enum SubstitutionFunctions {
+
+        //~ Enum constants -----------------------------------------------------
+
+        LENGTH, AREA, X, Y
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -163,18 +200,23 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     private boolean calculationStarted = false;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel HintPanel;
     private javax.swing.JButton btnSearchCancel;
     private javax.swing.JList jAttributesLi;
     private javax.swing.JLabel jCommandLb;
     private javax.swing.JButton jGetValuesBn;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanelTasten;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JList jValuesLi;
     private javax.swing.JLabel jlShowIndividualValues;
+    private javax.swing.JLabel labMathLink;
+    private javax.swing.JLabel labStringLink;
     private org.jdesktop.swingx.JXBusyLabel lblBusyIcon;
     private org.jdesktop.swingx.JXBusyLabel lblBusyValueIcon;
     private javax.swing.JPanel panCommand;
@@ -242,10 +284,53 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                 }
             });
 
+        jValuesLi.setCellRenderer(new DefaultListCellRenderer() {
+
+                @Override
+                public Component getListCellRendererComponent(final JList list,
+                        final Object value,
+                        final int index,
+                        final boolean isSelected,
+                        final boolean cellHasFocus) {
+                    final Component c = super.getListCellRendererComponent(
+                            list,
+                            value,
+                            index,
+                            isSelected,
+                            cellHasFocus);
+
+                    if ((value instanceof MetaObject) && (c instanceof JLabel)) {
+                        final MetaObject mo = (MetaObject)value;
+                        ((JLabel)c).setText(mo.getID() + " - " + mo.toString());
+                    } else {
+                        ((JLabel)c).setText(featureValueToString(value));
+                    }
+
+                    return c;
+                }
+            });
+
         init();
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Converts the given value to a string.
+     *
+     * @param   value  the value to convert to a string
+     *
+     * @return  the converted value
+     */
+    private String featureValueToString(final Object value) {
+        if ((value instanceof Float) || (value instanceof Double)) {
+            final Number valueNumber = (Number)value;
+
+            return FeatureTools.FORMATTER.format(valueNumber);
+        }
+
+        return ((value == null) ? "" : String.valueOf(value));
+    }
 
     /**
      * Initialises the GUI elements.
@@ -253,8 +338,15 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     private void init() {
         final AbstractFeatureService afs = (AbstractFeatureService)service;
         final Map<String, FeatureServiceAttribute> newAttribMap = afs.getFeatureServiceAttributes();
-        final List<FeatureServiceAttribute> newAttributes = new ArrayList<FeatureServiceAttribute>(
-                newAttribMap.values());
+        final List<FeatureServiceAttribute> newAttributes = new ArrayList<FeatureServiceAttribute>();
+
+        for (final String attr : (List<String>)afs.getOrderedFeatureServiceAttributes()) {
+            final FeatureServiceAttribute fsa = newAttribMap.get(attr);
+
+            if (attr != null) {
+                newAttributes.add(fsa);
+            }
+        }
 
         List<? extends Object> old = attributes;
         attributes = newAttributes;
@@ -284,7 +376,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         final List<DefaultQueryButtonAction> queryButtons;
         int x = 0;
         int y = 0;
-        jPanelTasten.removeAll();
+//        jPanelTasten.removeAll();
 
         queryButtons = SQL_QUERY_BUTTONS;
 
@@ -306,11 +398,25 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
             jPanelTasten.add(button, constraint);
             buttonAction.setQueryTextArea(taQuery);
             x += buttonAction.getWidth();
-            if (x > 5) {
+            if (x > 6) {
                 x = 0;
                 ++y;
             }
         }
+
+        final GridBagConstraints constraint = new GridBagConstraints(
+                x,
+                y,
+                7, // width
+                1,
+                1,
+                0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(2, 2, 2, 2),
+                0,
+                0);
+        jPanelTasten.add(HintPanel, constraint);
 
         jPanelTasten.invalidate();
         jPanelTasten.revalidate();
@@ -372,11 +478,16 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        HintPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        labMathLink = new javax.swing.JLabel();
+        labStringLink = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jAttributesLi = new javax.swing.JList();
         jScrollPane2 = new javax.swing.JScrollPane();
         jValuesLi = new javax.swing.JList();
         jPanelTasten = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         taQuery = new javax.swing.JTextArea();
         jCommandLb = new javax.swing.JLabel();
@@ -391,6 +502,54 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         lblBusyValueIcon = new org.jdesktop.swingx.JXBusyLabel(new java.awt.Dimension(20, 20));
         jlShowIndividualValues = new javax.swing.JLabel();
+
+        HintPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(
+                FieldCalculatorDialog.class,
+                "FieldCalculatorDialog.jLabel1.text",
+                new Object[] {})); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        HintPanel.add(jLabel1, gridBagConstraints);
+
+        labMathLink.setForeground(new java.awt.Color(64, 64, 255));
+        labMathLink.setText(org.openide.util.NbBundle.getMessage(
+                FieldCalculatorDialog.class,
+                "FieldCalculatorDialog.labMathLink.text",
+                new Object[] {})); // NOI18N
+        labMathLink.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        labMathLink.addMouseListener(new java.awt.event.MouseAdapter() {
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    labMathLinkMouseClicked(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        HintPanel.add(labMathLink, gridBagConstraints);
+
+        labStringLink.setForeground(new java.awt.Color(64, 64, 255));
+        labStringLink.setText(org.openide.util.NbBundle.getMessage(
+                FieldCalculatorDialog.class,
+                "FieldCalculatorDialog.labStringLink.text",
+                new Object[] {})); // NOI18N
+        labStringLink.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        labStringLink.addMouseListener(new java.awt.event.MouseAdapter() {
+
+                @Override
+                public void mouseClicked(final java.awt.event.MouseEvent evt) {
+                    labStringLinkMouseClicked(evt);
+                }
+            });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        HintPanel.add(labStringLink, gridBagConstraints);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(
@@ -415,7 +574,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(jScrollPane1, gridBagConstraints);
 
-        jScrollPane2.setMinimumSize(new java.awt.Dimension(258, 40));
+        jScrollPane2.setMinimumSize(new java.awt.Dimension(240, 40));
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(240, 40));
 
         jValuesLi.setModel(new DefaultListModel());
         jValuesLi.setVisibleRowCount(0);
@@ -423,10 +583,10 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(jScrollPane2, gridBagConstraints);
@@ -434,10 +594,17 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         jPanelTasten.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.weighty = 1.0;
+        jPanelTasten.add(jPanel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(jPanelTasten, gridBagConstraints);
 
         jScrollPane3.setMinimumSize(new java.awt.Dimension(262, 87));
@@ -661,6 +828,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
 
                             code = substituteLength(code, feature);
                             code = substituteArea(code, feature);
+                            code = substituteX(code, feature);
+                            code = substituteY(code, feature);
                             code = substituteLeft(code, feature);
                             code = substituteRight(code, feature);
                             code = dataDefinition + "\n " + code;
@@ -691,7 +860,12 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                             @Override
                             public void run() {
                                 calculationStarted = true;
+                                final List selectedFeatures = table.getSelectedFeatures();
                                 table.refresh();
+
+                                if ((selectedFeatures != null) && !selectedFeatures.isEmpty()) {
+                                    table.applySelection(this, selectedFeatures, false);
+                                }
                                 lblBusyIcon.setEnabled(false);
                                 lblBusyIcon.setBusy(false);
                             }
@@ -699,6 +873,32 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                 }
             });
     } //GEN-LAST:event_btnSearchCancelActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void labMathLinkMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_labMathLinkMouseClicked
+        try {
+            de.cismet.tools.BrowserLauncher.openURL("https://wiki.selfhtml.org/wiki/JavaScript/Objekte/Math");
+        } catch (Exception ex) {
+            LOG.error("Error while trying to open a link", ex);
+        }
+    }                                                                           //GEN-LAST:event_labMathLinkMouseClicked
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void labStringLinkMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_labStringLinkMouseClicked
+        try {
+            de.cismet.tools.BrowserLauncher.openURL("https://wiki.selfhtml.org/wiki/JavaScript/Objekte/String");
+        } catch (Exception ex) {
+            LOG.error("Error while trying to open a link", ex);
+        }
+    }                                                                             //GEN-LAST:event_labStringLinkMouseClicked
 
     /**
      * Solve all length properties.
@@ -709,7 +909,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
      * @return  the new code
      */
     private String substituteLength(final String code, final FeatureServiceFeature feature) {
-        return preEvalProperty(code, feature, "length", true);
+        return preEvalProperty(code, feature, "length", SubstitutionFunctions.LENGTH);
     }
 
     /**
@@ -721,7 +921,31 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
      * @return  the new code
      */
     private String substituteArea(final String code, final FeatureServiceFeature feature) {
-        return preEvalProperty(code, feature, "area", false);
+        return preEvalProperty(code, feature, "area", SubstitutionFunctions.AREA);
+    }
+
+    /**
+     * Solve all area properties.
+     *
+     * @param   code     the code that possibly contains invocations of the area property
+     * @param   feature  the feature with the properties which are use in the code parameter
+     *
+     * @return  the new code
+     */
+    private String substituteX(final String code, final FeatureServiceFeature feature) {
+        return preEvalProperty(code, feature, "x", SubstitutionFunctions.X);
+    }
+
+    /**
+     * Solve all area properties.
+     *
+     * @param   code     the code that possibly contains invocations of the area property
+     * @param   feature  the feature with the properties which are use in the code parameter
+     *
+     * @return  the new code
+     */
+    private String substituteY(final String code, final FeatureServiceFeature feature) {
+        return preEvalProperty(code, feature, "y", SubstitutionFunctions.Y);
     }
 
     /**
@@ -790,18 +1014,20 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     /**
      * Solves propertie invocations.
      *
-     * @param   code            the code that possibly contains property invocations
-     * @param   feature         the feature with the properties which are use in the code parameter
-     * @param   propertyName    methodName the name of the property that should be substituted
-     * @param   lengthFunction  left true, iff the given property should be substituted by the length of the geometry
+     * @param   code          the code that possibly contains property invocations
+     * @param   feature       the feature with the properties which are use in the code parameter
+     * @param   propertyName  methodName the name of the property that should be substituted
+     * @param   function      lengthFunction left true, iff the given property should be substituted by the length of
+     *                        the geometry
      *
      * @return  the new code
      */
     private String preEvalProperty(final String code,
             final FeatureServiceFeature feature,
             final String propertyName,
-            final boolean lengthFunction) {
-        final Pattern p = Pattern.compile("([^\\s]+\\." + propertyName + "\\s)");
+            final SubstitutionFunctions function) {
+//        final Pattern p = Pattern.compile("([^\\s]+\\." + propertyName + "\\s)");
+        final Pattern p = Pattern.compile("([^\\s]+\\." + propertyName + ")");
         final Matcher matcher = p.matcher(code);
         final StringBuilder c = new StringBuilder(code);
         int offset = 0;
@@ -818,10 +1044,22 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     final Geometry geom = converter.convertForward(
                             geometryString,
                             CismapBroker.getInstance().getSrs().getCode());
-                    if (lengthFunction) {
-                        object = String.valueOf(round(geom.getLength(), 2));
-                    } else {
-                        object = String.valueOf(round(geom.getArea(), 2));
+                    if (function == SubstitutionFunctions.LENGTH) {
+                        object = FeatureTools.FORMATTER.format(round(geom.getLength(), 2));
+                    } else if (function == SubstitutionFunctions.AREA) {
+                        object = FeatureTools.FORMATTER.format(round(geom.getArea(), 2));
+                    } else if (function == SubstitutionFunctions.X) {
+                        if (geom.getGeometryType().equalsIgnoreCase("Point")) {
+                            object = FeatureTools.FORMATTER.format(geom.getCoordinate().x);
+                        } else {
+                            object = FeatureTools.FORMATTER.format(geom.getCentroid().getCoordinate().x);
+                        }
+                    } else if (function == SubstitutionFunctions.Y) {
+                        if (geom.getGeometryType().equalsIgnoreCase("Point")) {
+                            object = FeatureTools.FORMATTER.format(geom.getCoordinate().y);
+                        } else {
+                            object = FeatureTools.FORMATTER.format(geom.getCentroid().getCoordinate().y);
+                        }
                     }
                 } catch (ConversionException e) {
                     JOptionPane.showMessageDialog(
@@ -837,10 +1075,22 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
 
                 if (geometryObject instanceof Geometry) {
                     final Geometry geometry = (Geometry)geometryObject;
-                    if (lengthFunction) {
-                        object = String.valueOf(round(geometry.getLength(), 2));
-                    } else {
-                        object = String.valueOf(round(geometry.getArea(), 2));
+                    if (function == SubstitutionFunctions.LENGTH) {
+                        object = FeatureTools.FORMATTER.format(round(geometry.getLength(), 2));
+                    } else if (function == SubstitutionFunctions.AREA) {
+                        object = FeatureTools.FORMATTER.format(round(geometry.getArea(), 2));
+                    } else if (function == SubstitutionFunctions.X) {
+                        if (geometry.getGeometryType().equalsIgnoreCase("Point")) {
+                            object = FeatureTools.FORMATTER.format(geometry.getCoordinate().x);
+                        } else {
+                            object = FeatureTools.FORMATTER.format(geometry.getCentroid().getCoordinate().x);
+                        }
+                    } else if (function == SubstitutionFunctions.Y) {
+                        if (geometry.getGeometryType().equalsIgnoreCase("Point")) {
+                            object = FeatureTools.FORMATTER.format(geometry.getCoordinate().y);
+                        } else {
+                            object = FeatureTools.FORMATTER.format(geometry.getCentroid().getCoordinate().y);
+                        }
                     }
                 }
             }
@@ -989,7 +1239,11 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     if (cl.equals(String.class) || cl.equals(Date.class)) {
                         value = "\"" + selectedObject.toString() + "\"";
                     } else {
-                        value = String.valueOf(selectedObject);
+                        if ((selectedObject instanceof Float) || (selectedObject instanceof Double)) {
+                            value = FeatureTools.FORMATTER.format(selectedObject);
+                        } else {
+                            value = String.valueOf(selectedObject);
+                        }
                     }
                 }
 
