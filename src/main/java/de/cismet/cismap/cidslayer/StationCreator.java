@@ -90,7 +90,7 @@ public class StationCreator extends AbstractFeatureCreator {
                                 public void pointFinished(final CidsBean route,
                                         Geometry pointGeom,
                                         final double point) {
-                                    mc.setInteractionMode(oldInteractionMode);
+//                                    mc.setInteractionMode(oldInteractionMode);
                                     pointGeom = CrsTransformer.transformToDefaultCrs(pointGeom);
                                     pointGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                                     final CidsBean station = helper.createStationBeanFromRouteBean(route, point);

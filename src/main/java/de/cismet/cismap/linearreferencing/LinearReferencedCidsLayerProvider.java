@@ -13,6 +13,7 @@ package de.cismet.cismap.linearreferencing;
 
 import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
+import Sirius.server.localserver.attribute.Attribute;
 
 import Sirius.server.middleware.types.MetaClass;
 
@@ -25,6 +26,7 @@ import java.util.List;
 import de.cismet.cismap.cidslayer.CidsLayer;
 
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
+import de.cismet.cismap.commons.featureservice.H2FeatureService;
 
 import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
 
@@ -58,7 +60,14 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
                         continue;
                     }
                     final CidsLayer cidsLayer = new CidsLayer(clazz);
-                    cidsLayer.setName(clazz.getDomain() + ":" + clazz.getTableName());
+                    Collection<Attribute> name = clazz.getAttributeByName("LinRefBaseName");
+                    
+                    if (name != null && !name.isEmpty()) {
+                        Attribute attr = name.toArray(new Attribute[name.size()])[0];
+                        cidsLayer.setName(String.valueOf(attr.getValue()));
+                    } else {
+                        cidsLayer.setName(clazz.getTableName());
+                    }
                     validLinRefClasses.add(cidsLayer);
                 }
             } catch (ConnectionException ex) {
@@ -67,5 +76,27 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
         }
 
         return validLinRefClasses;
+    }
+
+    @Override
+    public String getServiceDomain(AbstractFeatureService service) {
+        if (service instanceof CidsLayer) {
+            CidsLayer cidsLayer = (CidsLayer)service;
+            
+            return cidsLayer.getMetaClass().getDomain();
+        }
+        
+        return null;
+    }
+
+    @Override
+    public String getInternalServiceName(AbstractFeatureService service) {
+        if (service instanceof CidsLayer) {
+            CidsLayer cidsLayer = (CidsLayer)service;
+            
+            return cidsLayer.getMetaClass().getTableName();
+        }
+        
+        return null;
     }
 }

@@ -112,7 +112,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
                                 @Override
                                 public void geometryFinished(final Geometry g) {
                                     feature.setGeometry(g);
-                                    mc.setInteractionMode(oldInteractionMode);
+//                                    mc.setInteractionMode(oldInteractionMode);
 
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {

@@ -96,12 +96,14 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
+                modified = true;
                 firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             }
         };
 
     private HashMap backupProperties;
     private Geometry backupGeometry;
+    private boolean modified;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -222,7 +224,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if ((propertyName != null) && !propertyName.isEmpty()) {
             if (propertyName.startsWith("original:")) {
                 try {
-                    return getMetaObject().getBean().getProperty(propertyName);
+                    return getMetaObject().getBean().getProperty(propertyName.substring("original:".length()));
                 } catch (ConnectionException ex) {
                     CidsLayerFeature.LOG.info("CidsBean could not be loaded, property is null", ex);
                     return null;
@@ -244,6 +246,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         super.setEditable(editable);
 
         if (oldEditableStatus != editable) {
+            modified = false;
             if (!editable && (stations != null)) {
                 for (final String key : stations.keySet()) {
                     final DisposableCidsBeanStore editor = stations.get(key);
@@ -415,6 +418,17 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         super.addProperty(propertyName, property); // To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public void setProperty(String propertyName, Object propertyValue) {
+        super.setProperty(propertyName, propertyValue);
+        
+        if (isEditable()) {
+            modified = true;
+        }
+    }
+    
+    
+
     /**
      * DOCUMENT ME!
      *
@@ -447,6 +461,19 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public FeatureServiceFeature saveChanges() throws Exception {
+        saveChangesWithoutReload();
+        
+        final FeatureServiceFeature feature = reloadFeature();
+
+        if (feature != null) {
+            return feature;
+        } else {
+            return this;
+        }
+    }
+
+    @Override
+    public void saveChangesWithoutReload() throws Exception {
         final Map<String, Object> propertyMap = super.getProperties();
         final CidsBean bean = getMetaObject().getBean();
         final String[] cols = layerInfo.getColumnNames();
@@ -541,18 +568,20 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             }
         }
 //LOG.error(bean.getMOString());
-        final CidsBean savedBean = bean.persist();
-        setId(savedBean.getMetaObject().getID());
-        setProperty("id", savedBean.getMetaObject().getID());
-        metaObject = savedBean.getMetaObject();
-        final FeatureServiceFeature feature = reloadFeature();
-
-        if (feature != null) {
-            return feature;
+        CidsBean newBean = bean.persist();
+        
+        if (newBean != null) {
+            setId(newBean.getMetaObject().getID());
+            setProperty("id", newBean.getMetaObject().getID());
         } else {
-            return this;
+            setId(bean.getMetaObject().getID());
+            setProperty("id", bean.getMetaObject().getID());
         }
+        // to decrease the memory usage
+        metaObject = null;
     }
+    
+    
 
     /**
      * DOCUMENT ME!
@@ -859,10 +888,19 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public void setGeometry(final Geometry geom) {
-        super.setGeometry(geom);
+        Geometry oldGeom = getGeometry();
+        
+        if (((oldGeom == null) != (geom == null)) || (oldGeom != null && geom != null && !oldGeom.equalsExact(geom))) {
+            //the old geometry and the new geometry are different
+            super.setGeometry(geom);
 
-        if (layerInfo != null) {
-            super.addProperty(layerInfo.getGeoField(), geom);
+            if (layerInfo != null) {
+                super.addProperty(layerInfo.getGeoField(), geom);
+            }
+
+            if (isEditable()) {
+                modified = true;
+            }
         }
     }
 
@@ -951,6 +989,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     .getMetaClass(SessionManager.getSession().getUser(),
                         classId,
                         metaClass.getDomain());
+    }
+
+    @Override
+    public boolean isFeatureChanged() {
+        Geometry geom = getGeometry();
+        
+        if (((backupGeometry == null) != (geom == null)) || (backupGeometry != null && geom != null && !backupGeometry.equalsExact(geom))) {
+            //The geometry will not changed with the setGeometry() method, but also within the geometry object itself.
+            return true;
+        } else {
+            return modified;
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

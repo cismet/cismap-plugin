@@ -129,10 +129,10 @@ public class StationLineCreator extends AbstractFeatureCreator {
                                         final double end) {
                                     if (route == null) {
                                         // cancel the creation mode
-                                        mc.setInteractionMode(oldInteractionMode);
+//                                        mc.setInteractionMode(oldInteractionMode);
                                         return;
                                     }
-                                    mc.setInteractionMode(oldInteractionMode);
+//                                    mc.setInteractionMode(oldInteractionMode);
                                     lineGeom = CrsTransformer.transformToDefaultCrs(lineGeom);
                                     lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                                     final CidsBean line = helper.createLineBeanFromRouteBean(route);

@@ -59,6 +59,8 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.linearreferencing.tools.StationEditorInterface;
 
 import de.cismet.tools.CurrentStackTrace;
+import de.cismet.tools.gui.StaticSwingTools;
+import java.awt.IllegalComponentStateException;
 
 /**
  * DOCUMENT ME!
@@ -102,6 +104,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 dialogCleanup();
             }
         };
+    private boolean dialogInitialised = false;
 
     private DockingWindowListener windowCleanupListener = new DockingWindowListener() {
 
@@ -391,7 +394,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butExpandActionPerformed
+    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butExpandActionPerformed
         final View w = getParentView(this);
 
         if (w != null) {
@@ -399,7 +402,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             w.addListener(windowCleanupListener);
         }
 
-        if (!diaExp.isVisible()) {
+        if (!dialogInitialised && !diaExp.isVisible()) {
             if (line) {
                 dialogLineEditor = new LinearReferencedLineEditor(true, true, true, routeTable);
 
@@ -409,6 +412,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 }
                 // se.setDrawingFeaturesEnabled(false);
                 dialogLineEditor.setCidsBean(lineBean);
+                jPanel1.removeAll();
                 jPanel1.add(dialogLineEditor);
 //                diaExp.setSize(460,100);
                 dialogLineEditor.addListener(new LinearReferencedLineEditorListener() {
@@ -445,24 +449,39 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             } else {
                 dialogStationEditor = new StationEditor(true, routeTable, true);
                 dialogStationEditor.setCidsBeanStore(this);
+                jPanel1.removeAll();
                 jPanel1.add(dialogStationEditor);
 //                diaExp.setSize(200,100);
                 diaExp.pack();
             }
+            dialogInitialised = true;
         }
-        final Point p = this.getLocationOnScreen();
-        final Rectangle r = this.getBounds();
-        diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
-        diaExp.setAlwaysOnTop(true);
-        diaExp.setVisible(true);
-    } //GEN-LAST:event_butExpandActionPerformed
+        
+        EventQueue.invokeLater(new Thread("show linear referencing editor popup") {
+
+            @Override
+            public void run() {
+                diaExp.setAlwaysOnTop(true);
+                try {
+                    final Point p = TableStationEditor.this.getLocationOnScreen();
+                    final Rectangle r = TableStationEditor.this.getBounds();
+                    diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
+                    diaExp.setVisible(true);
+                } catch (IllegalComponentStateException e) {
+                    LOG.warn("Cannot calculate popup position under editor", e);
+                    StaticSwingTools.centerWindowOnScreen(diaExp);
+                }
+            }
+        });
+
+    }//GEN-LAST:event_butExpandActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butRemoveActionPerformed
+    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRemoveActionPerformed
         final int ans = JOptionPane.showConfirmDialog(
                 ComponentRegistry.getRegistry().getMainWindow(),
                 NbBundle.getMessage(
@@ -479,7 +498,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 parentFeature.setProperty(stationProperty, null);
             }
         }
-    } //GEN-LAST:event_butRemoveActionPerformed
+    }//GEN-LAST:event_butRemoveActionPerformed
 
     @Override
     public CidsBean getCidsBean() {

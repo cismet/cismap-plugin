@@ -104,6 +104,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     public CidsFeatureFactory(final MetaClass metaClass, final LayerProperties layerProperties) {
         this.layerProperties = layerProperties;
         this.metaClass = metaClass;
+        layerName = CidsLayer.determineLayerName(metaClass);
         initLayer();
     }
 
@@ -153,7 +154,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 metaClass,
                 getLayerInfo(),
                 layerProperties,
-                getStyle(CidsLayer.determineLayerName(metaClass)));
+                getStyle(layerName));
 
         return feature;
     }
@@ -221,7 +222,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                         envelope = converter.convertForward((String)row.get(0), crs);
 
                         if (row.size() == 2) {
-                            geometryType = converter.convertForward((String)row.get(1), crs).getGeometryType();
+                            geometryType = postgisToJtsGeometryType((String)row.get(1));
                         }
                     }
                 }
@@ -269,6 +270,26 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         } catch (Exception e) {
             logger.error("Error while initialiseing the cids layer.", e);
         }
+    }
+    
+    private String postgisToJtsGeometryType(String geometryType) {
+        final GeometryFactory factory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), -1);
+
+        if (geometryType.equalsIgnoreCase("ST_Point")) {
+            return "Point";
+        } else if (geometryType.equalsIgnoreCase("ST_MultiPoint")) {
+            return "MultiPoint";
+        } else if (geometryType.equalsIgnoreCase("ST_LineString")) {
+            return "LineString";
+        } else if (geometryType.equalsIgnoreCase("ST_MultiLineString")) {
+            return "MultiLineString";
+        } else if (geometryType.equalsIgnoreCase("ST_Polygon")) {
+            return "Polygon";
+        } else if (geometryType.equalsIgnoreCase("ST_MultiPolygon")) {
+            return "MultiPolygon";
+        }
+
+        return AbstractFeatureService.UNKNOWN;
     }
 
     @Override
@@ -479,7 +500,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                     metaClass,
                     getLayerInfo(),
                     layerProperties,
-                    getStyle(CidsLayer.determineLayerName(metaClass)));
+                    getStyle(layerName));
             lastFeature.setSimplifiedGeometryAllowed(saveAsLastCreated);
 
             features.add(lastFeature);

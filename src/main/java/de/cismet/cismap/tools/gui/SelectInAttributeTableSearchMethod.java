@@ -40,6 +40,7 @@ import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.layerwidget.ZoomToLayerWorker;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.commons.util.SelectionManager;
 
 import de.cismet.commons.concurrency.CismetExecutors;
 
@@ -196,7 +197,7 @@ public class SelectInAttributeTableSearchMethod implements QuerySearchMethod {
                 }
 
                 if ((features != null) && (layer instanceof AbstractFeatureService)) {
-                    table.applySelection(this, features, true);
+                    SelectionManager.getInstance().setSelectedFeaturesForService((AbstractFeatureService)layer, features);
                 }
             } catch (Exception e) {
                 LOG.error("Error while selecting features", e);
