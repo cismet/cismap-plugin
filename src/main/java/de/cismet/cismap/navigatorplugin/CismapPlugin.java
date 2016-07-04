@@ -4499,6 +4499,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
                                 setupDefaultLayout();
                                 // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                                if (mapC != null) {
+                                    // without this code, the layer will not be shown, if no local layout file exists
+                                    mapC.componentResizedIntermediate();
+                                    mapC.componentResizedDelayed();
+                                }
                             }
                         });
                 }
