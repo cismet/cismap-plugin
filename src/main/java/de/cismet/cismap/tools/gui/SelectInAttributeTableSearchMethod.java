@@ -197,7 +197,8 @@ public class SelectInAttributeTableSearchMethod implements QuerySearchMethod {
                 }
 
                 if ((features != null) && (layer instanceof AbstractFeatureService)) {
-                    SelectionManager.getInstance().setSelectedFeaturesForService((AbstractFeatureService)layer, features);
+                    SelectionManager.getInstance()
+                            .setSelectedFeaturesForService((AbstractFeatureService)layer, features);
                 }
             } catch (Exception e) {
                 LOG.error("Error while selecting features", e);

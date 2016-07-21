@@ -26,6 +26,7 @@ import org.openide.util.NbBundle;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.IllegalComponentStateException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
@@ -59,8 +60,8 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.linearreferencing.tools.StationEditorInterface;
 
 import de.cismet.tools.CurrentStackTrace;
+
 import de.cismet.tools.gui.StaticSwingTools;
-import java.awt.IllegalComponentStateException;
 
 /**
  * DOCUMENT ME!
@@ -104,6 +105,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 dialogCleanup();
             }
         };
+
     private boolean dialogInitialised = false;
 
     private DockingWindowListener windowCleanupListener = new DockingWindowListener() {
@@ -394,7 +396,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butExpandActionPerformed
+    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butExpandActionPerformed
         final View w = getParentView(this);
 
         if (w != null) {
@@ -456,32 +458,31 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             }
             dialogInitialised = true;
         }
-        
+
         EventQueue.invokeLater(new Thread("show linear referencing editor popup") {
 
-            @Override
-            public void run() {
-                diaExp.setAlwaysOnTop(true);
-                try {
-                    final Point p = TableStationEditor.this.getLocationOnScreen();
-                    final Rectangle r = TableStationEditor.this.getBounds();
-                    diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
-                    diaExp.setVisible(true);
-                } catch (IllegalComponentStateException e) {
-                    LOG.warn("Cannot calculate popup position under editor", e);
-                    StaticSwingTools.centerWindowOnScreen(diaExp);
+                @Override
+                public void run() {
+                    diaExp.setAlwaysOnTop(true);
+                    try {
+                        final Point p = TableStationEditor.this.getLocationOnScreen();
+                        final Rectangle r = TableStationEditor.this.getBounds();
+                        diaExp.setLocation((int)p.getX(), (int)(p.getY() + r.getHeight()));
+                        diaExp.setVisible(true);
+                    } catch (IllegalComponentStateException e) {
+                        LOG.warn("Cannot calculate popup position under editor", e);
+                        StaticSwingTools.centerWindowOnScreen(diaExp);
+                    }
                 }
-            }
-        });
-
-    }//GEN-LAST:event_butExpandActionPerformed
+            });
+    } //GEN-LAST:event_butExpandActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRemoveActionPerformed
+    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butRemoveActionPerformed
         final int ans = JOptionPane.showConfirmDialog(
                 ComponentRegistry.getRegistry().getMainWindow(),
                 NbBundle.getMessage(
@@ -498,7 +499,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 parentFeature.setProperty(stationProperty, null);
             }
         }
-    }//GEN-LAST:event_butRemoveActionPerformed
+    } //GEN-LAST:event_butRemoveActionPerformed
 
     @Override
     public CidsBean getCidsBean() {

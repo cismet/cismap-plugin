@@ -50,13 +50,14 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
 
     //~ Instance fields --------------------------------------------------------
 
-    private DefaultBindableReferenceCombo combo = new DefaultBindableReferenceCombo();
-    private CidsBeanFilter filter;
+    private DefaultCidsLayerBindableReferenceCombo combo = new DefaultCidsLayerBindableReferenceCombo();
+    private CidsLayerFeatureFilter filter;
     private FeatureServiceAttribute attr;
     private boolean useAutoCompleteDecorator = true;
     private ListCellRenderer listRenderer = null;
     private boolean nullable = false;
-    private HashSet<DefaultBindableReferenceCombo> configuredCombos = new HashSet<DefaultBindableReferenceCombo>();
+    private HashSet<DefaultCidsLayerBindableReferenceCombo> configuredCombos =
+        new HashSet<DefaultCidsLayerBindableReferenceCombo>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,7 +86,7 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
      * @param  attr    The attribute, this editor will be used for.
      * @param  filter  DOCUMENT ME!
      */
-    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr, final CidsBeanFilter filter) {
+    public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr, final CidsLayerFeatureFilter filter) {
         this(attr, true, filter);
     }
 
@@ -98,7 +99,7 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
      */
     public CidsLayerReferencedComboEditor(final FeatureServiceAttribute attr,
             final boolean useAutoCompleteDecorator,
-            final CidsBeanFilter filter) {
+            final CidsLayerFeatureFilter filter) {
         this.filter = filter;
         this.useAutoCompleteDecorator = useAutoCompleteDecorator;
         this.attr = attr;

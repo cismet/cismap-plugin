@@ -271,8 +271,15 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             logger.error("Error while initialiseing the cids layer.", e);
         }
     }
-    
-    private String postgisToJtsGeometryType(String geometryType) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   geometryType  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String postgisToJtsGeometryType(final String geometryType) {
         final GeometryFactory factory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), -1);
 
         if (geometryType.equalsIgnoreCase("ST_Point")) {

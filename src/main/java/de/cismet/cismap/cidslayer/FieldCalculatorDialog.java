@@ -70,6 +70,7 @@ import de.cismet.cids.tools.CidsLayerUtil;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.XBoundingBox;
+import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
@@ -87,7 +88,6 @@ import de.cismet.tools.gui.StaticSwingTools;
 
 import static de.cismet.cids.search.QuerySearch.PROP_ATTRIBUTES;
 import static de.cismet.cids.search.QuerySearch.PROP_VALUES;
-import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 
 /**
  * This dialog allows to use a formula to set the values for a AttributeTable row.
@@ -705,7 +705,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void jGetValuesBnActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jGetValuesBnActionPerformed
+    private void jGetValuesBnActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jGetValuesBnActionPerformed
         if (jAttributesLi.getSelectedValue() == null) {
             return;
         }
@@ -802,14 +802,14 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                 FieldCalculatorDialog.class,
                 "FieldCalculatorDialog.jGetValuesBnActionPerformed().jlShowIndividualValues.text",
                 currentlyExpandedAttribute.getName()));
-    }//GEN-LAST:event_jGetValuesBnActionPerformed
+    } //GEN-LAST:event_jGetValuesBnActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnSearchCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchCancelActionPerformed
+    private void btnSearchCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnSearchCancelActionPerformed
         lblBusyIcon.setEnabled(true);
         lblBusyIcon.setBusy(true);
 
@@ -874,33 +874,33 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                         });
                 }
             });
-    }//GEN-LAST:event_btnSearchCancelActionPerformed
+    } //GEN-LAST:event_btnSearchCancelActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void labMathLinkMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labMathLinkMouseClicked
+    private void labMathLinkMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_labMathLinkMouseClicked
         try {
             de.cismet.tools.BrowserLauncher.openURL("https://wiki.selfhtml.org/wiki/JavaScript/Objekte/Math");
         } catch (Exception ex) {
             LOG.error("Error while trying to open a link", ex);
         }
-    }//GEN-LAST:event_labMathLinkMouseClicked
+    }                                                                           //GEN-LAST:event_labMathLinkMouseClicked
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void labStringLinkMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labStringLinkMouseClicked
+    private void labStringLinkMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_labStringLinkMouseClicked
         try {
             de.cismet.tools.BrowserLauncher.openURL("https://wiki.selfhtml.org/wiki/JavaScript/Objekte/String");
         } catch (Exception ex) {
             LOG.error("Error while trying to open a link", ex);
         }
-    }//GEN-LAST:event_labStringLinkMouseClicked
+    }                                                                             //GEN-LAST:event_labStringLinkMouseClicked
 
     /**
      * Solve all length properties.

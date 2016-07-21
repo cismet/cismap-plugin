@@ -74,12 +74,12 @@ public class CidsBeanLocker {
                     CidsBeanLocker.class,
                     "CidsLayerLocker.lock(CidsBean).userString",
                     SessionManager.getSession().getUser().getName());
-            
+
             if (bean.getMetaObject().getMetaClass().getID() == -1) {
-                //object with id -1 are new objects, which cannot be locked, because they do not exists on the server
+                // object with id -1 are new objects, which cannot be locked, because they do not exists on the server
                 return new FakeLock();
             }
-            
+
             // Check, if the lock already exists
             final String query = String.format(
                     LOCK_QUERY,
@@ -199,7 +199,7 @@ public class CidsBeanLocker {
      */
     public void unlock(final CidsBean bean) throws Exception {
         try {
-            if(bean instanceof FakeLock) {
+            if (bean instanceof FakeLock) {
                 return;
             }
             bean.delete();
@@ -234,7 +234,14 @@ public class CidsBeanLocker {
 
         return lockMc;
     }
-    
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
     private class FakeLock extends CidsBean {
     }
 }

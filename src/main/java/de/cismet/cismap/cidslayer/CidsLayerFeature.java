@@ -49,6 +49,9 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.cidslayer.StationInfo;
 
+import de.cismet.cids.tools.tostring.CidsLayerFeatureToStringConverter;
+import de.cismet.cids.tools.tostring.ToStringConverter;
+
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.WorldToScreenTransform;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
@@ -90,7 +93,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     // protected Map<String, Object> properties;
     private CidsLayerInfo layerInfo;
     private Map<String, DisposableCidsBeanStore> stations = null;
-    private Map<String, DefaultBindableReferenceCombo> combos = null;
+    private Map<String, DefaultCidsLayerBindableReferenceCombo> combos = null;
     private Color backgroundColor;
     private PropertyChangeListener propListener = new PropertyChangeListener() {
 
@@ -232,7 +235,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             }
         }
 
-        if (layerInfo.isStation(propertyName) && (stations != null) && (stations.get(propertyName) != null)) {
+        if ((stations != null) && layerInfo.isStation(propertyName) && (stations.get(propertyName) != null)) {
             final TableStationEditor se = (TableStationEditor)stations.get(propertyName);
             return se.getValue();
         } else {
@@ -368,16 +371,21 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                 final int referencedForeignClassId = layerInfo.getCatalogueClass(col);
 
                                 if (combos == null) {
-                                    combos = new HashMap<String, DefaultBindableReferenceCombo>();
+                                    combos = new HashMap<String, DefaultCidsLayerBindableReferenceCombo>();
                                 }
                                 final MetaClass foreignClass = getMetaClass(referencedForeignClassId);
-                                final DefaultBindableReferenceCombo catalogueEditor = new DefaultBindableReferenceCombo(
+                                final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
+                                    new DefaultCidsLayerBindableReferenceCombo(
                                         foreignClass,
-                                        true,
-                                        false);
+                                        true);
                                 final String colName = layerInfo.getColumnPropertyNames()[i];
+                                FeatureServiceFeature feature = null;
                                 final CidsBean bean = (CidsBean)getMetaObject().getBean().getProperty(colName);
-                                catalogueEditor.setSelectedItem(bean);
+                                
+                                if (bean != null) {
+                                    feature = retrieveFeature(bean.getPrimaryKeyValue(), bean.getMetaObject().getMetaClass());
+                                }
+                                catalogueEditor.setSelectedItem(feature);
                                 combos.put(col, catalogueEditor);
                             }
                         } catch (Exception e) {
@@ -419,15 +427,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     @Override
-    public void setProperty(String propertyName, Object propertyValue) {
+    public void setProperty(final String propertyName, final Object propertyValue) {
         super.setProperty(propertyName, propertyValue);
-        
+
         if (isEditable()) {
             modified = true;
         }
     }
-    
-    
 
     /**
      * DOCUMENT ME!
@@ -462,7 +468,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     @Override
     public FeatureServiceFeature saveChanges() throws Exception {
         saveChangesWithoutReload();
-        
+
         final FeatureServiceFeature feature = reloadFeature();
 
         if (feature != null) {
@@ -568,8 +574,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             }
         }
 //LOG.error(bean.getMOString());
-        CidsBean newBean = bean.persist();
-        
+        final CidsBean newBean = bean.persist();
+
         if (newBean != null) {
             setId(newBean.getMetaObject().getID());
             setProperty("id", newBean.getMetaObject().getID());
@@ -580,8 +586,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         // to decrease the memory usage
         metaObject = null;
     }
-    
-    
 
     /**
      * DOCUMENT ME!
@@ -603,6 +607,32 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             final String query = idField + " = " + getId();
             final List<FeatureServiceFeature> features = getLayerProperties().getFeatureService()
                         .getFeatureFactory()
+                        .createFeatures(query, null, null, 0, 1, null);
+
+            if (features.size() == 1) {
+                setProperties(features.get(0).getProperties());
+
+                return features.get(0);
+            }
+        } catch (Exception e) {
+            LOG.error("Error while reloading feature from server", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private FeatureServiceFeature retrieveFeature(int id, MetaClass mc) {
+        try {
+            String idField = "id";
+            final String query = idField + " = " + id;
+            CidsLayer service = new CidsLayer(mc);
+            service.initAndWait();
+            final List<FeatureServiceFeature> features = service.getFeatureFactory()
                         .createFeatures(query, null, null, 0, 1, null);
 
             if (features.size() == 1) {
@@ -888,10 +918,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public void setGeometry(final Geometry geom) {
-        Geometry oldGeom = getGeometry();
-        
-        if (((oldGeom == null) != (geom == null)) || (oldGeom != null && geom != null && !oldGeom.equalsExact(geom))) {
-            //the old geometry and the new geometry are different
+        final Geometry oldGeom = getGeometry();
+
+        if (((oldGeom == null) != (geom == null))
+                    || ((oldGeom != null) && (geom != null) && !oldGeom.equalsExact(geom))) {
+            // the old geometry and the new geometry are different
             super.setGeometry(geom);
 
             if (layerInfo != null) {
@@ -932,11 +963,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      *
      * @return  DOCUMENT ME!
      */
-    public DefaultBindableReferenceCombo getCatalogueCombo(final String columnName) {
+    public DefaultCidsLayerBindableReferenceCombo getCatalogueCombo(final String columnName) {
         if (combos == null) {
             return null;
         }
-        final DefaultBindableReferenceCombo c = combos.get(columnName);
+        final DefaultCidsLayerBindableReferenceCombo c = combos.get(columnName);
 
         return c;
     }
@@ -993,13 +1024,27 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public boolean isFeatureChanged() {
-        Geometry geom = getGeometry();
-        
-        if (((backupGeometry == null) != (geom == null)) || (backupGeometry != null && geom != null && !backupGeometry.equalsExact(geom))) {
-            //The geometry will not changed with the setGeometry() method, but also within the geometry object itself.
+        final Geometry geom = getGeometry();
+
+        if (((backupGeometry == null) != (geom == null))
+                    || ((backupGeometry != null) && (geom != null) && !backupGeometry.equalsExact(geom))) {
+            // The geometry will not changed with the setGeometry() method, but also within the geometry object itself.
             return true;
         } else {
             return modified;
+        }
+    }
+
+    @Override
+    public String toString() {
+        final ToStringConverter converter = metaClass.getToStringConverter();
+
+        if (converter instanceof CidsLayerFeatureToStringConverter) {
+            final CidsLayerFeatureToStringConverter featureConverter = (CidsLayerFeatureToStringConverter)converter;
+
+            return featureConverter.featureToString(this);
+        } else {
+            return super.toString();
         }
     }
 
