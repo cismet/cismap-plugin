@@ -4492,23 +4492,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             } else {
                 EventQueue.invokeLater(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                // UGLY WINNING --> Gefixed durch IDW Version 1.5
-                                // setupDefaultLayout();
-                                // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
-                                setupDefaultLayout();
-                                // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
-                                if (mapC != null) {
-                                    // without this code, the layer will not be shown, if no local layout file exists
-                                    mapC.componentResizedIntermediate();
-                                    mapC.componentResizedDelayed();
-                                }
-                                if ((overviewComponent != null) && (overviewComponent.getOverviewMap() != null)) {
-                                    // without this code, the layer will not be shown, if no local layout file exists
-                                    overviewComponent.getOverviewMap().componentResizedIntermediate();
-                                    overviewComponent.getOverviewMap().componentResizedDelayed();
-                                }
+                        @Override
+                        public void run() {
+                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
+                            // setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
+                            setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                            if (mapC != null) {
+                                // without this code, the layer will not be shown, if no local layout file exists
+                                mapC.componentResizedIntermediate();
+                                mapC.componentResizedDelayed();
                             }
                             if ((overviewComponent != null) && (overviewComponent.getOverviewMap() != null)) {
                                 // without this code, the layer will not be shown, if no local layout file exists
