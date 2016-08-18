@@ -211,7 +211,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                         e);
                 }
             }
-            
+
             scaleAttr = metaClass.getClassAttribute("maxScale");
 
             if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {

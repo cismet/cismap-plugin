@@ -332,12 +332,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             }
         }
 
-        if ((getMaxArea() != null || getMaxScale() != null) && (box != null)) {
+        if (((getMaxArea() != null) || (getMaxScale() != null)) && (box != null)) {
             Geometry bbox = box.getGeometry();
             bbox = CrsTransformer.transformToMetricCrs(bbox);
 
-            if ((getMaxArea() != null && bbox.getArea() > getMaxArea()) || 
-                    (getMaxScale() != null && CismapBroker.getInstance().getMappingComponent().getScaleDenominator() > getMaxScale())) {
+            if (((getMaxArea() != null) && (bbox.getArea() > getMaxArea()))
+                        || ((getMaxScale() != null)
+                            && (CismapBroker.getInstance().getMappingComponent().getScaleDenominator()
+                                > getMaxScale()))) {
                 return false;
             }
         }
@@ -519,7 +521,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public Double getMaxArea() {
         return maxArea;
     }
-    
+
     /**
      * DOCUMENT ME!
      *

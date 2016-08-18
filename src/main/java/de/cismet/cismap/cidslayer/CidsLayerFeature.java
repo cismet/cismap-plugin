@@ -101,17 +101,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             public void propertyChange(final PropertyChangeEvent evt) {
                 modified = true;
                 firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                
-                if (getLayerProperties() != null && getLayerProperties().getAttributeTableRuleSet() != null) {
+
+                if ((getLayerProperties() != null) && (getLayerProperties().getAttributeTableRuleSet() != null)) {
                     if (!getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
                         if (evt.getSource() instanceof TableStationEditor) {
-                            TableStationEditor stat = (TableStationEditor)evt.getSource();
-                            
+                            final TableStationEditor stat = (TableStationEditor)evt.getSource();
+
                             if (stat.isLine()) {
                                 final LinearReferencingHelper helper = FeatureRegistry.getInstance()
-                                        .getLinearReferencingSolver();
-                                Geometry g = (Geometry)helper.getGeomBeanFromLineBean(stat.getLineBean()).getProperty("geo_field");
-                                
+                                            .getLinearReferencingSolver();
+                                final Geometry g = (Geometry)helper.getGeomBeanFromLineBean(stat.getLineBean())
+                                            .getProperty("geo_field");
+
                                 setGeometry(g);
                             }
                         }
@@ -459,9 +460,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      */
     private boolean hasStations() {
         final AttributeTableRuleSet ruleSet = getLayerProperties().getAttributeTableRuleSet();
-        
+
         for (final String col : layerInfo.getColumnNames()) {
-            if (layerInfo.isStation(col) && (ruleSet == null || ruleSet.isColumnEditable(col))) {
+            if (layerInfo.isStation(col) && ((ruleSet == null) || ruleSet.isColumnEditable(col))) {
                 return true;
             }
         }
@@ -556,7 +557,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             } else if (layerInfo.isCatalogue(key)) {
                 if (getCatalogueCombo(key) != null) {
                     if (getCatalogueCombo(key).getSelectedItem() instanceof CidsLayerFeature) {
-                        bean.setProperty(colMap.get(key), ((CidsLayerFeature)getCatalogueCombo(key).getSelectedItem()).getMetaObject().getBean());
+                        bean.setProperty(colMap.get(key),
+                            ((CidsLayerFeature)getCatalogueCombo(key).getSelectedItem()).getMetaObject().getBean());
                     } else {
                         bean.setProperty(colMap.get(key), getCatalogueCombo(key).getSelectedItem());
                     }
@@ -593,7 +595,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 if (propKey == null) {
                     propKey = key;
                 }
-                
+
                 if (propKey.contains(".")) {
                     continue;
                 }
@@ -660,7 +662,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         try {
             final String idField = "id";
             final CidsLayer service = new CidsLayer(mc);
-            final String query = service.decoratePropertyName( idField ) + " = " + id;
+            final String query = service.decoratePropertyName(idField) + " = " + id;
             service.initAndWait();
             final List<FeatureServiceFeature> features = service.getFeatureFactory()
                         .createFeatures(query, null, null, 0, 1, null);
