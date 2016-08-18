@@ -1061,7 +1061,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         configureApp(false);
 
         // configureActiveTabAfterVisibility();
-
         for (final Scale s : mapC.getScales()) {
             if (s.getDenominator() > 0) {
                 menExtras.add(getScaleMenuItem(s.getText(), s.getDenominator()));
@@ -1345,12 +1344,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         log.warn("unrecognised view section: " + section); // NOI18N
                     }
                 }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug(
-                        "ignoring extension window in layout, because the position hint is not a ViewSection" // NOI18N
-                                + entry.getKey().getName());
-                }
+            } else if (log.isDebugEnabled()) {
+                log.debug(
+                    "ignoring extension window in layout, because the position hint is not a ViewSection" // NOI18N
+                            + entry.getKey().getName());
             }
         }
 
@@ -3293,7 +3290,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private void mniLoadConfigFromServerActionPerformed(final java.awt.event.ActionEvent evt) {
         activeLayers.removeAllLayers();
         mapC.getMapServiceLayer().removeAllChildren();
+        mapC.lock();
         configureApp(true);
+        EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    mapC.unlock();
+                }
+            });
     }
 
     /**
@@ -3452,12 +3457,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void cmdPrintActionPerformed(final java.awt.event.ActionEvent evt) {
-        final String oldMode = mapC.getInteractionMode();
-        if (log.isDebugEnabled()) {
-            log.debug("oldInteractionMode:" + oldMode); // NOI18N
-        }
-        togInvisible.setSelected(true);
-        mapC.showPrintingSettingsDialog(oldMode);
+        mapC.showPrintingSettingsDialog();
+        setButtonSelectionAccordingToMappingComponent();
     }
 
     /**
@@ -4485,37 +4486,45 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         "CismapPlugin.loadLayout(String).JOptionPane.title"), // NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
             }
-        } else {
-            if (isInit) {
-                log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
-                if (isInit && (defaultLayout != null)) {
-                    // reset to saved local layout file in custom res.jar
-                    this.loadLayout(defaultLayout, isInit);
-                } else {
-                    EventQueue.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                // UGLY WINNING --> Gefixed durch IDW Version 1.5
-                                // setupDefaultLayout();
-                                // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
-                                setupDefaultLayout();
-                                // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
-                            }
-                        });
-                }
+        } else if (isInit) {
+            log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
+            if (isInit && (defaultLayout != null)) {
+                // reset to saved local layout file in custom res.jar
+                this.loadLayout(defaultLayout, isInit);
             } else {
-                log.error("File '" + file + "' does not exist)");                // NOI18N
-                JOptionPane.showMessageDialog(
-                    StaticSwingTools.getParentFrame(mapC),
-                    org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
-                    org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.loadLayout(String).JOptionPane.title"),    // NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
+                EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            // UGLY WINNING --> Gefixed durch IDW Version 1.5
+                            // setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup1",rootWindow).setVisible(true);
+                            setupDefaultLayout();
+                            // DeveloperUtil.createWindowLayoutFrame("nach setup2",rootWindow).setVisible(true);
+                            if (mapC != null) {
+                                // without this code, the layer will not be shown, if no local layout file exists
+                                mapC.componentResizedIntermediate();
+                                mapC.componentResizedDelayed();
+                            }
+                            if ((overviewComponent != null) && (overviewComponent.getOverviewMap() != null)) {
+                                // without this code, the layer will not be shown, if no local layout file exists
+                                overviewComponent.getOverviewMap().componentResizedIntermediate();
+                                overviewComponent.getOverviewMap().componentResizedDelayed();
+                            }
+                        }
+                    });
             }
+        } else {
+            log.error("File '" + file + "' does not exist)");                // NOI18N
+            JOptionPane.showMessageDialog(
+                StaticSwingTools.getParentFrame(mapC),
+                org.openide.util.NbBundle.getMessage(
+                    CismapPlugin.class,
+                    "CismapPlugin.loadLayout(String).JOptionPane.message3"), // NOI18N
+                org.openide.util.NbBundle.getMessage(
+                    CismapPlugin.class,
+                    "CismapPlugin.loadLayout(String).JOptionPane.title"),    // NOI18N
+                JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -4625,10 +4634,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     log.debug("Saving Layout.. File does not exit"); // NOI18N
                 }
                 layoutFile.createNewFile();
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Saving Layout.. File does exit");     // NOI18N
-                }
+            } else if (log.isDebugEnabled()) {
+                log.debug("Saving Layout.. File does exit");         // NOI18N
             }
 
             final FileOutputStream layoutOutput = new FileOutputStream(layoutFile);
@@ -4818,10 +4825,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             if (!cmdSnap.isSelected()) {
                 cmdSnap.setSelected(true);
             }
-        } else {
-            if (cmdSnap.isSelected()) {
-                cmdSnap.setSelected(false);
-            }
+        } else if (cmdSnap.isSelected()) {
+            cmdSnap.setSelected(false);
         }
     }
 
