@@ -74,6 +74,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private CidsLayerInfo layerInfo;
     private String geometryType = AbstractFeatureService.UNKNOWN;
     private Double maxArea = null;
+    private Double maxScale = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,6 +91,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         this.layerInfo = cff.layerInfo;
         this.geometryType = cff.geometryType;
         this.maxArea = cff.maxArea;
+        this.maxScale = cff.maxScale;
         this.layerProperties = cff.layerProperties;
     }
 
@@ -181,6 +183,11 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 return new ArrayList<CidsLayerFeature>();
             }
         }
+        if ((maxScale != null) && (boundingBox != null)) {
+            if (CismapBroker.getInstance().getMappingComponent().getScaleDenominator() > maxScale) {
+                return new ArrayList<CidsLayerFeature>();
+            }
+        }
 
         return createFeaturesInternal(query, boundingBox, workerThread, 0, 0, null, true);
     }
@@ -193,11 +200,23 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             final Object info = CidsLayerUtil.getCidsLayerInfo(metaClass, SessionManager.getSession().getUser());
             setLayerInfo((CidsLayerInfo)info);
 
-            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxArea");
+            ClassAttribute scaleAttr = metaClass.getClassAttribute("maxArea");
 
             if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
                 try {
                     maxArea = Double.parseDouble(scaleAttr.getValue().toString());
+                } catch (Exception e) {
+                    logger.error("the max area attribute does not contain a valid number: "
+                                + scaleAttr.getValue().toString(),
+                        e);
+                }
+            }
+            
+            scaleAttr = metaClass.getClassAttribute("maxScale");
+
+            if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
+                try {
+                    maxScale = Double.parseDouble(scaleAttr.getValue().toString());
                 } catch (Exception e) {
                     logger.error("the max scale attribute does not contain a valid number: "
                                 + scaleAttr.getValue().toString(),

@@ -43,6 +43,7 @@ import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
 /**
  * DOCUMENT ME!
@@ -83,6 +84,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private String geometryType = AbstractFeatureService.UNKNOWN;
     private Integer maxFeaturesPerPage = null;
     private Double maxArea = null;
+    private Double maxScale = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -303,11 +305,25 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     @Override
     public boolean isVisibleInBoundingBox(final XBoundingBox box) {
         if ((getMaxArea() == null) && (metaClass != null)) {
-            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxArea");
+            final ClassAttribute areaAttr = metaClass.getClassAttribute("maxArea");
+
+            if ((areaAttr != null) && (areaAttr.getValue() != null)) {
+                try {
+                    maxArea = Double.parseDouble(areaAttr.getValue().toString());
+                } catch (Exception e) {
+                    LOG.error("the max scale attribute does not contain a valid number: "
+                                + areaAttr.getValue().toString(),
+                        e);
+                }
+            }
+        }
+
+        if ((getMaxScale() == null) && (metaClass != null)) {
+            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxScale");
 
             if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
                 try {
-                    maxArea = Double.parseDouble(scaleAttr.getValue().toString());
+                    maxScale = Double.parseDouble(scaleAttr.getValue().toString());
                 } catch (Exception e) {
                     LOG.error("the max scale attribute does not contain a valid number: "
                                 + scaleAttr.getValue().toString(),
@@ -316,11 +332,12 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             }
         }
 
-        if ((getMaxArea() != null) && (box != null)) {
+        if ((getMaxArea() != null || getMaxScale() != null) && (box != null)) {
             Geometry bbox = box.getGeometry();
             bbox = CrsTransformer.transformToMetricCrs(bbox);
 
-            if (bbox.getArea() > getMaxArea()) {
+            if ((getMaxArea() != null && bbox.getArea() > getMaxArea()) || 
+                    (getMaxScale() != null && CismapBroker.getInstance().getMappingComponent().getScaleDenominator() > getMaxScale())) {
                 return false;
             }
         }
@@ -501,5 +518,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public Double getMaxArea() {
         return maxArea;
+    }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the maxArea
+     */
+    public Double getMaxScale() {
+        return maxScale;
     }
 }
