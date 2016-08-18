@@ -50,6 +50,8 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
+import org.apache.commons.io.FilenameUtils;
+
 import org.jdom.Element;
 
 import org.mortbay.jetty.Connector;
