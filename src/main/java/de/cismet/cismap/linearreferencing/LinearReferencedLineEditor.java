@@ -278,7 +278,13 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 @Override
                 public String getPreferredStringForItem(final Object o) {
                     if (o instanceof CidsLayerFeature) {
-                        return (String)((CidsLayerFeature)o).getProperty(routeNamePropertyName);
+                        Object prop = ((CidsLayerFeature)o).getProperty(routeNamePropertyName);
+                        
+                        if (prop == null) {
+                            return "";
+                        } else {
+                            return String.valueOf(prop);
+                        }
                     } else {
                         if (o == null) {
                             return "";
@@ -2582,79 +2588,79 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromPointSplitActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromPointSplitActionPerformed
+    private void btnFromPointSplitActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromPointSplitActionPerformed
         splitPoint(FROM);
-    }                                                                                     //GEN-LAST:event_btnFromPointSplitActionPerformed
+    }//GEN-LAST:event_btnFromPointSplitActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToPointSplitActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToPointSplitActionPerformed
+    private void btnToPointSplitActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToPointSplitActionPerformed
         splitPoint(TO);
-    }                                                                                   //GEN-LAST:event_btnToPointSplitActionPerformed
+    }//GEN-LAST:event_btnToPointSplitActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToBadGeomCorrectActionPerformed
+    private void btnToBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToBadGeomCorrectActionPerformed
         correctBadGeom(TO);
-    }                                                                                       //GEN-LAST:event_btnToBadGeomCorrectActionPerformed
+    }//GEN-LAST:event_btnToBadGeomCorrectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToBadGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToBadGeomActionPerformed
+    private void btnToBadGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToBadGeomActionPerformed
         switchBadGeomVisibility(TO);
-    }                                                                                //GEN-LAST:event_btnToBadGeomActionPerformed
+    }//GEN-LAST:event_btnToBadGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromBadGeomCorrectActionPerformed
+    private void btnFromBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromBadGeomCorrectActionPerformed
         correctBadGeom(FROM);
-    }                                                                                         //GEN-LAST:event_btnFromBadGeomCorrectActionPerformed
+    }//GEN-LAST:event_btnFromBadGeomCorrectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromBadGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromBadGeomActionPerformed
+    private void btnFromBadGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromBadGeomActionPerformed
         switchBadGeomVisibility(FROM);
-    }                                                                                  //GEN-LAST:event_btnFromBadGeomActionPerformed
+    }//GEN-LAST:event_btnFromBadGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnRouteActionPerformed
+    private void btnRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRouteActionPerformed
         updateOtherLinesPanelVisibility();
-    }                                                                            //GEN-LAST:event_btnRouteActionPerformed
+    }//GEN-LAST:event_btnRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPossibleRouteActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_cbPossibleRouteActionPerformed
+    }//GEN-LAST:event_cbPossibleRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butApplyActionPerformed
+    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butApplyActionPerformed
         if (isEnabled() && isEditable()) {
             if (cbPossibleRoute.getSelectedItem() instanceof CidsLayerFeature) {
                 final CidsLayerFeature f = (CidsLayerFeature)cbPossibleRoute.getSelectedItem();
@@ -2669,39 +2675,39 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 }
             }
         }
-    } //GEN-LAST:event_butApplyActionPerformed
+    }//GEN-LAST:event_butApplyActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butCancelActionPerformed
+    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butCancelActionPerformed
         showCard(Card.edit);
-    }                                                                             //GEN-LAST:event_butCancelActionPerformed
+    }//GEN-LAST:event_butCancelActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panLineMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLineMouseClicked
+    private void panLineMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panLineMouseClicked
         if (!routeCombo) {
             return;
         }
         showCard(Card.add);
 
         fillRoutesCombo();
-    } //GEN-LAST:event_panLineMouseClicked
+    }//GEN-LAST:event_panLineMouseClicked
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLinePointsMouseClicked
+    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panLinePointsMouseClicked
         panLineMouseClicked(evt);
-    }                                                                             //GEN-LAST:event_panLinePointsMouseClicked
+    }//GEN-LAST:event_panLinePointsMouseClicked
 
     /**
      * DOCUMENT ME!

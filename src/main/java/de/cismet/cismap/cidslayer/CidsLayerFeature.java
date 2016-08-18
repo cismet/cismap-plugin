@@ -101,6 +101,22 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             public void propertyChange(final PropertyChangeEvent evt) {
                 modified = true;
                 firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                
+                if (getLayerProperties() != null && getLayerProperties().getAttributeTableRuleSet() != null) {
+                    if (!getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
+                        if (evt.getSource() instanceof TableStationEditor) {
+                            TableStationEditor stat = (TableStationEditor)evt.getSource();
+                            
+                            if (stat.isLine()) {
+                                final LinearReferencingHelper helper = FeatureRegistry.getInstance()
+                                        .getLinearReferencingSolver();
+                                Geometry g = (Geometry)helper.getGeomBeanFromLineBean(stat.getLineBean()).getProperty("geo_field");
+                                
+                                setGeometry(g);
+                            }
+                        }
+                    }
+                }
             }
         };
 
@@ -381,9 +397,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                 final String colName = layerInfo.getColumnPropertyNames()[i];
                                 FeatureServiceFeature feature = null;
                                 final CidsBean bean = (CidsBean)getMetaObject().getBean().getProperty(colName);
-                                
+
                                 if (bean != null) {
-                                    feature = retrieveFeature(bean.getPrimaryKeyValue(), bean.getMetaObject().getMetaClass());
+                                    feature = retrieveFeature(bean.getPrimaryKeyValue(),
+                                            bean.getMetaObject().getMetaClass());
                                 }
                                 catalogueEditor.setSelectedItem(feature);
                                 combos.put(col, catalogueEditor);
@@ -441,8 +458,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * @return  DOCUMENT ME!
      */
     private boolean hasStations() {
+        final AttributeTableRuleSet ruleSet = getLayerProperties().getAttributeTableRuleSet();
+        
         for (final String col : layerInfo.getColumnNames()) {
-            if (layerInfo.isStation(col)) {
+            if (layerInfo.isStation(col) && (ruleSet == null || ruleSet.isColumnEditable(col))) {
                 return true;
             }
         }
@@ -536,7 +555,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 }
             } else if (layerInfo.isCatalogue(key)) {
                 if (getCatalogueCombo(key) != null) {
-                    bean.setProperty(colMap.get(key), getCatalogueCombo(key).getSelectedItem());
+                    if (getCatalogueCombo(key).getSelectedItem() instanceof CidsLayerFeature) {
+                        bean.setProperty(colMap.get(key), ((CidsLayerFeature)getCatalogueCombo(key).getSelectedItem()).getMetaObject().getBean());
+                    } else {
+                        bean.setProperty(colMap.get(key), getCatalogueCombo(key).getSelectedItem());
+                    }
                 } else {
                     // A new object was created
                     bean.setProperty(colMap.get(key), propertyMap.get(key));
@@ -569,6 +592,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
                 if (propKey == null) {
                     propKey = key;
+                }
+                
+                if (propKey.contains(".")) {
+                    continue;
                 }
                 bean.setProperty(propKey, propertyMap.get(key));
             }
@@ -624,20 +651,21 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     /**
      * DOCUMENT ME!
      *
+     * @param   id  DOCUMENT ME!
+     * @param   mc  DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
-    private FeatureServiceFeature retrieveFeature(int id, MetaClass mc) {
+    private FeatureServiceFeature retrieveFeature(final int id, final MetaClass mc) {
         try {
-            String idField = "id";
-            final String query = idField + " = " + id;
-            CidsLayer service = new CidsLayer(mc);
+            final String idField = "id";
+            final CidsLayer service = new CidsLayer(mc);
+            final String query = service.decoratePropertyName( idField ) + " = " + id;
             service.initAndWait();
             final List<FeatureServiceFeature> features = service.getFeatureFactory()
                         .createFeatures(query, null, null, 0, 1, null);
 
             if (features.size() == 1) {
-                setProperties(features.get(0).getProperties());
-
                 return features.get(0);
             }
         } catch (Exception e) {

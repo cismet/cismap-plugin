@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.Validator;
 
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 import java.awt.Component;
@@ -44,11 +45,11 @@ import javax.swing.SwingWorker;
 import de.cismet.cids.editors.Bindable;
 
 import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
-import de.cismet.commons.ref.PurgingCache;
-import de.cismet.tools.Calculator;
 
+import de.cismet.commons.ref.PurgingCache;
+
+import de.cismet.tools.Calculator;
 import de.cismet.tools.CismetThreadPool;
-import org.openide.util.NbBundle;
 
 /**
  * DOCUMENT ME!
@@ -65,64 +66,65 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
     private static final Logger LOG = Logger.getLogger(DefaultCidsLayerBindableReferenceCombo.class);
 
     protected static final Comparator<CidsLayerFeature> BEAN_TOSTRING_COMPARATOR = new FeatureToStringComparator();
-    private static final PurgingCache<CatalogueDefinition, List<CidsLayerFeature>> cache = new PurgingCache<CatalogueDefinition, List<CidsLayerFeature>>(new Calculator<CatalogueDefinition, List<CidsLayerFeature>>() {
+    private static final PurgingCache<CatalogueDefinition, List<CidsLayerFeature>> cache =
+        new PurgingCache<CatalogueDefinition, List<CidsLayerFeature>>(
+            new Calculator<CatalogueDefinition, List<CidsLayerFeature>>() {
 
-        @Override
-        public List<CidsLayerFeature> calculate(CatalogueDefinition input) throws Exception {
-            final ClassAttribute ca = input.getMc().getClassAttribute("sortingColumn"); // NOI18N
-            final CidsLayer layer = new CidsLayer(input.getMc());
-            final Map<String, FeatureServiceAttribute> attributeMap = layer.getFeatureServiceAttributes();
-            List<CidsLayerFeature> featureList = new ArrayList<CidsLayerFeature>();
-            FeatureServiceAttribute[] attrArray = null;
-            String[] orderBy = null;                                         // NOI18N
+                @Override
+                public List<CidsLayerFeature> calculate(final CatalogueDefinition input) throws Exception {
+                    final ClassAttribute ca = input.getMc().getClassAttribute("sortingColumn"); // NOI18N
+                    final CidsLayer layer = new CidsLayer(input.getMc());
+                    final Map<String, FeatureServiceAttribute> attributeMap = layer.getFeatureServiceAttributes();
+                    List<CidsLayerFeature> featureList = new ArrayList<CidsLayerFeature>();
+                    FeatureServiceAttribute[] attrArray = null;
+                    String[] orderBy = null;                                                    // NOI18N
 
-            //determine sort order
-            if (input.getSortingColumn() == null) {
-                if (ca != null) {
-                    final String value = ca.getValue().toString();
-                    orderBy = value.split(",");
-                }
-            } else {
-                orderBy = input.getSortingColumn().split(",");
-            }
-            
-            if ((orderBy != null) && (orderBy.length > 0)) {
-                final List<FeatureServiceAttribute> attributeList = new ArrayList<FeatureServiceAttribute>();
-
-                for (final String attributeName : orderBy) {
-                    final FeatureServiceAttribute attr = attributeMap.get(attributeName);
-
-                    if (attr != null) {
-                        attributeList.add(attr);
+                    // determine sort order
+                    if (input.getSortingColumn() == null) {
+                        if (ca != null) {
+                            final String value = ca.getValue().toString();
+                            orderBy = value.split(",");
+                        }
+                    } else {
+                        orderBy = input.getSortingColumn().split(",");
                     }
+
+                    if ((orderBy != null) && (orderBy.length > 0)) {
+                        final List<FeatureServiceAttribute> attributeList = new ArrayList<FeatureServiceAttribute>();
+
+                        for (final String attributeName : orderBy) {
+                            final FeatureServiceAttribute attr = attributeMap.get(attributeName);
+
+                            if (attr != null) {
+                                attributeList.add(attr);
+                            }
+                        }
+
+                        if (!attributeList.isEmpty()) {
+                            attrArray = attributeList.toArray(new FeatureServiceAttribute[attributeList.size()]);
+                        }
+                    }
+
+                    // load data
+                    try {
+                        layer.initAndWait();
+                        featureList = layer.getFeatureFactory()
+                                        .createFeatures(layer.getQuery(), null, null, 0, 0, attrArray);
+                    } catch (final Exception ex) {
+                        LOG.warn("cache could not come up with appropriate objects", ex); // NOI18N
+                        throw ex;
+                    }
+
+                    // add null value, if required
+                    if (input.isNullable()) {
+                        featureList.add(null);
+                    }
+
+                    return featureList;
                 }
-
-                if (!attributeList.isEmpty()) {
-                    attrArray = attributeList.toArray(new FeatureServiceAttribute[attributeList.size()]);
-                }
-            }
-
-            //load data
-            try {
-                long start = System.currentTimeMillis();
-                layer.initAndWait();
-                LOG.error("init time: " + (System.currentTimeMillis() - start));
-                start = System.currentTimeMillis();
-                featureList = layer.getFeatureFactory().createFeatures(layer.getQuery(), null, null, 0, 0, attrArray);
-                LOG.error("retrieve time: " + (System.currentTimeMillis() - start));
-            } catch (final Exception ex) {
-                LOG.warn("cache could not come up with appropriate objects", ex); // NOI18N
-                throw ex;
-            }
-
-            //add null value, if required
-            if (input.isNullable()) {
-                featureList.add(null);
-            }
-            
-            return featureList;
-        }
-    }, 300000L, 3000000);
+            },
+            300000L,
+            3000000);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -188,7 +190,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
      *
      * @param  mc        DOCUMENT ME!
      * @param  nullable  DOCUMENT ME!
-     * @param  onlyUsed  DOCUMENT ME!
      */
     public DefaultCidsLayerBindableReferenceCombo(final MetaClass mc, final boolean nullable) {
         this(mc, nullable, BEAN_TOSTRING_COMPARATOR);
@@ -199,7 +200,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
      *
      * @param  mc          DOCUMENT ME!
      * @param  nullable    DOCUMENT ME!
-     * @param  onlyUsed    DOCUMENT ME!
      * @param  comparator  DOCUMENT ME!
      */
     public DefaultCidsLayerBindableReferenceCombo(final MetaClass mc,
@@ -213,7 +213,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
      *
      * @param  mc             DOCUMENT ME!
      * @param  nullable       DOCUMENT ME!
-     * @param  onlyUsed       DOCUMENT ME!
      * @param  comparator     DOCUMENT ME!
      * @param  sortingColumn  DOCUMENT ME!
      */
@@ -222,7 +221,9 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
             final Comparator<CidsLayerFeature> comparator,
             final String sortingColumn) {
         final String[] s = new String[] {
-                NbBundle.getMessage(DefaultCidsLayerBindableReferenceCombo.class, "DefaultCidsLayerBindableReferenceCombo.loading")
+                NbBundle.getMessage(
+                    DefaultCidsLayerBindableReferenceCombo.class,
+                    "DefaultCidsLayerBindableReferenceCombo.loading")
             };
         setModel(new DefaultComboBoxModel(s));
 
@@ -390,7 +391,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
         return nullable;
     }
 
-
     /**
      * DOCUMENT ME!
      *
@@ -449,7 +449,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
      *
      * @param   mc             DOCUMENT ME!
      * @param   nullable       DOCUMENT ME!
-     * @param   onlyUsed       DOCUMENT ME!
      * @param   comparator     DOCUMENT ME!
      * @param   forceReload    DOCUMENT ME!
      * @param   sortingColumn  DOCUMENT ME!
@@ -462,18 +461,15 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
             final boolean forceReload,
             final String sortingColumn) {
         if (mc != null) {
-
             if (forceReload) {
                 cache.clear();
             }
 
-            List<CidsLayerFeature> featureList = cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
-            
-            if (sortingColumn == null && featureList != null) {
+            final List<CidsLayerFeature> featureList = cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
+
+            if ((sortingColumn == null) && (featureList != null)) {
                 // Sorts the model using String comparison on the bean's toString()
-                long start = System.currentTimeMillis();
                 Collections.sort(featureList, comparator);
-                LOG.error("sort time: " + (System.currentTimeMillis() - start));
             }
 
             return new DefaultComboBoxModel(featureList.toArray());
@@ -682,44 +678,72 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
             return ret;
         }
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
     private static class CatalogueDefinition {
+
+        //~ Instance fields ----------------------------------------------------
+
         private final MetaClass mc;
         private final boolean nullable;
         private final String sortingColumn;
 
-        public CatalogueDefinition(MetaClass mc, boolean nullable, String sortingColumn) {
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new CatalogueDefinition object.
+         *
+         * @param  mc             DOCUMENT ME!
+         * @param  nullable       DOCUMENT ME!
+         * @param  sortingColumn  DOCUMENT ME!
+         */
+        public CatalogueDefinition(final MetaClass mc, final boolean nullable, final String sortingColumn) {
             this.mc = mc;
             this.nullable = nullable;
             this.sortingColumn = sortingColumn;
         }
 
+        //~ Methods ------------------------------------------------------------
+
         /**
-         * @return the mc
+         * DOCUMENT ME!
+         *
+         * @return  the mc
          */
         public MetaClass getMc() {
             return mc;
         }
 
         /**
-         * @return the nullable
+         * DOCUMENT ME!
+         *
+         * @return  the nullable
          */
         public boolean isNullable() {
             return nullable;
         }
 
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
         public String getSortingColumn() {
             return sortingColumn;
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (obj instanceof CatalogueDefinition) {
-                CatalogueDefinition other = (CatalogueDefinition)obj;
-                String otherSort = other.getSortingColumn() == null  ? "" : other.getSortingColumn();
-                String sort = getSortingColumn() == null  ? "" : getSortingColumn();
-                
-                return otherSort.equals(sort) && other.getMc().equals(mc) && other.isNullable() == nullable;
+                final CatalogueDefinition other = (CatalogueDefinition)obj;
+                final String otherSort = (other.getSortingColumn() == null) ? "" : other.getSortingColumn();
+                final String sort = (getSortingColumn() == null) ? "" : getSortingColumn();
+
+                return otherSort.equals(sort) && other.getMc().equals(mc) && (other.isNullable() == nullable);
             } else {
                 return false;
             }
@@ -728,9 +752,9 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 29 * hash + (this.mc != null ? this.mc.hashCode() : 0);
-            hash = 29 * hash + (this.nullable ? 1 : 0);
-            hash = 29 * hash + (this.sortingColumn != null ? this.sortingColumn.hashCode() : 0);
+            hash = (29 * hash) + ((this.mc != null) ? this.mc.hashCode() : 0);
+            hash = (29 * hash) + (this.nullable ? 1 : 0);
+            hash = (29 * hash) + ((this.sortingColumn != null) ? this.sortingColumn.hashCode() : 0);
             return hash;
         }
     }
