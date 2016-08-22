@@ -21,7 +21,6 @@ import Sirius.navigator.types.iterator.SingleAttributeIterator;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
-import Sirius.navigator.ui.LayoutedContainer;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
@@ -50,7 +49,7 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.collections.MultiHashMap;
 
 import org.jdom.Element;
 
@@ -141,6 +140,8 @@ import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
+import de.cismet.cismap.commons.drophandler.MappingComponentDropHandler;
+import de.cismet.cismap.commons.drophandler.MappingComponentDropHandlerRegistry;
 import de.cismet.cismap.commons.features.DefaultFeatureCollection;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
@@ -161,6 +162,7 @@ import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
+import de.cismet.cismap.commons.gui.layerwidget.LayerWidgetProvider;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
@@ -2824,7 +2826,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -2832,14 +2834,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -2896,14 +2898,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -2912,23 +2914,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
+    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAngleMeasurementActionPerformed
         StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
-    }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
+    }//GEN-LAST:event_mniAngleMeasurementActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadShapeActionPerformed
+    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadShapeActionPerformed
         JFileChooser fc;
 
         try {
@@ -2963,7 +2965,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final ActiveLayerModel model = (ActiveLayerModel)mapC.getMappingModel();
             LayerDropUtils.handleFiles(Collections.nCopies(1, file), model, 0, this);
         }
-    } //GEN-LAST:event_mniLoadShapeActionPerformed
+    }//GEN-LAST:event_mniLoadShapeActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -4689,9 +4691,34 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 } catch (Throwable t) {
                     log.fatal("Error on drop", t); // NOI18N
                 }
-            } else if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
-                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)) {
-                activeLayers.drop((DropTargetDropEvent)mde.getDte());
+            } else if (DnDUtils.isFilesOrUriList(dtde)) {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                try {
+                    final List<File> data = DnDUtils.getFilesFrom(dtde);
+
+                    final MultiHashMap filesPerDropHandlerMap = new MultiHashMap();
+                    if (data != null) {
+                        for (final File file : data) {
+                            final MappingComponentDropHandler dropHandler = MappingComponentDropHandlerRegistry
+                                        .getInstance().getDropHandler(file);
+                            if (dropHandler != null) {
+                                filesPerDropHandlerMap.put(dropHandler, file);
+                                if (dropHandler instanceof LayerWidgetProvider) {
+                                    ((LayerWidgetProvider)dropHandler).setLayerWidget(activeLayers);
+                                }
+                            }
+                        }
+                    }
+                    if (!filesPerDropHandlerMap.isEmpty()) {
+                        for (final MappingComponentDropHandler dropHandler
+                                    : (Set<MappingComponentDropHandler>)filesPerDropHandlerMap.keySet()) {
+                            final Collection<File> files = filesPerDropHandlerMap.getCollection(dropHandler);
+                            dropHandler.dropFiles(files);
+                        }
+                    }
+                } catch (final Exception ex) {
+                    log.error("Failure during drag & drop opertation", ex); // NOI18N
+                }
             } else {
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
