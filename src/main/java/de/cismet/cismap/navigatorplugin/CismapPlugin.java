@@ -21,7 +21,6 @@ import Sirius.navigator.types.iterator.SingleAttributeIterator;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.types.treenode.ObjectTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
-import Sirius.navigator.ui.LayoutedContainer;
 
 import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaObject;
@@ -50,7 +49,7 @@ import net.infonode.docking.util.StringViewMap;
 import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.collections.MultiHashMap;
 
 import org.jdom.Element;
 
@@ -141,6 +140,8 @@ import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.debug.DebugPanel;
+import de.cismet.cismap.commons.drophandler.MappingComponentDropHandler;
+import de.cismet.cismap.commons.drophandler.MappingComponentDropHandlerRegistry;
 import de.cismet.cismap.commons.features.DefaultFeatureCollection;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
@@ -161,6 +162,7 @@ import de.cismet.cismap.commons.gui.infowidgets.ServerInfo;
 import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
+import de.cismet.cismap.commons.gui.layerwidget.LayerWidgetProvider;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
@@ -4689,9 +4691,41 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 } catch (Throwable t) {
                     log.fatal("Error on drop", t); // NOI18N
                 }
-            } else if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
-                        || dtde.isDataFlavorSupported(DnDUtils.URI_LIST_FLAVOR)) {
-                activeLayers.drop((DropTargetDropEvent)mde.getDte());
+            } else if (DnDUtils.isFilesOrUriList(dtde)) {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                try {
+                    final List<File> data = DnDUtils.getFilesFrom(dtde);
+
+                    final MultiHashMap filesPerDropHandlerMap = new MultiHashMap();
+                    if (data != null) {
+                        for (final File file : data) {
+                            final MappingComponentDropHandler dropHandler = MappingComponentDropHandlerRegistry
+                                        .getInstance().getDropHandler(file);
+                            if (dropHandler != null) {
+                                filesPerDropHandlerMap.put(dropHandler, file);
+                                if (dropHandler instanceof LayerWidgetProvider) {
+                                    ((LayerWidgetProvider)dropHandler).setLayerWidget(activeLayers);
+                                }
+                            }
+                        }
+                    }
+                    if (!filesPerDropHandlerMap.isEmpty()) {
+                        for (final MappingComponentDropHandler dropHandler
+                                    : (Set<MappingComponentDropHandler>)filesPerDropHandlerMap.keySet()) {
+                            final Collection<File> files = filesPerDropHandlerMap.getCollection(dropHandler);
+                            new SwingWorker<Void, Void>() {
+
+                                    @Override
+                                    protected Void doInBackground() throws Exception {
+                                        dropHandler.dropFiles(files);
+                                        return null;
+                                    }
+                                }.execute();
+                        }
+                    }
+                } catch (final Exception ex) {
+                    log.error("Failure during drag & drop opertation", ex); // NOI18N
+                }
             } else {
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
