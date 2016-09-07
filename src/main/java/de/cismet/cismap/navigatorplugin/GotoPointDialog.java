@@ -479,15 +479,6 @@ public class GotoPointDialog extends javax.swing.JDialog {
         final GeometryFactory gfactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING),
                 CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getSrs().getCode()));
         gotoPoint = new Point(coordSeq, gfactory);
-
-//        final Point transformedPoint = crsT.transformGeometry(point, CismapBroker.getInstance().getSrs().getCode());
-//
-//        return transformedPoint.getCoordinate();
-//
-//        new Point(coordinates, factory)
-//
-//        tfCoordinatesSRS1.setText(StaticDecimalTools.round(pattern, x) + "," + StaticDecimalTools.round(pattern, y));
-        log.fatal(gotoPoint + " --> " + gotoPoint.getSRID());
         syncPosition(null);
     }
 
