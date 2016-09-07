@@ -22,6 +22,8 @@ import org.deegree.model.crs.UnknownCRSException;
 
 import java.awt.Component;
 
+import java.io.IOException;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -60,6 +62,7 @@ public class GotoPointDialog extends javax.swing.JDialog {
     private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private ImageIcon mark = new javax.swing.ImageIcon(getClass().getResource(
                 "/images/markPoint.png")); // NOI18N
+    private final java.util.Properties sweetSpotOfpMark = new java.util.Properties();
     private FixedPImage pMark = new FixedPImage(mark.getImage());
 
     private Point gotoPoint = null;
@@ -94,6 +97,13 @@ public class GotoPointDialog extends javax.swing.JDialog {
      */
     private GotoPointDialog() {
         super();
+        try {
+            sweetSpotOfpMark.load(this.getClass().getResourceAsStream("/images/markPointSweetSpot.properties"));
+            pMark.setSweetSpotX(Double.valueOf(sweetSpotOfpMark.getProperty("x", "0")));
+            pMark.setSweetSpotY(Double.valueOf(sweetSpotOfpMark.getProperty("y", "0")));
+        } catch (IOException iox) {
+            log.warn("Problem when loading the markPointSweetSpot.properties", iox);
+        }
         initComponents();
 
         tfCoordinatesSRS0.getDocument().addDocumentListener(new CoordDocumentListener(tfCoordinatesSRS0));
