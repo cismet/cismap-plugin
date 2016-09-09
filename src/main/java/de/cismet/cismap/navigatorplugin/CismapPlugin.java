@@ -169,6 +169,7 @@ import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.actions.CustomAction;
 import de.cismet.cismap.commons.gui.printing.Scale;
 import de.cismet.cismap.commons.gui.shapeexport.ShapeExport;
@@ -357,7 +358,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JButton cmdRedo;
     private javax.swing.JButton cmdRefresh;
     private javax.swing.JToggleButton cmdRemoveGeometry;
-    private javax.swing.JToggleButton cmdSelect;
+    private javax.swing.JButton cmdSelect;
     private javax.swing.JToggleButton cmdSnap;
     private javax.swing.JButton cmdUndo;
     private javax.swing.JToggleButton cmdZoom;
@@ -1128,6 +1129,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 loadLayout(cismapDirectory + fs + pluginLayoutName, true);
             }
         }
+
+        //TODO not handle this here !
+        final SelectionListener sl = (SelectionListener)mapC.getInputEventListener().get(MappingComponent.SELECT);
+        sl.setFeaturesFromServicesSelectable(true);
+        sl.setSelectMultipleFeatures(true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1482,7 +1488,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         jSeparator4 = new javax.swing.JSeparator();
         togInvisible = new javax.swing.JToggleButton();
         togInvisible.setVisible(false);
-        cmdSelect = new javax.swing.JToggleButton();
+        cmdSelect = new GeoSelectionButton(MappingComponent.SELECT, mapC, null);
         cmdZoom = new javax.swing.JToggleButton();
         cmdPan = new javax.swing.JToggleButton();
         cmdFeatureInfo = new javax.swing.JToggleButton();
@@ -1637,12 +1643,12 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         panMain.addMouseListener(new java.awt.event.MouseAdapter() {
 
                 @Override
-                public void mouseEntered(final java.awt.event.MouseEvent evt) {
-                    panMainMouseEntered(evt);
-                }
-                @Override
                 public void mouseExited(final java.awt.event.MouseEvent evt) {
                     panMainMouseExited(evt);
+                }
+                @Override
+                public void mouseEntered(final java.awt.event.MouseEvent evt) {
+                    panMainMouseEntered(evt);
                 }
             });
         panMain.setLayout(new java.awt.BorderLayout());
@@ -1778,20 +1784,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         tlbMain.add(togInvisible);
 
         cmdGroupPrimaryInteractionMode.add(cmdSelect);
-        cmdSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/select.png"))); // NOI18N
+        cmdSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/selectRectangle.png"))); // NOI18N
         cmdSelect.setSelected(true);
         cmdSelect.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
-                "CismapPlugin.cmdSelect.toolTipText"));                                             // NOI18N
-        cmdSelect.setBorderPainted(false);
-        cmdSelect.setFocusPainted(false);
-        cmdSelect.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(final java.awt.event.ActionEvent evt) {
-                    cmdSelectActionPerformed(evt);
-                }
-            });
+                "CismapPlugin.cmdSelect.toolTipText"));                                                      // NOI18N
+        cmdSelect.setFocusable(false);
+        cmdSelect.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cmdSelect.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         tlbMain.add(cmdSelect);
 
         cmdGroupPrimaryInteractionMode.add(cmdZoom);
@@ -1842,8 +1842,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         tlbMain.add(cmdFeatureInfo);
 
-        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
         cmdGroupPrimaryInteractionMode.add(cmdPluginSearch);
+        cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
         tlbMain.add(cmdPluginSearch);
 
         cmdGroupPrimaryInteractionMode.add(cmdNewPolygon);
@@ -2826,7 +2826,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -2834,14 +2834,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -2898,14 +2898,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -2914,23 +2914,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
+    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAngleMeasurementActionPerformed
         StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
-    }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
+    }//GEN-LAST:event_mniAngleMeasurementActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadShapeActionPerformed
+    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadShapeActionPerformed
         JFileChooser fc;
 
         try {
@@ -2965,7 +2965,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final ActiveLayerModel model = (ActiveLayerModel)mapC.getMappingModel();
             LayerDropUtils.handleFiles(Collections.nCopies(1, file), model, 0, this);
         }
-    } //GEN-LAST:event_mniLoadShapeActionPerformed
+    }//GEN-LAST:event_mniLoadShapeActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -3602,21 +3602,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 @Override
                 public void run() {
                     mapC.setHandleInteractionMode(MappingComponent.MOVE_HANDLE);
-                    mapC.setInteractionMode(MappingComponent.SELECT);
-                }
-            });
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  evt  DOCUMENT ME!
-     */
-    private void cmdSelectActionPerformed(final java.awt.event.ActionEvent evt) {
-        EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
