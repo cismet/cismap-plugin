@@ -23,6 +23,8 @@ import com.vividsolutions.jts.io.WKBReader;
 
 import org.deegree.datatypes.Types;
 
+import java.lang.reflect.Constructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -490,6 +492,54 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             }
         }
 
+        // determine the feature class
+        Class<? extends CidsLayerFeature> featureClass;
+
+        if ((getLayerProperties() != null) && (getLayerProperties().getAttributeTableRuleSet() != null)
+                    && (getLayerProperties().getAttributeTableRuleSet().getFeatureClass() != null)
+                    && CidsLayerFeature.class.isAssignableFrom(
+                        getLayerProperties().getAttributeTableRuleSet().getFeatureClass())) {
+            featureClass = (Class<? extends CidsLayerFeature>)getLayerProperties().getAttributeTableRuleSet()
+                        .getFeatureClass();
+        } else {
+            if ((getLayerProperties() != null) && (getLayerProperties().getAttributeTableRuleSet() != null)
+                        && (getLayerProperties().getAttributeTableRuleSet().getFeatureClass() != null)) {
+                logger.warn(
+                    "The custom feature class of the cids layer is not an instance of CidsLayerFeature. The class CidsLayerFeature will be used.");
+            }
+            featureClass = CidsLayerFeature.class;
+        }
+
+        Constructor<? extends CidsLayerFeature> featureConstructor;
+
+        try {
+            featureConstructor = featureClass.getConstructor(
+                    Map.class,
+                    MetaClass.class,
+                    CidsLayerInfo.class,
+                    LayerProperties.class,
+                    List.class);
+        } catch (Exception e) {
+            logger.warn(
+                "The custom CidsLayerFeature class has no suitable constructor (Map, MetaClass, CidsLayerInfo, LayerProperties, List). The class CidsLayerFeature will be used.",
+                e);
+            featureClass = CidsLayerFeature.class;
+
+            try {
+                featureConstructor = featureClass.getConstructor(
+                        Map.class,
+                        MetaClass.class,
+                        CidsLayerInfo.class,
+                        LayerProperties.class,
+                        List.class);
+            } catch (Exception ex) {
+                logger.error(
+                    "No suitable constructor found in class CidsLayerFeature. The cids layer cannot be used.",
+                    ex);
+                return features;
+            }
+        }
+
         for (int i = 0; i < resultArray.size(); i++) {
             final HashMap<String, Object> properties = new HashMap<String, Object>(
                     attributeListWithoutGenericAttributes.size());
@@ -521,7 +571,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 continue;
             }
 
-            CidsLayerFeature lastFeature = new CidsLayerFeature(
+            CidsLayerFeature lastFeature = featureConstructor.newInstance(
                     properties /*oid, cid, geom,*/,
                     metaClass,
                     getLayerInfo(),
