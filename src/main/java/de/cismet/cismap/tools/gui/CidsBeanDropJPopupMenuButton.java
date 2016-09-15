@@ -25,10 +25,14 @@ import de.cismet.cids.navigator.utils.CidsBeanDropListener;
 
 import de.cismet.cismap.commons.features.AbstractNewFeature;
 import de.cismet.cismap.commons.features.SearchFeature;
+import de.cismet.cismap.commons.features.SelectFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateSearchGeometryListener;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 
 import de.cismet.cismap.navigatorplugin.CidsBeansSearchFeature;
+import de.cismet.cismap.navigatorplugin.CidsBeansSelectFeature;
 
 import de.cismet.tools.gui.JPopupMenuButton;
 
@@ -97,32 +101,57 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
     @Override
     public void beansDropped(final ArrayList<CidsBean> beans) {
         mappingComponent.setInteractionMode(interactionMode);
-        final CreateSearchGeometryListener searchListener = ((CreateSearchGeometryListener)
+        final CreateGeometryListenerInterface searchListener = ((CreateGeometryListenerInterface)
                 mappingComponent.getInputListener(
                     interactionMode));
 
-        de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<SearchFeature, Void>() {
+        if (searchListener instanceof CreateSearchGeometryListener) {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<SearchFeature, Void>() {
 
-                @Override
-                protected SearchFeature doInBackground() throws Exception {
-                    Thread.currentThread().setName("CidsBeanDropJPopupMenuButton beansDropped()");
-                    final SearchFeature search = CidsBeansSearchFeature.createFromBeans(beans, interactionMode);
-                    search.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
-                    return search;
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        final SearchFeature search = get();
-                        if (search != null) {
-                            searchListener.search(search);
-                        }
-                    } catch (Exception e) {
-                        LOG.error("Exception in Background Thread", e);
+                    @Override
+                    protected SearchFeature doInBackground() throws Exception {
+                        Thread.currentThread().setName("CidsBeanDropJPopupMenuButton beansDropped()");
+                        final SearchFeature feature = CidsBeansSearchFeature.createFromBeans(beans, interactionMode);
+                        feature.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                        return feature;
                     }
-                }
-            });
+
+                    @Override
+                    protected void done() {
+                        try {
+                            final SearchFeature feature = get();
+                            if (feature != null) {
+                                ((CreateSearchGeometryListener)searchListener).search(feature);
+                            }
+                        } catch (Exception e) {
+                            LOG.error("Exception in Background Thread", e);
+                        }
+                    }
+                });
+        } else if (searchListener instanceof SelectionListener) {
+            de.cismet.tools.CismetThreadPool.execute(new javax.swing.SwingWorker<SelectFeature, Void>() {
+
+                    @Override
+                    protected SelectFeature doInBackground() throws Exception {
+                        Thread.currentThread().setName("CidsBeanDropJPopupMenuButton beansDropped()");
+                        final SelectFeature feature = CidsBeansSelectFeature.createFromBeans(beans, interactionMode);
+                        feature.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                        return feature;
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            final SelectFeature feature = get();
+                            if (feature != null) {
+                                ((SelectionListener)searchListener).select(feature);
+                            }
+                        } catch (Exception e) {
+                            LOG.error("Exception in Background Thread", e);
+                        }
+                    }
+                });
+        }
 
         super.setSelectedIcon(defaultIcon);
         super.setIcon(defaultIcon);
