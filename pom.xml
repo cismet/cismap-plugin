@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>4.0</version>
     <packaging>jar</packaging>
     <properties>
         <names.cismap-plugin>cismap Plugin</names.cismap-plugin>
@@ -34,7 +33,8 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-    </scm>
+      <tag>v4.0</tag>
+  </scm>
 
     <repositories>
         <repository>
@@ -51,23 +51,23 @@
                 <updatePolicy>interval:60</updatePolicy>
             </snapshots>
         </repository>
-    <repository>
-      <id>deegree-repo</id>
-      <url>http://repo.deegree.org/content/groups/public</url>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
+        <repository>
+            <id>deegree-repo</id>
+            <url>http://repo.deegree.org/content/groups/public</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>de.cismet.cids.navigator</groupId>
             <artifactId>cids-navigator</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>4.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -76,11 +76,11 @@
             <version>1.1</version>
             <scope>runtime</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismap-scale-generator</artifactId>
             <scope>runtime</scope>
-            <version>2.0-SNAPSHOT</version>
+            <version>4.0</version>
         </dependency>
     </dependencies>
 
@@ -96,7 +96,7 @@
                         <manifest>
                             <mainClass>de.cismet.cismap.navigatorplugin.CismapPlugin</mainClass>
                         </manifest>
-                         <manifestEntries>
+                        <manifestEntries>
                             <Application-Name>CismapPlugin</Application-Name>                           
                             <Permissions>all-permissions</Permissions>                           
                         </manifestEntries>
