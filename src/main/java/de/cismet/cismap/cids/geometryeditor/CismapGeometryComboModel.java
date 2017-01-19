@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cismap.cids.geometryeditor;
 
+import Sirius.navigator.ui.ComponentRegistry;
+
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
@@ -21,9 +23,11 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureCollectionEvent;
 import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.PureNewFeature;
+import de.cismet.cismap.commons.features.SearchFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.tools.CurrentStackTrace;
+
 /**
  * End of variables declaration.
  *
@@ -77,7 +81,8 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
             }
 
             if (srid != defaultSrid) {
-                final int ans = JOptionPane.showConfirmDialog(editor.getParent(),
+                final int ans = JOptionPane.showConfirmDialog(
+                        ComponentRegistry.getRegistry().getMainWindow(),
                         NbBundle.getMessage(
                             CismapGeometryComboModel.class,
                             "CismapGeometryComboModel.setSelectedItem.JOptionPane.message",
@@ -202,7 +207,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
                         .getAllFeatures();
 
             for (final Feature f : allFeatures) {
-                if (f instanceof PureNewFeature) {                                     // ||f instanceof CidsFeature) {
+                if ((f instanceof PureNewFeature) || (f instanceof SearchFeature)) {
                     allNewFeatures.add(f);
                 }
             }

@@ -39,23 +39,12 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
 
     //~ Instance fields --------------------------------------------------------
 
-    CidsBean cidsBean = null;
     String geoPropertyName;
+    Geometry oldGeom = null;
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
 
     //~ Constructors -----------------------------------------------------------
 
-    /**
-     * Creates a new BeanUpdatingCidsFeature object.
-     *
-     * @param   mo  DOCUMENT ME!
-     *
-     * @throws  IllegalArgumentException  DOCUMENT ME!
-     */
-    public BeanUpdatingCidsFeature(final MetaObject mo) throws IllegalArgumentException {
-        super(mo);
-        cidsBean = mo.getBean();
-    }
     /**
      * Creates a new BeanUpdatingCidsFeature object.
      *
@@ -66,17 +55,52 @@ public class BeanUpdatingCidsFeature extends CidsFeature {
      */
     public BeanUpdatingCidsFeature(final CidsBean cidsBean, final String geoPropertyName)
             throws IllegalArgumentException {
-        this(cidsBean.getMetaObject());
+        super(cidsBean.getMetaObject());
         this.geoPropertyName = geoPropertyName;
+        if ((cidsBean.getProperty(geoPropertyName) != null)) {
+            oldGeom = (Geometry)((Geometry)cidsBean.getProperty(geoPropertyName)).clone();
+        } else {
+            oldGeom = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public CidsBean getCidsBean() {
+        return getMetaObject().getBean();
+    }
+
     @Override
     public void setGeometry(final Geometry geom) {
         super.setGeometry(geom);
+        updateBeanGeometry();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getGeoPropertyName() {
+        return geoPropertyName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void updateBeanGeometry() {
         try {
-            cidsBean.setProperty(geoPropertyName, geom);
+            final Geometry geom = getGeometry();
+
+            // oldGeom !(===) geom
+            if (!((oldGeom == geom) || ((oldGeom != null) && oldGeom.equalsExact(geom)))) {
+                getCidsBean().setProperty(geoPropertyName, geom);
+            }
         } catch (Exception e) {
             log.error("error while storing updated geometry in bean", e);
         }

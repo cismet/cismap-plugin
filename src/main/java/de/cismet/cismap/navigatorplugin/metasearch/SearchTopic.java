@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
@@ -36,13 +37,15 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
 
     //~ Instance fields --------------------------------------------------------
 
-    private Collection<SearchClass> searchClasses;
-    private String name;
-    private String description;
-    private String key;
-    private String iconName;
-    private ImageIcon icon;
+    private final Collection<SearchClass> searchClasses;
+    private final String name;
+    private final String description;
+    private final String key;
+    private final String iconName;
+    private final ImageIcon icon;
     private boolean selected;
+    private final Collection<SearchTopicListener> listeners = new ArrayList<SearchTopicListener>();
+    private final ListenerHandler listenerHandler = new ListenerHandler();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -96,6 +99,24 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  listener  DOCUMENT ME!
+     */
+    public void addSearchTopicListener(final SearchTopicListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listener  DOCUMENT ME!
+     */
+    public void removeSearchTopicListener(final SearchTopicListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
      * Add a new search class to this search topic. The given search class won't be added if it's already added to this
      * search topic.
      *
@@ -118,10 +139,7 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
     @Override
     public void actionPerformed(final ActionEvent event) {
         if (event.getSource() instanceof AbstractButton) {
-            final boolean oldValue = selected;
-            selected = ((AbstractButton)event.getSource()).isSelected();
-            putValue(SELECTED_KEY, selected);
-            firePropertyChange(SELECTED, oldValue, selected);
+            setSelected(((AbstractButton)event.getSource()).isSelected());
         }
     }
 
@@ -185,8 +203,14 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
      * @param  selected  DOCUMENT ME!
      */
     public void setSelected(final boolean selected) {
+        final boolean oldValue = selected;
         this.selected = selected;
         putValue(SELECTED_KEY, this.selected);
+        listenerHandler.selectionChanged(new SearchTopicListenerEvent(
+                this,
+                SearchTopicListenerEvent.SELECTION_CHANGED,
+                this.selected));
+        firePropertyChange(SELECTED, oldValue, selected);
     }
 
     /**
@@ -241,5 +265,24 @@ public class SearchTopic extends AbstractAction implements Comparable<SearchTopi
         }
 
         return name.compareTo(o.name);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    class ListenerHandler implements SearchTopicListener {
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void selectionChanged(final SearchTopicListenerEvent event) {
+            for (final SearchTopicListener listener : listeners) {
+                listener.selectionChanged(event);
+            }
+        }
     }
 }

@@ -14,15 +14,12 @@ package de.cismet.cismap.printing.templateinscriber;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.Properties;
 
 import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
 import de.cismet.cismap.commons.interaction.CismapBroker;
-
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
 
 import de.cismet.tools.CismetThreadPool;
 
@@ -168,7 +165,7 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      * DOCUMENT ME!
      */
     private void writeInscriberCache() {
-        final Runnable r = new Runnable() {
+        final Runnable t = new Thread("A4HPersistent writeInscriberCache()") {
 
                 @Override
                 public void run() {
@@ -179,6 +176,24 @@ public class A4HPersistent extends AbstractPrintingInscriber {
                     }
                 }
             };
-        CismetThreadPool.execute(r);
+        CismetThreadPool.execute(t);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  newText  DOCUMENT ME!
+     */
+    protected void setTextOfJLabel1(final String newText) {
+        jLabel1.setText(newText);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  newText  DOCUMENT ME!
+     */
+    protected void setTextOfJLabel2(final String newText) {
+        jLabel2.setText(newText);
     }
 }

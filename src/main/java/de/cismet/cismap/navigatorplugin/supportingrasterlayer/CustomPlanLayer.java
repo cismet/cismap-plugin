@@ -23,6 +23,7 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
+@Deprecated
 public class CustomPlanLayer extends SimpleFeatureSupportingRasterLayer {
 
     //~ Instance fields --------------------------------------------------------

@@ -50,7 +50,9 @@ import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.FeatureRenderer;
+import de.cismet.cismap.commons.features.FeatureRendererAwareFeature;
 import de.cismet.cismap.commons.features.Highlightable;
+import de.cismet.cismap.commons.features.InfoNodeAwareFeature;
 import de.cismet.cismap.commons.features.PureFeatureGroup;
 import de.cismet.cismap.commons.features.RasterLayerSupportedFeature;
 import de.cismet.cismap.commons.features.XStyledFeature;
@@ -60,7 +62,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupporterRasterServiceUrl;
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
-import de.cismet.tools.BlacklistClassloading;
+import de.cismet.commons.classloading.BlacklistClassloading;
 
 /**
  * DOCUMENT ME!
@@ -73,7 +75,9 @@ public class CidsFeature implements XStyledFeature,
     Bufferable,
     RasterLayerSupportedFeature,
     FeatureGroup,
-    CidsBeanActionsProvider {
+    CidsBeanActionsProvider,
+    InfoNodeAwareFeature,
+    FeatureRendererAwareFeature {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -109,6 +113,7 @@ public class CidsFeature implements XStyledFeature,
     private FeatureGroup parentFeature = null;
     private String myAttributeStringInParentFeature = null;
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
+    private boolean infoNodeEnabled = true;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -133,6 +138,18 @@ public class CidsFeature implements XStyledFeature,
      */
     public CidsFeature(final MetaObject mo) throws IllegalArgumentException {
         this(mo, null, null);
+    }
+
+    /**
+     * Creates a new CidsFeature object.
+     *
+     * @param   mo     DOCUMENT ME!
+     * @param   oAttr  DOCUMENT ME!
+     *
+     * @throws  IllegalArgumentException  DOCUMENT ME!
+     */
+    public CidsFeature(final MetaObject mo, final ObjectAttribute oAttr) throws IllegalArgumentException {
+        this(mo, ((oAttr != null) ? oAttr.getMai().getFieldName() : null), null);
     }
 
     /**
@@ -271,6 +288,8 @@ public class CidsFeature implements XStyledFeature,
                     cf.setParentFeature(this); // first we had fg here ;-)
                     cf.setMyAttributeStringInParentFeature(renderFeature);
                     fg.addFeature(cf);
+                    // sub features should not show their InfoNode Panel
+                    cf.setInfoNodeEnabled(false);
                 }
                 fg.setParentFeature(this);
                 fg.setMyAttributeStringInParentFeature(renderFeature);
@@ -280,8 +299,11 @@ public class CidsFeature implements XStyledFeature,
                 final CidsFeature cf = new CidsFeature(this.getMetaObject(), renderFeature, rootRenderer);
                 cf.setParentFeature(this);
                 cf.setMyAttributeStringInParentFeature(renderFeature);
+                // sub features should not show their InfoNode Panel
+                cf.setInfoNodeEnabled(false);
                 result = cf;
             }
+
             if (result.getGeometry() != null) {
                 // ok case
                 subFeatures.add(result);
@@ -400,88 +422,104 @@ public class CidsFeature implements XStyledFeature,
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
-            featureFG = new Color(r, g, b);
+
+            if (t.length == 4) {
+                // The feature colour has an alpha component
+                final int a = new Integer(t[3]).intValue();
+                featureFG = new Color(r, g, b, a);
+            } else {
+                featureFG = new Color(r, g, b);
+            }
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+                LOG.debug("FEATURE_FG=Color(" + r + "," + g + "," + b + ")"); // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_FG corrupt or missing", t);                                                  // NOI18N
+            LOG.info("FEATURE_FG corrupt or missing", t);                     // NOI18N
         }
         try {
-            final String s = getAttribValue("FEATURE_BG", mo, mc).toString();                              // NOI18N
-            final String[] t = s.split(",");                                                               // NOI18N
+            final String s = getAttribValue("FEATURE_BG", mo, mc).toString(); // NOI18N
+            final String[] t = s.split(",");                                  // NOI18N
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
-            featureBG = new Color(r, g, b);
+
+            if (t.length == 4) {
+                // The feature colour has an alpha component
+                final int a = new Integer(t[3]).intValue();
+                featureBG = new Color(r, g, b, a);
+            } else {
+                featureBG = new Color(r, g, b);
+            }
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                              // NOI18N
+                LOG.debug("FEATURE_BG=Color(" + r + "," + g + "," + b + ")");                       // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_BG corrupt or missing", t);                                                  // NOI18N
+            LOG.info("FEATURE_BG corrupt or missing", t);                                           // NOI18N
         }
         try {
-            final String s = getAttribValue("FEATURE_HIGH_FG", mo, mc).toString();                         // NOI18N
-            final String[] t = s.split(",");                                                               // NOI18N
+            final String s = getAttribValue("FEATURE_HIGH_FG", mo, mc).toString();                  // NOI18N
+            final String[] t = s.split(",");                                                        // NOI18N
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+                LOG.debug("FEATURE_HIGH_FG=Color(" + r + "," + g + "," + b + ")");                  // NOI18N
             }
 //            featureHighFG = new Color(r, g, b);
         } catch (Exception t) {
-            LOG.info("FEATURE_HIGH_FG corrupt or missing", t);                                             // NOI18N
+            LOG.info("FEATURE_HIGH_FG corrupt or missing", t);                                      // NOI18N
         }
         try {
-            final String s = getAttribValue("FEATURE_HIGH_BG", mo, mc).toString();                         // NOI18N
-            final String[] t = s.split(",");                                                               // NOI18N
+            final String s = getAttribValue("FEATURE_HIGH_BG", mo, mc).toString();                  // NOI18N
+            final String[] t = s.split(",");                                                        // NOI18N
             final int r = new Integer(t[0]).intValue();
             final int g = new Integer(t[1]).intValue();
             final int b = new Integer(t[2]).intValue();
 //            featureHighFG = new Color(r, g, b);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");                         // NOI18N
+                LOG.debug("FEATURE_HIGH_BG=Color(" + r + "," + g + "," + b + ")");                  // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_HIGH_BG corrupt or missing", t);                                             // NOI18N
+            LOG.info("FEATURE_HIGH_BG corrupt or missing", t);                                      // NOI18N
         }
         try {
-            final String path = getAttribValue("FEATURE_POINT_SYMBOL", mo, mc).toString();                 // NOI18N
+            final String path = getAttribValue("FEATURE_POINT_SYMBOL", mo, mc).toString();          // NOI18N
             pointSymbol = new javax.swing.ImageIcon(getClass().getResource(path)).getImage();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_POINT_SYMBOL=" + path);                                                 // NOI18N
+                LOG.debug("FEATURE_POINT_SYMBOL=" + path);                                          // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_POINT_SYMBOL Error", t);                                                     // NOI18N
+            LOG.info("FEATURE_POINT_SYMBOL Error", t);                                              // NOI18N
         }
         try {
-            final String x = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_X", mo, mc).toString();        // NOI18N
+            final String x = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_X", mo, mc).toString(); // NOI18N
             pointSymbolSweetSpotX = new Double(x).doubleValue();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);                                        // NOI18N
+                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_X=" + x);                                 // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);                                         // NOI18N
+            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_X Error", t);                                  // NOI18N
         }
         try {
-            final String y = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_Y", mo, mc).toString();        // NOI18N
+            final String y = getAttribValue("FEATURE_POINT_SYMBOL_SWEETSPOT_Y", mo, mc).toString(); // NOI18N
             pointSymbolSweetSpotY = new Double(y).doubleValue();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);                                        // NOI18N
+                LOG.debug("FEATURE_POINT_SYMBOL_SWEETSPOT_Y=" + y);                                 // NOI18N
             }
         } catch (Exception t) {
-            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);                                         // NOI18N
+            LOG.info("FEATURE_POINT_SYMBOL_SWEETSPOT_Y Error", t);                                  // NOI18N
         }
         try {
             final String supportingRasterService = String.valueOf(getAttribValue(
                         "FEATURESUPPORTINGRASTERSERVICE_TYPE",
                         mo,
-                        mc));                                                                              // NOI18N
+                        mc));                                                                       // NOI18N
             final String supportingRasterServiceUrl = (String)getAttribValue(
                     "FEATURESUPPORTINGRASTERSERVICE_SIMPLEURL",
                     mo,
-                    mc);                                                                                   // NOI18N
+                    mc);                                                                            // NOI18N
 
             supportingRasterServiceRasterLayerName = (String)getAttribValue(
                     "FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER",
@@ -680,6 +718,7 @@ public class CidsFeature implements XStyledFeature,
         if (LOG.isDebugEnabled()) {
             LOG.debug("getInfoComponent"); // NOI18N
         }
+
         if (parentFeatureRenderer != null) {
             return parentFeatureRenderer.getInfoComponent(refresh, this);
         } else if (featureRenderer != null) {
@@ -867,7 +906,9 @@ public class CidsFeature implements XStyledFeature,
                     && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
                 final String attrField = supportingRasterServiceRasterLayerName.substring("cidsAttribute::".length()); // NOI18N
-                LOG.fatal("attrField" + attrField);                                                                    // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("FeatureSupportingRasterService:attrField:" + attrField);                                // NOI18N
+                }
                 final String ret = getMetaObject().getBean().getProperty(attrField).toString();
                 return ret;
             } catch (Exception e) {
@@ -1015,6 +1056,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public FeatureRenderer getFeatureRenderer() {
         return featureRenderer;
     }
@@ -1024,6 +1066,7 @@ public class CidsFeature implements XStyledFeature,
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public SubFeatureAwareFeatureRenderer getParentFeatureRenderer() {
         return parentFeatureRenderer;
     }
@@ -1036,5 +1079,19 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public Collection<CidsBeanAction> getActions() {
         return cidsBeanActions;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  infoNodeEnabled  the infoComponentDisabled to set
+     */
+    public void setInfoNodeEnabled(final boolean infoNodeEnabled) {
+        this.infoNodeEnabled = infoNodeEnabled;
+    }
+
+    @Override
+    public boolean hasInfoNode() {
+        return infoNodeEnabled;
     }
 }

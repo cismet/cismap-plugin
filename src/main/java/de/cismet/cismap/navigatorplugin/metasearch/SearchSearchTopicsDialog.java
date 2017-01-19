@@ -16,12 +16,11 @@ import Sirius.navigator.search.dynamic.SearchControlListener;
 import Sirius.navigator.search.dynamic.SearchControlPanel;
 import Sirius.navigator.ui.ComponentRegistry;
 
-import Sirius.server.search.CidsServerSearch;
-import Sirius.server.search.builtin.FullTextSearch;
-
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Lookup;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -29,13 +28,23 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+import de.cismet.cids.server.search.SearchResultListener;
+import de.cismet.cids.server.search.SearchResultListenerProvider;
+import de.cismet.cids.server.search.builtin.FullTextSearch;
+
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+
+import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
+
+import de.cismet.commons.gui.protocol.ProtocolHandler;
 
 /**
  * DOCUMENT ME!
@@ -52,8 +61,10 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
     //~ Instance fields --------------------------------------------------------
 
-    private SearchControlPanel pnlSearchCancel;
+    private final SearchControlPanel pnlSearchCancel;
     private boolean searchRunning = false;
+    private final SearchTopicsDialogModel model = new SearchTopicsDialogModel();
+
 //    private SwingWorker searchThread;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
@@ -90,8 +101,34 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         pnlButtons.add(pnlSearchCancel);
         pnlButtons.add(btnClose);
 
+        final MetaSearchListener metaSearchListener = new MetaSearchAdapter() {
+
+                @Override
+                public void topicAdded(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicsAdded(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicRemoved(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+
+                @Override
+                public void topicsRemoved(final MetaSearchListenerEvent event) {
+                    refreshSearchTopics();
+                }
+            };
+
+        MetaSearch.instance().addMetaSearchListener(metaSearchListener);
+
+        refreshSearchTopics();
+
         final EnableSearchListener listener = new EnableSearchListener();
-        pnlSearchTopics.setSearchTopics(MetaSearch.instance().getSearchTopics());
         pnlSearchTopics.registerItemListener(listener);
         txtSearchParameter.getDocument().addDocumentListener(listener);
         chkHere.addItemListener(listener);
@@ -105,6 +142,14 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void refreshSearchTopics() {
+        pnlSearchTopics.setSearchTopics(MetaSearch.instance().getSearchTopics());
+        pack();
+    }
 
     /**
      * DOCUMENT ME!
@@ -206,6 +251,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         chkCaseSensitive.setText(org.openide.util.NbBundle.getMessage(
                 SearchSearchTopicsDialog.class,
                 "SearchSearchTopicsDialog.chkCaseSensitive.text")); // NOI18N
+        chkCaseSensitive.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    chkCaseSensitiveActionPerformed(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -243,6 +295,13 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         chkHere.setText(org.openide.util.NbBundle.getMessage(
                 SearchSearchTopicsDialog.class,
                 "SearchSearchTopicsDialog.chkHere.text")); // NOI18N
+        chkHere.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    chkHereActionPerformed(evt);
+                }
+            });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -327,6 +386,33 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void chkCaseSensitiveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkCaseSensitiveActionPerformed
+        model.setCaseSensitiveEnabled(chkCaseSensitive.isSelected());
+    }                                                                                    //GEN-LAST:event_chkCaseSensitiveActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
+    private void chkHereActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkHereActionPerformed
+        model.setSearchGeometryEnabled(chkHere.isSelected());
+    }                                                                           //GEN-LAST:event_chkHereActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public SearchTopicsDialogModel getModel() {
+        return model;
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     private void switchControls() {
         if (searchRunning) {
@@ -342,19 +428,17 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
         }
     }
 
-    @Override
-    public CidsServerSearch assembleSearch() {
-        final Collection<String> selectedSearchClasses = MetaSearch.instance().getSelectedSearchClassesForQuery();
-
-        LOG.info("Starting search for '" + txtSearchParameter.getText() + "' in '" + selectedSearchClasses
-                    + "'. Case sensitive? "
-                    + chkCaseSensitive.isSelected() + ", Only in cismap? " + chkHere.isSelected());
-
-        FullTextSearch fullTextSearch = null;
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Geometry createSearchGeometry() {
         Geometry searchGeometry = null;
-
         if (chkHere.isSelected()) {
-            final BoundingBox boundingBox = CismapBroker.getInstance().getMappingComponent().getCurrentBoundingBox();
+            final BoundingBox boundingBox = CismapBroker.getInstance()
+                        .getMappingComponent()
+                        .getCurrentBoundingBoxFromCamera();
             final int srid = CrsTransformer.extractSridFromCrs(CismapBroker.getInstance().getMappingComponent()
                             .getMappingModel().getSrs().getCode());
 
@@ -362,12 +446,69 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
             // Damits auch mit -1 funzt:
             searchGeometry.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
         }
+        return searchGeometry;
+    }
 
-        fullTextSearch = new FullTextSearch(txtSearchParameter.getText(),
-                chkCaseSensitive.isSelected(),
-                searchGeometry);
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isCaseSensitiveEnabled() {
+        return chkCaseSensitive.isSelected();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean isGeometryEnabled() {
+        return chkHere.isSelected();
+    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public SearchTopicsPanel getPnlSearchTopics() {
+        return pnlSearchTopics;
+    }
+
+    @Override
+    public MetaObjectNodeServerSearch assembleSearch() {
+        final Collection<String> selectedSearchClasses = MetaSearch.instance().getSelectedSearchClassesForQuery();
+
+        LOG.info("Starting search for '" + txtSearchParameter.getText() + "' in '" + selectedSearchClasses
+                    + "'. Case sensitive? "
+                    + chkCaseSensitive.isSelected() + ", Only in cismap? " + chkHere.isSelected());
+
+        model.setSearchText(txtSearchParameter.getText());
+
+        final Geometry searchGeometry = createSearchGeometry();
+
+        // default search is always present
+        final FullTextSearch fullTextSearch = Lookup.getDefault().lookup(FullTextSearch.class);
+        fullTextSearch.setSearchText(txtSearchParameter.getText());
+        fullTextSearch.setCaseSensitive(chkCaseSensitive.isSelected());
+        fullTextSearch.setGeometry(searchGeometry);
         fullTextSearch.setValidClassesFromStrings(selectedSearchClasses);
+        if (fullTextSearch instanceof SearchResultListenerProvider) {
+            ((SearchResultListenerProvider)fullTextSearch).setSearchResultListener(new SearchResultListener() {
 
+                    @Override
+                    public void searchDone(final List results) {
+                        if (ProtocolHandler.getInstance().isRecordEnabled()) {
+                            ProtocolHandler.getInstance()
+                                    .recordStep(
+                                        new FulltextSearchProtocolStepImpl(
+                                            fullTextSearch,
+                                            MetaSearch.instance().getSelectedSearchTopics(),
+                                            results));
+                        }
+                    }
+                });
+        }
         return fullTextSearch;
     }
 
