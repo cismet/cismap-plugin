@@ -1665,6 +1665,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdReconfig.toolTipText"));                                           // NOI18N
         cmdReconfig.setBorderPainted(false);
         cmdReconfig.setFocusPainted(false);
+        cmdReconfig.setName("cmdReconfig");                                                         // NOI18N
         cmdReconfig.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1685,6 +1686,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdBack.toolTipText"));                                           // NOI18N
         cmdBack.setBorderPainted(false);
         cmdBack.setFocusPainted(false);
+        cmdBack.setName("cmdBack");                                                             // NOI18N
         cmdBack.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1700,6 +1702,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdHome.toolTipText"));                                           // NOI18N
         cmdHome.setBorderPainted(false);
         cmdHome.setFocusPainted(false);
+        cmdHome.setName("cmdHome");                                                             // NOI18N
         cmdHome.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1715,6 +1718,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdForward.toolTipText"));                                              // NOI18N
         cmdForward.setBorderPainted(false);
         cmdForward.setFocusPainted(false);
+        cmdForward.setName("cmdForward");                                                             // NOI18N
         tlbMain.add(cmdForward);
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -1728,6 +1732,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdRefresh.toolTipText"));                                             // NOI18N
         cmdRefresh.setBorderPainted(false);
         cmdRefresh.setFocusPainted(false);
+        cmdRefresh.setName("cmdRefresh");                                                            // NOI18N
         cmdRefresh.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1791,6 +1796,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdSelectSingle.setFocusPainted(false);
         cmdSelectSingle.setFocusable(false);
         cmdSelectSingle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cmdSelectSingle.setName("cmdSelectSingle");                                                       // NOI18N
         cmdSelectSingle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         cmdSelectSingle.addActionListener(new java.awt.event.ActionListener() {
 
@@ -1809,6 +1815,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdGroupPrimaryInteractionMode.add(cmdSelect);
         cmdSelect.setFocusable(false);
         cmdSelect.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cmdSelect.setName("cmdSelect");                                                                      // NOI18N
         cmdSelect.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         tlbMain.add(cmdSelect);
         cmdSelect.setVisible(hasExtendedSelectionCapabilities());
@@ -1820,6 +1827,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdZoom.toolTipText"));                                           // NOI18N
         cmdZoom.setBorderPainted(false);
         cmdZoom.setFocusPainted(false);
+        cmdZoom.setName("cmdZoom");                                                             // NOI18N
         cmdZoom.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1836,6 +1844,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdPan.toolTipText"));                                          // NOI18N
         cmdPan.setBorderPainted(false);
         cmdPan.setFocusPainted(false);
+        cmdPan.setName("cmdPan");                                                             // NOI18N
         cmdPan.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1852,6 +1861,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdFeatureInfo.toolTipText"));                                                   // NOI18N
         cmdFeatureInfo.setBorderPainted(false);
         cmdFeatureInfo.setFocusPainted(false);
+        cmdFeatureInfo.setName("cmdFeatureInfo");                                                              // NOI18N
         cmdFeatureInfo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1863,6 +1873,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         cmdPluginSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pluginSearchRectangle.png"))); // NOI18N
         cmdGroupPrimaryInteractionMode.add(cmdPluginSearch);
+        cmdPluginSearch.setName("cmdPluginSearch");                                                                      // NOI18N
         tlbMain.add(cmdPluginSearch);
 
         cmdGroupPrimaryInteractionMode.add(cmdNewPolygon);
@@ -1872,6 +1883,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNewPolygon.toolTipText"));                                                 // NOI18N
         cmdNewPolygon.setBorderPainted(false);
         cmdNewPolygon.setFocusPainted(false);
+        cmdNewPolygon.setName("cmdNewPolygon");                                                             // NOI18N
         cmdNewPolygon.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1888,6 +1900,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNewLinestring.toolTipText"));                                                    // NOI18N
         cmdNewLinestring.setBorderPainted(false);
         cmdNewLinestring.setFocusPainted(false);
+        cmdNewLinestring.setName("cmdNewLinestring");                                                             // NOI18N
         cmdNewLinestring.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1904,6 +1917,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNewPoint.toolTipText"));                                               // NOI18N
         cmdNewPoint.setBorderPainted(false);
         cmdNewPoint.setFocusPainted(false);
+        cmdNewPoint.setName("cmdNewPoint");                                                             // NOI18N
         cmdNewPoint.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1928,6 +1942,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 CismapPlugin.class,
                 "CismapPlugin.cmdNewLinearReferencing.toolTipText"));                                             // NOI18N
         cmdNewLinearReferencing.setFocusPainted(false);
+        cmdNewLinearReferencing.setName("cmdNewLinearReferencing");                                               // NOI18N
         cmdNewLinearReferencing.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1947,6 +1962,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdMoveGeometry.setFocusPainted(false);
         cmdMoveGeometry.setMaximumSize(new java.awt.Dimension(29, 29));
         cmdMoveGeometry.setMinimumSize(new java.awt.Dimension(29, 29));
+        cmdMoveGeometry.setName("cmdMoveGeometry");                                                     // NOI18N
         cmdMoveGeometry.setPreferredSize(new java.awt.Dimension(29, 29));
         cmdMoveGeometry.addActionListener(new java.awt.event.ActionListener() {
 
@@ -1964,6 +1980,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdRemoveGeometry.toolTipText"));                                             // NOI18N
         cmdRemoveGeometry.setBorderPainted(false);
         cmdRemoveGeometry.setFocusPainted(false);
+        cmdRemoveGeometry.setName("cmdRemoveGeometry");                                                     // NOI18N
         cmdRemoveGeometry.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -1986,6 +2003,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNodeMove.toolTipText"));                                                // NOI18N
         cmdNodeMove.setBorderPainted(false);
         cmdNodeMove.setFocusPainted(false);
+        cmdNodeMove.setName("cmdNodeMove");                                                              // NOI18N
         cmdNodeMove.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2002,6 +2020,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNodeAdd.toolTipText"));                                                  // NOI18N
         cmdNodeAdd.setBorderPainted(false);
         cmdNodeAdd.setFocusPainted(false);
+        cmdNodeAdd.setName("cmdNodeAdd");                                                                 // NOI18N
         cmdNodeAdd.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2018,6 +2037,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNodeRemove.toolTipText"));                                                  // NOI18N
         cmdNodeRemove.setBorderPainted(false);
         cmdNodeRemove.setFocusPainted(false);
+        cmdNodeRemove.setName("cmdNodeRemove");                                                              // NOI18N
         cmdNodeRemove.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2034,6 +2054,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 "CismapPlugin.cmdNodeRotateGeometry.toolTipText"));                                             // NOI18N
         cmdNodeRotateGeometry.setBorderPainted(false);
         cmdNodeRotateGeometry.setFocusPainted(false);
+        cmdNodeRotateGeometry.setName("cmdNodeRotateGeometry");                                                 // NOI18N
         cmdNodeRotateGeometry.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2052,6 +2073,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdNodeReflectGeometry.setFocusPainted(false);
         cmdNodeReflectGeometry.setFocusable(false);
         cmdNodeReflectGeometry.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cmdNodeReflectGeometry.setName("cmdNodeReflectGeometry");                                                // NOI18N
         cmdNodeReflectGeometry.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         cmdNodeReflectGeometry.addActionListener(new java.awt.event.ActionListener() {
 
@@ -2075,6 +2097,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdSnap.setFocusPainted(false);
         cmdSnap.setMaximumSize(new java.awt.Dimension(29, 29));
         cmdSnap.setMinimumSize(new java.awt.Dimension(29, 29));
+        cmdSnap.setName("cmdSnap");                                                                                      // NOI18N
         cmdSnap.setPreferredSize(new java.awt.Dimension(29, 29));
         cmdSnap.setRolloverSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/images/snap_selected.png"))); // NOI18N
         cmdSnap.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/images/snap_selected.png")));         // NOI18N
@@ -2099,6 +2122,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdUndo.setBorderPainted(false);
         cmdUndo.setEnabled(false);
         cmdUndo.setFocusPainted(false);
+        cmdUndo.setName("cmdUndo");                                                             // NOI18N
         cmdUndo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -2115,6 +2139,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdRedo.setBorderPainted(false);
         cmdRedo.setEnabled(false);
         cmdRedo.setFocusPainted(false);
+        cmdRedo.setName("cmdRedo");                                                             // NOI18N
         cmdRedo.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
