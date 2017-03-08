@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>4.1</version>
+    <version>4.1.1</version>
     <packaging>jar</packaging>
     <properties>
         <names.cismap-plugin>cismap Plugin</names.cismap-plugin>
@@ -33,7 +33,7 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-      <tag>v4.1</tag>
+      <tag>v4.1.1</tag>
   </scm>
 
     <repositories>
@@ -67,7 +67,7 @@
         <dependency>
             <groupId>de.cismet.cids.navigator</groupId>
             <artifactId>cids-navigator</artifactId>
-            <version>4.1</version>
+            <version>4.1.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
