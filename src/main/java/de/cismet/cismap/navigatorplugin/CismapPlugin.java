@@ -118,6 +118,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -1226,6 +1227,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         int insertionIndex = tlbMain.getComponentCount();
                         final String anchor = componentDescription.getAnchorComponentName();
 
+                        final Component component = componentDescription.getComponent();
+                        if (componentDescription.isInteractionMode() && (component instanceof AbstractButton)) {
+                            cmdGroupPrimaryInteractionMode.add((AbstractButton)component);
+                        }
                         if (anchor != null) {
                             for (int i = tlbMain.getComponentCount(); --i >= 0;) {
                                 final Component currentAnchorCandidate = tlbMain.getComponent(i);
@@ -1243,7 +1248,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             }
                         }
 
-                        tlbMain.add(componentDescription.getComponent(), insertionIndex);
+                        tlbMain.add(component, insertionIndex);
                     }
                 }
             }
