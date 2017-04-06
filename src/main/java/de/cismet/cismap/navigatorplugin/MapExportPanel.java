@@ -15,6 +15,7 @@ import org.jdom.Element;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ import de.cismet.tools.configuration.NoWriteError;
 
 import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
+import de.cismet.tools.gui.menu.CidsUiComponent;
 
 /**
  * DOCUMENT ME!
@@ -41,9 +43,8 @@ import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
  * @author   Gilles Baatz
  * @version  $Revision$, $Date$
  */
-public class MapExportPanel extends javax.swing.JPanel implements Configurable,
-    ExportMapDataProvider,
-    ConnectionContextProvider {
+@org.openide.util.lookup.ServiceProvider(service = CidsUiComponent.class)
+public class MapExportPanel extends javax.swing.JPanel implements Configurable, ExportMapDataProvider, ConnectionContextProvider, CidsUiComponent {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -91,6 +92,9 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
         exportGeoPointToClipboardAction = new ExportGeoPointToClipboardAction(this);
         exportMapToFileAction = new ExportMapToFileAction(this);
         initComponents();
+        setMaximumSize(new Dimension(34, 34));
+        setMinimumSize(new Dimension(34, 34));
+        setPreferredSize(new Dimension(34, 34));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -318,5 +322,10 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
     @Override
     public final ConnectionContext getConnectionContext() {
         return connectionContext;
+    }
+
+    @Override
+    public String getValue(final String key) {
+        return "MapExportPanel";
     }
 }

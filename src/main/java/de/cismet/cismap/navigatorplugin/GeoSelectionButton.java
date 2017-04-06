@@ -22,6 +22,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import java.beans.PropertyChangeEvent;
@@ -52,6 +53,7 @@ import de.cismet.tools.CismetThreadPool;
 
 import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.tools.gui.menu.CidsUiComponent;
 
 import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.ELLIPSE;
 import static de.cismet.cismap.commons.features.AbstractNewFeature.geomTypes.LINESTRING;
@@ -68,7 +70,9 @@ import static de.cismet.cismap.navigatorplugin.GeoSelectionButton.createSelectRe
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements PropertyChangeListener {
+@org.openide.util.lookup.ServiceProvider(service = CidsUiComponent.class)
+public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements PropertyChangeListener,
+    CidsUiComponent {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -76,7 +80,7 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
 
     //~ Instance fields --------------------------------------------------------
 
-    private final SelectionListener selectListener;
+    private SelectionListener selectListener;
     private Action selectAction;
     private Action selectMenuSelectedAction;
     private Action selectRectangleAction;
@@ -106,6 +110,12 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
 
     /**
      * Creates a new GeoSelectionButton object.
+     */
+    public GeoSelectionButton() {
+    }
+
+    /**
+     * Creates a new GeoSelectionButton object.
      *
      * @param  interactionMode   DOCUMENT ME!
      * @param  mappingComponent  DOCUMENT ME!
@@ -129,7 +139,24 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
             final MappingComponent mappingComponent,
             final String selectName,
             final String toolTipText) {
-        super(interactionMode, mappingComponent, selectName);
+        init(interactionMode, mappingComponent, selectName, toolTipText);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Creates new form GeoSelectionButton.
+     *
+     * @param  interactionMode   DOCUMENT ME!
+     * @param  mappingComponent  DOCUMENT ME!
+     * @param  selectName        DOCUMENT ME!
+     * @param  toolTipText       DOCUMENT ME!
+     */
+    public final void init(final String interactionMode,
+            final MappingComponent mappingComponent,
+            final String selectName,
+            final String toolTipText) {
+        super.init(interactionMode, mappingComponent, selectName);
         selectAction = createSelectAction(interactionMode, mappingComponent);
         selectMenuSelectedAction = createSelectMenuSelectedAction(interactionMode, mappingComponent);
         selectRectangleAction = createSelectRectangleAction(interactionMode, mappingComponent);
@@ -155,8 +182,6 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
 
         selectListener.addPropertyChangeListener(this);
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -736,5 +761,15 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
         mniSelectPolygon1.setSelected(SelectionListener.POLYGON.equals(mode));
         mniSelectEllipse1.setSelected(SelectionListener.ELLIPSE.equals(mode));
         mniSelectPolyline1.setSelected(SelectionListener.LINESTRING.equals(mode));
+    }
+
+    @Override
+    public String getValue(final String key) {
+        return "GeoSelectionButton";
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
     }
 }
