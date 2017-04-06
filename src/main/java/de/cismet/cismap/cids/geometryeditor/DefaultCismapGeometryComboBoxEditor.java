@@ -31,6 +31,7 @@ import org.jdesktop.beansbinding.Validator;
 import javax.swing.JComboBox;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.Disposable;
 
 import de.cismet.cids.editors.Bindable;
 
@@ -50,7 +51,7 @@ import de.cismet.tools.CurrentStackTrace;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable, MetaClassStore {
+public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable, MetaClassStore, Disposable {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -131,6 +132,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
     /**
      * DOCUMENT ME!
      */
+    @Override
     public void dispose() {
         try {
             CismapBroker.getInstance()
