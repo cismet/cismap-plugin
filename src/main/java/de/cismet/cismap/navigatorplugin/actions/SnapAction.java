@@ -15,14 +15,14 @@ package de.cismet.cismap.navigatorplugin.actions;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JToggleButton;
 
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.tools.gui.menu.CidsUiAction;
 
 import static javax.swing.Action.SHORT_DESCRIPTION;
-import javax.swing.JButton;
-import javax.swing.JToggleButton;
 
 /**
  * DOCUMENT ME!
@@ -59,8 +59,8 @@ public class SnapAction extends AbstractAction implements CidsUiAction {
     public void actionPerformed(final ActionEvent e) {
         if (CismapBroker.getInstance().getMappingComponent() != null) {
             if (e.getSource() instanceof JToggleButton) {
-                JToggleButton button = (JToggleButton)e.getSource();
-                CismapBroker.getInstance().getMappingComponent().setSnappingEnabled( button.isSelected() );
+                final JToggleButton button = (JToggleButton)e.getSource();
+                CismapBroker.getInstance().getMappingComponent().setSnappingEnabled(button.isSelected());
             }
         }
     }

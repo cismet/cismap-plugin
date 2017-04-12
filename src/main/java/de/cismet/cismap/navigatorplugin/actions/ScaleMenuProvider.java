@@ -88,10 +88,10 @@ public class ScaleMenuProvider implements CidsUiMenuProvider {
     }
 
     @Override
-    public void addCidsUiMenuProviderListener(CidsUiMenuProviderListener listener) {
+    public void addCidsUiMenuProviderListener(final CidsUiMenuProviderListener listener) {
     }
 
     @Override
-    public void removeCidsUiMenuProviderListener(CidsUiMenuProviderListener listener) {
+    public void removeCidsUiMenuProviderListener(final CidsUiMenuProviderListener listener) {
     }
 }
