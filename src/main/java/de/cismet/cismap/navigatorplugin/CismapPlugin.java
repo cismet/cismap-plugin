@@ -5744,40 +5744,36 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     final Collection c = context.getMetadata().getSelectedNodes();
 
                     if ((c != null) && !(c.isEmpty())) {
-                        if (featureControl.isWizardMode()) {
-                            showObjectsMethod.invoke(c);
-                        } else {
-                            final Object[] nodes = c.toArray();
-                            boolean oneHit = false;
-                            final List<Feature> features = new ArrayList<Feature>();
+                        final Object[] nodes = c.toArray();
+                        boolean oneHit = false;
+                        final List<Feature> features = new ArrayList<Feature>();
 
-                            for (final Object o : nodes) {
-                                if (o instanceof DefaultMetaTreeNode) {
-                                    final DefaultMetaTreeNode node = (DefaultMetaTreeNode)o;
+                        for (final Object o : nodes) {
+                            if (o instanceof DefaultMetaTreeNode) {
+                                final DefaultMetaTreeNode node = (DefaultMetaTreeNode)o;
 
-                                    if (featuresInMap.containsKey(node)) {
-                                        oneHit = true;
-                                        features.add(featuresInMap.get(node));
-                                    }
+                                if (featuresInMap.containsKey(node)) {
+                                    oneHit = true;
+                                    features.add(featuresInMap.get(node));
                                 }
                             }
+                        }
 
-                            if (oneHit) {
-                                featureCollectionEventBlocker = true;
-                                mapC.getFeatureCollection().select(features);
-                                featureCollectionEventBlocker = false;
-                            } else {
-                                featureCollectionEventBlocker = true;
-                                mapC.getFeatureCollection().unselectAll();
-                                featureCollectionEventBlocker = false;
-                                if (log.isDebugEnabled()) {
-                                    log.debug("featuresInMap:" + featuresInMap); // NOI18N
-                                }
+                        if (oneHit) {
+                            featureCollectionEventBlocker = true;
+                            mapC.getFeatureCollection().select(features);
+                            featureCollectionEventBlocker = false;
+                        } else {
+                            featureCollectionEventBlocker = true;
+                            mapC.getFeatureCollection().unselectAll();
+                            featureCollectionEventBlocker = false;
+                            if (log.isDebugEnabled()) {
+                                log.debug("featuresInMap:" + featuresInMap); // NOI18N
                             }
                         }
                     }
                 } catch (final Exception t) {
-                    log.error("Error in WizardMode:", t);                        // NOI18N
+                    log.error("Error in WizardMode:", t);                    // NOI18N
                 }
             }
         }
