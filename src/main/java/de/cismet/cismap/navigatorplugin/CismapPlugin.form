@@ -1123,16 +1123,7 @@
                 </Component>
                 <Component class="de.cismet.cismap.navigatorplugin.MapExportPanel" name="cmdClipboard">
                   <Properties>
-                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[34, 34]"/>
-                    </Property>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[34, 34]"/>
-                    </Property>
                     <Property name="name" type="java.lang.String" value="cmdClipboard" noResource="true"/>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[34, 34]"/>
-                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.MapExportPanel(getConnectionContext())"/>
