@@ -18,6 +18,7 @@ import Sirius.navigator.ui.ComponentRegistry;
 import org.apache.log4j.Logger;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 
 import java.io.File;
@@ -36,10 +37,8 @@ import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-
 import de.cismet.tools.gui.menu.CidsUiAction;
 import de.cismet.tools.gui.menu.CidsUiActionProvider;
-import java.awt.EventQueue;
 
 import static javax.swing.Action.ACCELERATOR_KEY;
 import static javax.swing.Action.LARGE_ICON_KEY;
@@ -68,7 +67,7 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
      */
     public ConfigurationActionProvider() {
         final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
-        
+
         if (navigator != null) {
             cismapDirectory = navigator.getCismapDirectory();
         }
@@ -79,11 +78,10 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
     @Override
     public List<CidsUiAction> getActions() {
         final List<CidsUiAction> actionList = new ArrayList<CidsUiAction>();
-        
-        NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
-        
+
+        final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
+
         if (navigator != null) {
-            
         }
 
         actionList.add(new LoadConfigurationAction());
@@ -167,7 +165,7 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
                 final String name = file.getAbsolutePath();
                 final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
 
-                if (name.endsWith(".xml")) {                                                       // NOI18N
+                if (name.endsWith(".xml")) {                                            // NOI18N
                     ((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel())
                             .removeAllLayers();
                     CismapBroker.getInstance().getMappingComponent().getRasterServiceLayer().removeAllChildren();
@@ -256,7 +254,7 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
                 final String name = file.getAbsolutePath();
                 final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
 
-                if (name.endsWith(".xml")) {                                                                // NOI18N
+                if (name.endsWith(".xml")) {                                                     // NOI18N
                     navigator.getCismapConfigurationManager().writeConfiguration(name);
                 } else {
                     navigator.getCismapConfigurationManager().writeConfiguration(name + ".xml"); // NOI18N
@@ -308,7 +306,7 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
             CismapBroker.getInstance().getMappingComponent().getMapServiceLayer().removeAllChildren();
             CismapBroker.getInstance().getMappingComponent().lock();
             final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
-            
+
             navigator.getCismapConfigurationManager().configureFromClasspath();
 
             EventQueue.invokeLater(new Runnable() {
