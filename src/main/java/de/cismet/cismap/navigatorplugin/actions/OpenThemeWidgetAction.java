@@ -12,7 +12,9 @@
  */
 package de.cismet.cismap.navigatorplugin.actions;
 
+import Sirius.navigator.NavigatorX;
 import Sirius.navigator.plugin.PluginRegistry;
+import Sirius.navigator.ui.ComponentRegistry;
 
 import net.infonode.docking.View;
 
@@ -67,17 +69,24 @@ public class OpenThemeWidgetAction extends AbstractAction implements CidsUiActio
                 OpenThemeWidgetAction.class,
                 "OpenThemeWidgetAction.mnemonic");
         putValue(MNEMONIC_KEY, KeyStroke.getKeyStroke(mnemonic).getKeyCode());
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "OpenThemeWidgetAction");
     }
 
     @Override
     public void actionPerformed(final ActionEvent e) {
         final CismapPlugin cismap = (CismapPlugin)PluginRegistry.getRegistry().getPlugin("cismap");
-        final View v = cismap.getView("themelayer");
 
-        if (v.isClosable()) {
-            v.close();
+        if (cismap != null) {
+            final View v = cismap.getView("themelayer");
+
+            if (v.isClosable()) {
+                v.close();
+            } else {
+                v.restore();
+            }
         } else {
-            v.restore();
+            final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
+            navigator.select("de.cismet.cismap.commons.gui.layerwidget.ThemeLayerWidget");
         }
     }
 }
