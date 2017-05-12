@@ -70,6 +70,10 @@ public class ExportMapToFileAction extends AbstractExportMapAction implements Ci
             NbBundle.getMessage(ExportMapToFileAction.class, "ExportMapToFileAction.tooltip"));
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
+        putValue(
+            SMALL_ICON,
+            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/watergis/res/icons16/icon-exportfile.png")));
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
     }
 
     //~ Methods ----------------------------------------------------------------
