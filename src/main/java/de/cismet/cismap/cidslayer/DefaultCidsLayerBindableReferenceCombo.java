@@ -74,6 +74,7 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
                 public List<CidsLayerFeature> calculate(final CatalogueDefinition input) throws Exception {
                     final ClassAttribute ca = input.getMc().getClassAttribute("sortingColumn"); // NOI18N
                     final CidsLayer layer = new CidsLayer(input.getMc());
+                    layer.initAndWait();
                     final Map<String, FeatureServiceAttribute> attributeMap = layer.getFeatureServiceAttributes();
                     List<CidsLayerFeature> featureList = new ArrayList<CidsLayerFeature>();
                     FeatureServiceAttribute[] attrArray = null;
@@ -107,7 +108,6 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
 
                     // load data
                     try {
-                        layer.initAndWait();
                         featureList = layer.getFeatureFactory()
                                         .createFeatures(layer.getQuery(), null, null, 0, 0, attrArray);
                     } catch (final Exception ex) {
@@ -117,7 +117,10 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
 
                     // add null value, if required
                     if (input.isNullable()) {
-                        featureList.add(null);
+                        final List<CidsLayerFeature> tmpList = new ArrayList<CidsLayerFeature>();
+                        tmpList.add(null);
+                        tmpList.addAll(featureList);
+                        featureList = tmpList;
                     }
 
                     return featureList;
@@ -467,7 +470,7 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
 
             final List<CidsLayerFeature> featureList = cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
 
-            if ((sortingColumn == null) && (featureList != null)) {
+            if ((sortingColumn == null) && (featureList != null) && (mc.getClassAttribute("sortingColumn") == null)) {
                 // Sorts the model using String comparison on the bean's toString()
                 Collections.sort(featureList, comparator);
             }
@@ -577,7 +580,7 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
         }
 
         for (int i = 0; i < aModel.getSize(); ++i) {
-            if (aModel.getElementAt(i) instanceof CidsLayerFeature) {
+            if ((aModel.getElementAt(i) instanceof CidsLayerFeature) || (aModel.getElementAt(i) == null)) {
                 final CidsLayerFeature bean = (CidsLayerFeature)aModel.getElementAt(i);
 
                 if (beanFilter.accept(bean)) {
@@ -591,6 +594,17 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
         model.setSelectedItem(aModel.getSelectedItem());
 
         return model;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  mc             DOCUMENT ME!
+     * @param  nullable       DOCUMENT ME!
+     * @param  sortingColumn  DOCUMENT ME!
+     */
+    public static void preloadData(final MetaClass mc, final boolean nullable, final String sortingColumn) {
+        cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
     }
 
     //~ Inner Classes ----------------------------------------------------------

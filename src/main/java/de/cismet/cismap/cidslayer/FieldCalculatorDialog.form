@@ -66,7 +66,9 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="de/cismet/cismap/commons/tools/Bundle.properties" key="FieldCalculatorDialog.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
+      <ResourceString bundle="de/cismet/cismap/commons/tools/Bundle.properties" key="FieldCalculatorDialog.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+        <Argument index="0" javacode="(attribute.getAlias() != null &amp;&amp; !attribute.getAlias().equals(&quot;&quot;) ? attribute.getAlias() : attribute.getName())"/>
+      </ResourceString>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -202,6 +204,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="de/cismet/cismap/cidslayer/Bundle.properties" key="FieldCalculatorDialog.jGetValuesBn.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jGetValuesBnActionPerformed"/>

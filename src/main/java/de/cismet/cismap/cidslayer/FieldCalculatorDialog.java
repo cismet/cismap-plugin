@@ -12,6 +12,7 @@
 package de.cismet.cismap.cidslayer;
 
 import Sirius.navigator.connection.SessionManager;
+import Sirius.navigator.exception.ConnectionException;
 
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
@@ -20,14 +21,14 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
+import org.deegree.model.spatialschema.GeometryException;
+import org.deegree.model.spatialschema.JTSAdapter;
+
 import org.openide.util.NbBundle;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -51,18 +52,20 @@ import java.util.regex.Pattern;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+
+import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
@@ -145,7 +148,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     }
                 }
             });
-        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".length", "length") {
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".geoLength", "length") {
 
                 {
                     startWithSpace = false;
@@ -556,7 +559,10 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         setTitle(org.openide.util.NbBundle.getMessage(
                 FieldCalculatorDialog.class,
                 "FieldCalculatorDialog.title",
-                new Object[] {})); // NOI18N
+                new Object[] {
+                    (((attribute.getAlias() != null) && !attribute.getAlias().equals("")) ? attribute.getAlias()
+                                                                                          : attribute.getName())
+                })); // NOI18N
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(258, 40));
@@ -631,6 +637,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         jGetValuesBn.setText(org.openide.util.NbBundle.getMessage(
                 FieldCalculatorDialog.class,
                 "FieldCalculatorDialog.jGetValuesBn.text")); // NOI18N
+        jGetValuesBn.setEnabled(false);
         jGetValuesBn.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
@@ -784,6 +791,11 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                                 lblBusyValueIcon.setEnabled(false);
                                 lblBusyValueIcon.setBusy(false);
                                 jGetValuesBn.setEnabled(true);
+                                jPanel1.repaint();
+                                jScrollPane1.repaint();
+                                jValuesLi.repaint();
+                                doLayout();
+                                repaint();
                                 final DefaultListModel model = (DefaultListModel)jValuesLi.getModel();
 
                                 model.clear();
@@ -823,6 +835,42 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                         new HashMap<FeatureServiceFeature, Object>(featureList.size());
 
                     try {
+                        final FeatureServiceFeature firstFeature = featureList.get(0);
+                        List<Object> catElements = null;
+                        final CidsLayerInfo layerInfo = ((CidsLayerFeature)firstFeature).getLayerInfo();
+
+                        if ((firstFeature instanceof CidsLayerFeature) && layerInfo.isCatalogue(attribute.getName())) {
+                            final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
+                            catElements = new ArrayList<Object>();
+
+                            if (cf.getCatalogueCombo(attribute.getName()) != null) {
+                                final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
+
+                                waitForModel(model);
+
+                                for (int i = 0; i < model.getSize(); ++i) {
+                                    catElements.add(model.getElementAt(i));
+                                }
+                            } else {
+                                final int referencedForeignClassId = layerInfo.getCatalogueClass(attribute.getName());
+
+                                final MetaClass foreignClass = getMetaClass(
+                                        referencedForeignClassId,
+                                        cf.getBean().getMetaObject().getMetaClass());
+                                final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
+                                    new DefaultCidsLayerBindableReferenceCombo(
+                                        foreignClass,
+                                        true);
+                                final ComboBoxModel model = catalogueEditor.getModel();
+                                catElements = new ArrayList<Object>();
+
+                                waitForModel(model);
+
+                                for (int i = 0; i < model.getSize(); ++i) {
+                                    catElements.add(model.getElementAt(i));
+                                }
+                            }
+                        }
                         for (final FeatureServiceFeature feature : featureList) {
                             final String dataDefinition = toVariableString(feature);
                             String code = taQuery.getText();
@@ -836,12 +884,29 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                             code = dataDefinition + "\n " + code;
                             final Object result = engine.eval(code);
 
-                            temporaryObjectMap.put(
-                                feature,
-                                FeatureTools.convertObjectToClass(result, FeatureTools.getClass(attribute)));
+                            if (catElements != null) {
+                                for (final Object element : catElements) {
+                                    if (((element != null) && (result != null)
+                                                    && element.toString().equals(result.toString()))
+                                                || ((element == null) && (result == null))) {
+                                        temporaryObjectMap.put(feature, element);
+                                    }
+                                }
+                            } else {
+                                temporaryObjectMap.put(
+                                    feature,
+                                    FeatureTools.convertObjectToClass(result, FeatureTools.getClass(attribute)));
+                            }
                         }
 
                         for (final FeatureServiceFeature feature : temporaryObjectMap.keySet()) {
+                            if ((temporaryObjectMap.get(feature) instanceof CidsLayerFeature)
+                                        && (feature instanceof CidsLayerFeature)) {
+                                if (((CidsLayerFeature)feature).getCatalogueCombo(attribute.getName()) != null) {
+                                    ((CidsLayerFeature)feature).getCatalogueCombo(attribute.getName())
+                                            .setSelectedItem(temporaryObjectMap.get(feature));
+                                }
+                            }
                             feature.setProperty(attribute.getName(), temporaryObjectMap.get(feature));
                             table.addModifiedFeature((DefaultFeatureServiceFeature)feature);
                         }
@@ -903,6 +968,42 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     }                                                                             //GEN-LAST:event_labStringLinkMouseClicked
 
     /**
+     * DOCUMENT ME!
+     *
+     * @param  model  DOCUMENT ME!
+     */
+    private void waitForModel(final ComboBoxModel model) {
+        final String s = NbBundle.getMessage(
+                DefaultCidsLayerBindableReferenceCombo.class,
+                "DefaultCidsLayerBindableReferenceCombo.loading");
+
+        while ((model.getSize() == 1) && model.getElementAt(0).equals(s)) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // nothing to do
+            }
+        }
+    }
+
+    /**
+     * The delivered meta class is always from the same domain as the meta object of this feature.
+     *
+     * @param   classId    the id of the meta class
+     * @param   metaClass  DOCUMENT ME!
+     *
+     * @return  the meta class object of the class with the given class id
+     *
+     * @throws  ConnectionException  DOCUMENT ME!
+     */
+    private MetaClass getMetaClass(final int classId, final MetaClass metaClass) throws ConnectionException {
+        return SessionManager.getConnection()
+                    .getMetaClass(SessionManager.getSession().getUser(),
+                        classId,
+                        metaClass.getDomain());
+    }
+
+    /**
      * Solve all length properties.
      *
      * @param   code     the code that possibly contains invocations of the length property
@@ -911,7 +1012,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
      * @return  the new code
      */
     private String substituteLength(final String code, final FeatureServiceFeature feature) {
-        return preEvalProperty(code, feature, "length", SubstitutionFunctions.LENGTH);
+        return preEvalProperty(code, feature, "geoLength", SubstitutionFunctions.LENGTH);
     }
 
     /**
@@ -1073,7 +1174,14 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     object = "";
                 }
             } else {
-                final Object geometryObject = feature.getProperty(object);
+                Object geometryObject = feature.getProperty(object);
+                if (geometryObject instanceof org.deegree.model.spatialschema.Geometry) {
+                    try {
+                        geometryObject = JTSAdapter.export((org.deegree.model.spatialschema.Geometry)geometryObject);
+                    } catch (GeometryException ex) {
+                        LOG.error("Error while converting deegree geometry to jts geometry", ex);
+                    }
+                }
 
                 if (geometryObject instanceof Geometry) {
                     final Geometry geometry = (Geometry)geometryObject;
@@ -1112,9 +1220,9 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
      *
      * @return  the rounded value
      */
-    private String round(final double value, final int digits) {
+    private double round(final double value, final int digits) {
         final BigDecimal tmpValue = new BigDecimal(value);
-        return tmpValue.setScale(digits, RoundingMode.HALF_UP).toPlainString();
+        return tmpValue.setScale(digits, RoundingMode.HALF_UP).doubleValue();
     }
 
     /**
@@ -1134,13 +1242,20 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                         .getFeatureServiceAttributes()
                         .get(propName);
             final Class cl = FeatureTools.getClass(attr);
-            final Object value = props.get(propName);
+            Object value = props.get(propName);
 
+            if (value instanceof org.deegree.model.spatialschema.Geometry) {
+                try {
+                    value = JTSAdapter.export((org.deegree.model.spatialschema.Geometry)value);
+                } catch (GeometryException ex) {
+                    LOG.error("Error while converting deegree geometry to jts geometry", ex);
+                }
+            }
             if (vars.length() > 0) {
                 vars.append(";\n");
             }
 
-            vars.append(propName).append("=");
+            vars.append(propName.replace((CharSequence)"app:", (CharSequence)"")).append("=");
             if ((value != null) && (cl.equals(String.class) || cl.equals(Date.class))) {
                 vars.append("\"").append(value).append("\"");
             } else {

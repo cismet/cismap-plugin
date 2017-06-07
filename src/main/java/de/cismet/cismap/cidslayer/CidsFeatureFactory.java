@@ -18,6 +18,7 @@ import Sirius.server.middleware.types.MetaClass;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKBReader;
 
@@ -242,6 +243,10 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                     if (row.get(0) != null) {
                         envelope = converter.convertForward((String)row.get(0), crs);
 
+                        if (envelope instanceof Point) {
+                            envelope = envelope.buffer(1);
+                        }
+
                         if (row.size() == 2) {
                             geometryType = postgisToJtsGeometryType((String)row.get(1));
                         }
@@ -372,6 +377,42 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         } else {
             return Types.VARCHAR;
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  query  DOCUMENT ME!
+     */
+    public void initEnvelope(final String query) {
+        final Thread determineEnvelope = new Thread("determine envelope") {
+
+                @Override
+                public void run() {
+                    try {
+                        final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(
+                                metaClass,
+                                SessionManager.getSession().getUser());
+                        final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager
+                                    .getProxy().customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+                        final String crs = CismapBroker.getInstance().getDefaultCrs();
+
+                        for (final ArrayList row : resultArray) {
+                            if (row.get(0) != null) {
+                                envelope = converter.convertForward((String)row.get(0), crs);
+
+                                if (envelope instanceof Point) {
+                                    envelope = envelope.buffer(1);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.error("Error while determine new extend", e);
+                    }
+                }
+            };
+
+        determineEnvelope.start();
     }
 
     @Override
