@@ -99,7 +99,9 @@ public class StationCreator extends AbstractFeatureCreator {
                                     feature.setGeometry(pointGeom);
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
-                                            fillFeatureWithDefaultValues((DefaultFeatureServiceFeature)feature);
+                                            fillFeatureWithDefaultValues(
+                                                (DefaultFeatureServiceFeature)feature,
+                                                properties);
                                             ((DefaultFeatureServiceFeature)feature).saveChanges();
 
                                             for (final FeatureCreatedListener featureCreatedListener

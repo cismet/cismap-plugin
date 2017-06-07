@@ -58,6 +58,7 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
     private boolean nullable = false;
     private HashSet<DefaultCidsLayerBindableReferenceCombo> configuredCombos =
         new HashSet<DefaultCidsLayerBindableReferenceCombo>();
+    private String sortingColumn = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -157,6 +158,9 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
         if ((combo != null) && !configuredCombos.contains(combo)) {
             combo.setNullable(nullable);
             combo.setBeanFilter(filter);
+            if (sortingColumn != null) {
+                combo.setSortingColumn(sortingColumn);
+            }
 
             if (useAutoCompleteDecorator) {
                 AutoCompleteDecorator.decorate(combo, new ObjectToStringConverter() {
@@ -216,5 +220,23 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
      */
     public void setNullable(final boolean nullable) {
         this.nullable = nullable;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the sortingColumn
+     */
+    public String getSortingColumn() {
+        return sortingColumn;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  sortingColumn  the sortingColumn to set
+     */
+    public void setSortingColumn(final String sortingColumn) {
+        this.sortingColumn = sortingColumn;
     }
 }

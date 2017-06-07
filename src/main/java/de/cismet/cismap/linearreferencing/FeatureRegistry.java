@@ -292,7 +292,9 @@ public class FeatureRegistry implements LinearReferencingConstants, LinearRefere
     private int incrementCounter(final CidsBean cidsBean) {
         final int counter = getCounter(cidsBean) + 1;
         counterMap.put(cidsBean, counter);
-        logCounterStatus("after increment " + cidsBean);
+        if (LOG.isDebugEnabled()) {
+            logCounterStatus("after increment " + cidsBean);
+        }
         fireFeatureCountChanged(cidsBean);
         return counter;
     }
@@ -410,17 +412,19 @@ public class FeatureRegistry implements LinearReferencingConstants, LinearRefere
      * @param  string  DOCUMENT ME!
      */
     private void logCounterStatus(final String string) {
-        final StringBuilder sb = new StringBuilder("counterStatus ").append(string)
-                    .append(":<br/>\n=============<br/>\n");
-        for (final Entry<CidsBean, Integer> entry : counterMap.entrySet()) {
-            sb.append(entry.getKey())
-                    .append("-")
-                    .append(entry.getKey().getMetaObject().getId())
-                    .append(" => ")
-                    .append(entry.getValue())
-                    .append("<br/>\n");
-        }
         if (LOG.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder("counterStatus ").append(string)
+                        .append(":<br/>\n=============<br/>\n");
+            for (final Entry<CidsBean, Integer> entry : counterMap.entrySet()) {
+                if (entry.getKey() != null) {
+                    sb.append(entry.getKey())
+                            .append("-")
+                            .append(entry.getKey().getMetaObject().getId())
+                            .append(" => ")
+                            .append(entry.getValue())
+                            .append("<br/>\n");
+                }
+            }
             LOG.debug(sb.toString());
         }
     }
