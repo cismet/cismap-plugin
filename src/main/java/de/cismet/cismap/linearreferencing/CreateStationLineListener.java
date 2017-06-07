@@ -15,6 +15,8 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
+
 /**
  * DOCUMENT ME!
  *

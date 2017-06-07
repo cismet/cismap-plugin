@@ -6,14 +6,11 @@
 *
 ****************************************************/
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.cismap.linearreferencing;
-
-import com.vividsolutions.jts.geom.Geometry;
-
-import de.cismet.cids.dynamics.CidsBean;
+package de.cismet.cismap.cidslayer;
 
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 
@@ -23,18 +20,16 @@ import de.cismet.cismap.commons.gui.piccolo.PFeature;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public interface CreateStationListener {
+public interface StationCreationCheck {
 
     //~ Methods ----------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
      *
-     * @param  route        DOCUMENT ME!
-     * @param  stationGeom  DOCUMENT ME!
-     * @param  station      DOCUMENT ME!
+     * @param   feature  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    void pointFinished(CidsBean route,
-            Geometry stationGeom,
-            double station);
+    boolean isRouteValid(PFeature feature);
 }

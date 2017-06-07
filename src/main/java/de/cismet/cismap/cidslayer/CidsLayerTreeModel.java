@@ -75,10 +75,10 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
 
                 if ((folderAttributes != null) && !folderAttributes.isEmpty()) {
                     final String name = folderAttributes.toArray()[0].toString();
-                    final StringTokenizer st = new StringTokenizer(name, "->");
+                    final String[] st = name.split("->");
 
-                    while (st.hasMoreTokens()) {
-                        folderNames.add(st.nextToken());
+                    for (final String tmp : st) {
+                        folderNames.add(tmp);
                     }
                 }
 
@@ -111,6 +111,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
             LOG.error("Error while creating cids layer tree", ex);
         }
         sortList(classes);
+        removeSortExpression(classes);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -140,6 +141,23 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
         for (final Object o : listToSort) {
             if (o instanceof List) {
                 sortList((List)o);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listToSort  DOCUMENT ME!
+     */
+    private void removeSortExpression(final List listToSort) {
+        for (final Object o : listToSort) {
+            if (o instanceof List) {
+                final TreeFolder tf = (TreeFolder)o;
+                String newName = tf.getName();
+                newName = newName.replaceAll("sort:[0123456789]* ", "");
+                tf.setName(newName);
+                removeSortExpression((List)o);
             }
         }
     }
@@ -227,7 +245,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
     private boolean fulfilFilterRequirements(final Object entry) {
         if (entry instanceof TreeFolder) {
             if ((filterString == null)
-                        || ((TreeFolder)entry).name.toLowerCase().contains(filterString.toLowerCase())) {
+                        || ((TreeFolder)entry).getName().toLowerCase().contains(filterString.toLowerCase())) {
                 return true;
             } else {
                 for (final Object o : (TreeFolder)entry) {
@@ -256,7 +274,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
 
         //~ Instance fields ----------------------------------------------------
 
-        String name;
+        private String name;
 
         //~ Constructors -------------------------------------------------------
 
@@ -290,6 +308,24 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
             int hash = 3;
             hash = (37 * hash) + ((this.name != null) ? this.name.hashCode() : 0);
             return hash;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  name  the name to set
+         */
+        public void setName(final String name) {
+            this.name = name;
         }
     }
 }

@@ -56,8 +56,10 @@ public class StationLineCreator extends AbstractFeatureCreator {
     private String property;
     private MetaClass routeClass;
     private LinearReferencingHelper helper;
-    private float minDistance = 0;
+    private float minDistance = 0.01f;
     private float maxDistance = Float.MAX_VALUE;
+    private String routeName;
+    private StationCreationCheck check;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,36 +68,45 @@ public class StationLineCreator extends AbstractFeatureCreator {
      *
      * @param  property    mode DOCUMENT ME!
      * @param  routeClass  DOCUMENT ME!
+     * @param  routeName   DOCUMENT ME!
      * @param  helper      DOCUMENT ME!
      */
-    public StationLineCreator(final String property, final MetaClass routeClass, final LinearReferencingHelper helper) {
-        this(property, routeClass, helper, 0);
+    public StationLineCreator(final String property,
+            final MetaClass routeClass,
+            final String routeName,
+            final LinearReferencingHelper helper) {
+        this(property, routeClass, routeName, helper, 0);
     }
+
     /**
      * Creates a new StationLineCreator object.
      *
      * @param  property     mode DOCUMENT ME!
      * @param  routeClass   DOCUMENT ME!
+     * @param  routeName    DOCUMENT ME!
      * @param  helper       DOCUMENT ME!
      * @param  minDistance  DOCUMENT ME!
      */
     public StationLineCreator(final String property,
             final MetaClass routeClass,
+            final String routeName,
             final LinearReferencingHelper helper,
             final float minDistance) {
-        this(property, routeClass, helper, minDistance, Float.MAX_VALUE);
+        this(property, routeClass, routeName, helper, minDistance, Float.MAX_VALUE);
     }
     /**
      * Creates a new StationLineCreator object.
      *
      * @param  property     mode DOCUMENT ME!
      * @param  routeClass   DOCUMENT ME!
+     * @param  routeName    DOCUMENT ME!
      * @param  helper       DOCUMENT ME!
      * @param  minDistance  DOCUMENT ME!
      * @param  maxDistance  DOCUMENT ME!
      */
     public StationLineCreator(final String property,
             final MetaClass routeClass,
+            final String routeName,
             final LinearReferencingHelper helper,
             final float minDistance,
             final float maxDistance) {
@@ -104,9 +115,28 @@ public class StationLineCreator extends AbstractFeatureCreator {
         this.helper = helper;
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
+        this.routeName = routeName;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the check
+     */
+    public StationCreationCheck getCheck() {
+        return check;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  check  the check to set
+     */
+    public void setCheck(final StationCreationCheck check) {
+        this.check = check;
+    }
 
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
@@ -114,8 +144,6 @@ public class StationLineCreator extends AbstractFeatureCreator {
 
                 @Override
                 public void run() {
-                    final String oldInteractionMode = mc.getInteractionMode();
-
                     final CreateLinearReferencedLineListener listener = new CreateLinearReferencedLineListener(
                             mc,
                             new CreateStationLineListener() {
@@ -151,7 +179,9 @@ public class StationLineCreator extends AbstractFeatureCreator {
                                     feature.setGeometry(lineGeom);
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
-                                            fillFeatureWithDefaultValues((DefaultFeatureServiceFeature)feature);
+                                            fillFeatureWithDefaultValues(
+                                                (DefaultFeatureServiceFeature)feature,
+                                                properties);
 
                                             ((DefaultFeatureServiceFeature)feature).saveChanges();
 
@@ -167,8 +197,10 @@ public class StationLineCreator extends AbstractFeatureCreator {
                                 }
                             },
                             routeClass,
+                            routeName,
                             minDistance,
                             maxDistance);
+                    listener.setIdenticalPositionDelta(minDistance);
                     mc.addInputListener(
                         CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE,
                         listener);

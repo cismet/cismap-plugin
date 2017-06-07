@@ -237,8 +237,10 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         this.parentFeature = parentFeature;
         this.stationProperty = stationProperty;
         initComponents();
+        butExpand.setVisible(false);
+        butRemove.setVisible(false);
 //        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 0.0d, 0.01d));
-        setButRemoveVisibility();
+//        setButRemoveVisibility();
 
         initSpinnerListener();
         initFeatureListener();
@@ -312,12 +314,23 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     @Override
     public void setCidsBean(final CidsBean cidsBean) {
         // aufräumen falls vorher cidsbean schon gesetzt war
+        CidsBean newBean = cidsBean;
+
+        if (line) {
+            if ((lineBean != null) && cidsBean.getClass().getName().equals(lineBean.getClass().getName())) {
+                newBean = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, fromStation);
+            }
+//            else if (lineBean == null && cidsBean != null && cidsBean.getClass().getName().equals("")) {
+//                lineBean = cidsBean;
+//                newBean = linearReferencingHelper.getStationBeanFromLineBean(cidsBean, fromStation);
+//            }
+        }
         cleanup();
         // neue cidsbean setzen
-        this.cidsBean = cidsBean;
+        this.cidsBean = newBean;
         createBackupBean();
         if (line && (lineBean != null)) {
-            fromStation = cidsBean.equals(lineBean.getProperty("von"));
+            fromStation = this.cidsBean.equals(lineBean.getProperty("von"));
         }
         // neu initialisieren
         init();
@@ -431,7 +444,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                     dialogLineEditor.setOtherLinesQueryAddition(otherLinesFrom, otherLinesQuery);
                 }
                 // se.setDrawingFeaturesEnabled(false);
-                dialogLineEditor.setCidsBean(lineBean);
+                dialogLineEditor.setCidsBeanStore(this, lineBean);
                 jPanel1.removeAll();
                 jPanel1.add(dialogLineEditor);
 //                diaExp.setSize(460,100);
@@ -537,7 +550,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     private void createBackupBean() {
         try {
-            if (cidsBean == null) {
+            if ((cidsBean == null) || (linearReferencingHelper.getRouteBeanFromStationBean(cidsBean) == null)) {
                 return;
             }
             final Double value = linearReferencingHelper.getLinearValueFromStationBean(cidsBean);
@@ -648,7 +661,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         } else if (!isInited()) {
             final CidsBean pointBean = getCidsBean();
 
-            if (pointBean != null) {
+            if ((pointBean != null) && (linearReferencingHelper.getRouteBeanFromStationBean(pointBean) != null)) {
                 pointBean.addPropertyChangeListener(getCidsBeanListener());
                 final double pointValue = (Double)getValue();
 
@@ -805,11 +818,16 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
             lockBeanChange(true);
 
             setChangedSinceDrop(true);
+            Object oldValue = jSpinner1.getValue();
+
+            if (oldValue == null) {
+                oldValue = -1;
+            }
 
             setValueToSpinner(value);
 //            setValueToLabel(value);
             setValueToFeature(value);
-            firePropertyChange("wert", 0, value);
+            firePropertyChange("wert", oldValue, value);
 
             // realgeoms nur nach manueller eingabe updaten
             if (isInited()) {
@@ -926,6 +944,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         if (!isFeatureChangeLocked()) {
             final LinearReferencedPointFeature pointFeature = getFeature();
             if (pointFeature != null) {
+                final Geometry routeGeometry = linearReferencingHelper.getGeometryFromRoute(
+                        linearReferencingHelper.getRouteBeanFromStationBean(cidsBean));
+//                pointFeature.setBaseLine(routeGeometry);
                 pointFeature.setInfoFormat(new DecimalFormat("###.00"));
                 pointFeature.moveToPosition(value);
             } else {
