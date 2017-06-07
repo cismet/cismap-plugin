@@ -30,6 +30,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
+import de.cismet.cismap.cidslayer.StationCreationCheck;
 
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.gui.MappingComponent;
@@ -69,14 +70,37 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
      * @param  mc                        DOCUMENT ME!
      * @param  geometryFinishedListener  DOCUMENT ME!
      * @param  acceptedRoute             DOCUMENT ME!
+     * @param  routeName                 DOCUMENT ME!
      * @param  minDistance               DOCUMENT ME!
      * @param  maxDistance               DOCUMENT ME!
      */
     public CreateLinearReferencedLineListener(final MappingComponent mc,
             final CreateStationLineListener geometryFinishedListener,
             final MetaClass acceptedRoute,
+            final String routeName,
             final float minDistance,
             final float maxDistance) {
+        this(mc, geometryFinishedListener, acceptedRoute, routeName, minDistance, maxDistance, null);
+    }
+
+    /**
+     * Creates a new CreateLinearReferencedLineListener object.
+     *
+     * @param  mc                        DOCUMENT ME!
+     * @param  geometryFinishedListener  DOCUMENT ME!
+     * @param  acceptedRoute             DOCUMENT ME!
+     * @param  routeName                 DOCUMENT ME!
+     * @param  minDistance               DOCUMENT ME!
+     * @param  maxDistance               DOCUMENT ME!
+     * @param  check                     DOCUMENT ME!
+     */
+    public CreateLinearReferencedLineListener(final MappingComponent mc,
+            final CreateStationLineListener geometryFinishedListener,
+            final MetaClass acceptedRoute,
+            final String routeName,
+            final float minDistance,
+            final float maxDistance,
+            final StationCreationCheck check) {
         super(mc);
         mcModus = CREATE_LINEAR_REFERENCED_LINE_MODE;
         this.lineFinishedListener = geometryFinishedListener;
@@ -85,12 +109,16 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
         this.maxDistance = maxDistance;
         if (getSelectedLinePFeature() == null) {
             JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
-                "Bevor Sie ein neues Objekt anlegen können, \nmüssen Sie ein Objekt vom Typ "
-                        + acceptedRoute.getName()
-                        + " markieren.",
-                "Keine Route markiert",
+                "Sie müssen genau ein "
+                        + routeName
+                        + " wählen.",
+                "Fehler Thema-/Gewässerwahl",
                 JOptionPane.WARNING_MESSAGE);
             lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
+        } else {
+            if ((check != null) && !check.isRouteValid(getSelectedLinePFeature())) {
+                lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
+            }
         }
     }
 
@@ -125,6 +153,10 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
 
                     final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
                     lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);
+                    counter = 0;
+                } else {
+                    // the last click was not valid. So restore the ounter
+                    --counter;
                 }
             }
         }

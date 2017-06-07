@@ -124,7 +124,9 @@ public class PointAndStationCreator extends AbstractFeatureCreator {
 
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
-                                            fillFeatureWithDefaultValues((DefaultFeatureServiceFeature)feature);
+                                            fillFeatureWithDefaultValues(
+                                                (DefaultFeatureServiceFeature)feature,
+                                                properties);
                                             final WaitingDialogThread dia = new WaitingDialogThread<Void>(
                                                     null,
                                                     true,

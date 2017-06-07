@@ -15,6 +15,7 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
+import Sirius.server.localserver.attribute.ObjectAttribute;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
@@ -26,6 +27,8 @@ import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.nodes.PImage;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Exceptions;
 
 import java.awt.Color;
 
@@ -51,6 +54,8 @@ import de.cismet.cids.server.cidslayer.StationInfo;
 
 import de.cismet.cids.tools.tostring.CidsLayerFeatureToStringConverter;
 import de.cismet.cids.tools.tostring.ToStringConverter;
+
+import de.cismet.cids.utils.ClassloadingHelper;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.WorldToScreenTransform;
@@ -117,6 +122,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                             }
                         }
                     }
+                }
+                if (evt.getSource() instanceof TableStationEditor) {
+                    final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
+                    final TableStationEditor stat = (TableStationEditor)evt.getSource();
+                    final String routeProperty = stat.getStationProperty();
+                    String routeName = null;
+
+                    if (stat.getCidsBean() != null) {
+                        routeName = helper.getRouteNameFromStationBean(stat.getCidsBean());
+                    }
+
+                    setProperty(routeProperty, routeName);
                 }
             }
         };
@@ -198,17 +215,33 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      */
     public void syncWithBean() {
         final CidsBean bean = metaObject.getBean();
-        final HashMap<String, Object> props = new HashMap<String, Object>();
 
         for (final String propName : bean.getPropertyNames()) {
-            props.put(propName, bean.getProperty(propName));
+            setProperty(propName, bean.getProperty(propName));
 
             if (propName.equals(layerInfo.getIdField())) {
                 setId((Integer)bean.getProperty(propName));
             }
-        }
+            if (propName.equals(layerInfo.getGeoField())) {
+                // clone the geom object
+                final Object geomObject = bean.getProperty(propName);
 
-        setProperties(props);
+                if (geomObject instanceof CidsBean) {
+                    final MetaObject mo = ((CidsBean)geomObject).getMetaObject().getMetaClass().getEmptyInstance();
+
+                    for (final ObjectAttribute oa : mo.getAttribs()) {
+                        if (!oa.isPrimaryKey() && !oa.isArray()) {
+                            try {
+                                mo.getBean().setProperty(oa.getKey().toString(), oa.getValue());
+                            } catch (Exception ex) {
+                                LOG.error("Cannot copy attribute", ex);
+                            }
+                        }
+                    }
+                    setProperty(propName, mo.getBean());
+                }
+            }
+        }
     }
 
     @Override
@@ -268,18 +301,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if (oldEditableStatus != editable) {
             modified = false;
             if (!editable && (stations != null)) {
-                for (final String key : stations.keySet()) {
-                    final DisposableCidsBeanStore editor = stations.get(key);
-
-                    if (editor instanceof TableLinearReferencedLineEditor) {
-                        ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
-                    }
-
-                    if (stations.get(key) != null) {
-                        stations.get(key).dispose();
-                    }
-                }
-                stations.clear();
+                removeStations();
 
                 if ((getLayerProperties().getAttributeTableRuleSet() != null)
                             && getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
@@ -302,65 +324,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             if (editable) {
                 backupProperties = (HashMap)super.getProperties().clone();
                 if (hasStations()) {
-                    try {
-                        for (int i = 0; i < layerInfo.getColumnNames().length; ++i) {
-                            final String col = layerInfo.getColumnNames()[i];
-                            if (layerInfo.isStation(col)) {
-                                final StationInfo statInfo = layerInfo.getStationInfo(col);
-
-                                if (statInfo.isStationLine()) {
-                                    if (stations == null) {
-                                        stations = new HashMap<String, DisposableCidsBeanStore>();
-                                    }
-                                    TableLinearReferencedLineEditor st = (TableLinearReferencedLineEditor)stations.get(
-                                            String.valueOf(statInfo.getLineId()));
-
-                                    if (st == null) {
-                                        final String colName = layerInfo.getColumnPropertyNames()[i];
-                                        final String statField = colName.substring(0, colName.indexOf("."));
-                                        final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                                    .getProperty(colName.substring(0, colName.indexOf(".")));
-                                        st = new TableLinearReferencedLineEditor(statInfo.getRouteTable(),
-                                                this,
-                                                statInfo.getRoutePropertyName());
-                                        st.setOtherLinesFrom(metaClass.getTableName());
-                                        st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
-                                        st.setCidsBean(bean);
-                                        st.addPropertyChangeListener(propListener);
-                                        backgroundColor = st.getLineColor();
-
-                                        stations.put(String.valueOf(statInfo.getLineId()), st);
-                                    }
-
-                                    if (statInfo.isFromStation()) {
-                                        stations.put(col, st.getFromStation());
-                                    } else {
-                                        stations.put(col, st.getToStation());
-                                    }
-                                } else {
-                                    if (stations == null) {
-                                        stations = new HashMap<String, DisposableCidsBeanStore>();
-                                    }
-                                    final String colName = layerInfo.getColumnPropertyNames()[i];
-                                    final String statField = colName.substring(0, colName.indexOf("."));
-                                    final CidsBean bean = (CidsBean)getMetaObject().getBean()
-                                                .getProperty(colName.substring(0, colName.indexOf(".")));
-                                    final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable(),
-                                            this,
-                                            statInfo.getRoutePropertyName());
-                                    st.setOtherLinesFrom(metaClass.getTableName());
-                                    st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
-                                    st.setCidsBean(bean);
-                                    st.addPropertyChangeListener(propListener);
-//                                        backgroundColor = st.getLineColor();
-
-                                    stations.put(col, st);
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        LOG.error("Error while retrieving meta object", e);
-                    }
+                    initStations();
 
                     if ((getLayerProperties().getAttributeTableRuleSet() != null)
                                 && getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
@@ -372,7 +336,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 //                        backgroundColor = new Color(255, 91, 0);
                     }
                 } else {
-                    backupGeometry = (Geometry)getGeometry().clone();
+                    if (getGeometry() != null) {
+                        backupGeometry = (Geometry)getGeometry().clone();
+                    }
                     backupProperties = (HashMap)super.getProperties().clone();
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
@@ -413,6 +379,114 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 }
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void initStations() {
+        try {
+            for (int i = 0; i < layerInfo.getColumnNames().length; ++i) {
+                final String col = layerInfo.getColumnNames()[i];
+
+                if (layerInfo.isStation(col)) {
+                    final String colName = layerInfo.getColumnPropertyNames()[i];
+                    final CidsBean bean = (CidsBean)getMetaObject().getBean()
+                                .getProperty(colName.substring(0, colName.indexOf(".")));
+                    final StationInfo statInfo = layerInfo.getStationInfo(col);
+
+                    if (bean == null) {
+                        continue;
+                    }
+
+                    if (statInfo.isStationLine()) {
+                        if (stations == null) {
+                            stations = new HashMap<String, DisposableCidsBeanStore>();
+                        }
+                        TableLinearReferencedLineEditor st = (TableLinearReferencedLineEditor)stations.get(
+                                String.valueOf(statInfo.getLineId()));
+
+                        if (st == null) {
+                            final String statField = colName.substring(0, colName.indexOf("."));
+                            st = new TableLinearReferencedLineEditor(statInfo.getRouteTable(),
+                                    this,
+                                    statInfo.getRoutePropertyName());
+                            st.setOtherLinesFrom(metaClass.getTableName());
+                            st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
+
+//                            if (bean == null) {
+//                                final HashMap attribs = metaClass.getMemberAttributeInfos();
+//                                final String statName = colName.substring(0, colName.indexOf("."));
+//
+//                                for (final Object key : attribs.keySet()) {
+//                                    final MemberAttributeInfo attr = (MemberAttributeInfo)attribs.get(key);
+//                                    final LinearReferencingHelper helper = FeatureRegistry.getInstance()
+//                                                .getLinearReferencingSolver();
+//
+//                                    if (attr.getName().equalsIgnoreCase(statName)) {
+//                                        final MetaClass lineClass = getMetaClass(
+//                                                attr.getForeignKeyClassId());
+//                                        bean = lineClass.getEmptyInstance().getBean();
+//                                        final MetaClass stationClass = getMetaClass(bean.getMetaObject()
+//                                                        .getAttributeByFieldName("von").getMai()
+//                                                        .getForeignKeyClassId());
+//                                        bean.setProperty("von", stationClass.getEmptyInstance().getBean());
+//                                        bean.setProperty("bis", stationClass.getEmptyInstance().getBean());
+//                                    }
+//                                }
+//                            }
+
+                            st.setCidsBean(bean);
+                            st.addPropertyChangeListener(propListener);
+                            backgroundColor = st.getLineColor();
+
+                            stations.put(String.valueOf(statInfo.getLineId()), st);
+                        }
+
+                        if (statInfo.isFromStation()) {
+                            stations.put(col, st.getFromStation());
+                        } else {
+                            stations.put(col, st.getToStation());
+                        }
+                    } else {
+                        if (stations == null) {
+                            stations = new HashMap<String, DisposableCidsBeanStore>();
+                        }
+                        final String statField = colName.substring(0, colName.indexOf("."));
+                        final TableStationEditor st = new TableStationEditor(statInfo.getRouteTable(),
+                                this,
+                                statInfo.getRoutePropertyName());
+                        st.setOtherLinesFrom(metaClass.getTableName());
+                        st.setOtherLinesQuery(metaClass.getTableName() + "." + statField + " = ");
+                        st.setCidsBean(bean);
+                        st.addPropertyChangeListener(propListener);
+//                                        backgroundColor = st.getLineColor();
+
+                        stations.put(col, st);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error while retrieving meta object", e);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void removeStations() {
+        for (final String key : stations.keySet()) {
+            final DisposableCidsBeanStore editor = stations.get(key);
+
+            if (editor instanceof TableLinearReferencedLineEditor) {
+                ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
+            }
+
+            if (stations.get(key) != null) {
+                stations.get(key).dispose();
+            }
+        }
+        stations.clear();
     }
 
     /**
@@ -572,8 +646,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 if (info.isStationLine()) {
                     if (stations != null) {
                         final DisposableCidsBeanStore store = stations.get(String.valueOf(info.getLineId()));
-                        bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
-                            store.getCidsBean());
+                        if (store != null) {
+                            bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
+                                store.getCidsBean());
+                        } else {
+                            bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
+                                null);
+                        }
                     } else {
                         if (getProperty(key) != null) {
                             bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
@@ -686,24 +765,43 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public boolean hasWritePermissions() {
-        try {
-            final User usr = SessionManager.getSession().getUser();
-            boolean groupPermission = false;
-            final PermissionHolder ph = getMetaObject().getMetaClass().getPermissions();
+//        try {
+        final User usr = SessionManager.getSession().getUser();
+        boolean groupPermission = false;
+        final PermissionHolder ph = metaClass.getPermissions();
 
-            if (ph != null) {
-                groupPermission = ph.hasWritePermission(usr);
+        if (ph != null) {
+            groupPermission = ph.hasWritePermission(usr);
+        }
+        if (groupPermission) {
+            final Class cl = ClassloadingHelper.getDynamicClass(
+                    metaClass,
+                    ClassloadingHelper.CLASS_TYPE.PERMISSION_PROVIDER);
+
+            if (cl != null) {
+                final Object o;
+                try {
+                    o = cl.newInstance();
+
+                    if (o instanceof CidsLayerPermissionProvider) {
+                        final CidsLayerPermissionProvider permissionProvider = (CidsLayerPermissionProvider)o;
+                        return permissionProvider.getCustomCidsLayerWritePermissionDecisionforUser(usr, this);
+                    }
+                } catch (Exception ex) {
+                    LOG.error("Error while checking write permission", ex);
+                    return false;
+                }
             }
 
-            if (groupPermission) {
-                return getMetaObject().hasObjectWritePermission(usr);
-            } else {
-                return false;
-            }
-        } catch (ConnectionException e) {
-            LOG.error("Error during permission determination", e);
+            return true;
+//                return getMetaObject().hasObjectWritePermission(usr);
+        } else {
             return false;
         }
+//        } catch (ConnectionException e) {
+//            LOG.error("Error during permission determination", e);
+//            return false;
+//        }
     }
 
     @Override
@@ -742,7 +840,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     /**
-     * Copies all properties of the feature into the bean. This is required, if the feautre is new, so that no cids bean
+     * Copies all properties of the feature into the bean. This is required, if the feature is new, so that no cids bean
      * exists on the server.
      */
     private void copyFeaturePropertiesToMetaObject() {
@@ -968,6 +1066,15 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     */
+    public CidsLayerInfo getLayerInfo() {
+        return layerInfo;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   columnName  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -981,6 +1088,27 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
         if (store instanceof TableStationEditor) {
             return (TableStationEditor)store;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   lineId  columnName DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public TableLinearReferencedLineEditor getLineEditorEditor(final int lineId) {
+        if (stations == null) {
+            return null;
+        }
+
+        final DisposableCidsBeanStore store = stations.get(String.valueOf(lineId));
+
+        if (store instanceof TableLinearReferencedLineEditor) {
+            return (TableLinearReferencedLineEditor)store;
         } else {
             return null;
         }

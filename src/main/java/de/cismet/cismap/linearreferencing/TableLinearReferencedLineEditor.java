@@ -26,6 +26,8 @@ import java.util.List;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
+import de.cismet.cismap.cidslayer.CidsLayerFeature;
+
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedLineFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -86,17 +88,19 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     public void setCidsBean(final CidsBean cidsBean) {
         this.cidsBean = cidsBean;
 
-        if (cidsBean != null) {
-            fromStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
-            toStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
-            if ((otherLinesFrom != null) && (otherLinesQuery != null)) {
-                fromStation.setOtherLinesFrom(otherLinesFrom);
-                fromStation.setOtherLinesQuery(otherLinesQuery);
-                toStation.setOtherLinesFrom(otherLinesFrom);
-                toStation.setOtherLinesQuery(otherLinesQuery);
-            }
-            fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
-            toStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, false));
+//        if (cidsBean != null) {
+        fromStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
+        toStation = new TableStationEditor(true, cidsBean, routeName, parentFeature, stationProperty);
+        if ((otherLinesFrom != null) && (otherLinesQuery != null)) {
+            fromStation.setOtherLinesFrom(otherLinesFrom);
+            fromStation.setOtherLinesQuery(otherLinesQuery);
+            toStation.setOtherLinesFrom(otherLinesFrom);
+            toStation.setOtherLinesQuery(otherLinesQuery);
+        }
+        fromStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, true));
+        toStation.setCidsBean(linearReferencedHelper.getStationBeanFromLineBean(cidsBean, false));
+
+        if (fromStation.getStationFeature() != null) {
             lineFeature = FeatureRegistry.getInstance()
                         .addLinearReferencedLineFeature(
                                 cidsBean,
@@ -105,14 +109,14 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
             lineColor = FeatureRegistry.getNextColor(cidsBean);
             lineFeature.setLinePaint(getLineColor());
-
-            fromStation.addPropertyChangeListener(this);
-            toStation.addPropertyChangeListener(this);
-
-            valueProperty = linearReferencedHelper.getValueProperty(linearReferencedHelper.getStationBeanFromLineBean(
-                        cidsBean,
-                        false));
         }
+        fromStation.addPropertyChangeListener(this);
+        toStation.addPropertyChangeListener(this);
+
+        valueProperty = linearReferencedHelper.getValueProperty(linearReferencedHelper.getStationBeanFromLineBean(
+                    cidsBean,
+                    false));
+//        }
     }
 
     /**
@@ -143,7 +147,11 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
             toStation.removePropertyChangeListener(this);
         }
 
-        recreateGeometry();
+        try {
+            recreateGeometry();
+        } catch (Exception e) {
+            LOG.warn("Cannot recreate geometry.", e);
+        }
         if (cidsBean != null) {
             FeatureRegistry.getInstance().removeLinearReferencedLineFeature(cidsBean);
         }
@@ -181,8 +189,12 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
      */
     @Override
     public void undoChanges() {
-        fromStation.undoChanges();
-        toStation.undoChanges();
+        if (fromStation != null) {
+            fromStation.undoChanges();
+        }
+        if (fromStation != null) {
+            toStation.undoChanges();
+        }
     }
 
     /**

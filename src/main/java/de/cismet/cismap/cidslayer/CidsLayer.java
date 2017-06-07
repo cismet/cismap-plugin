@@ -20,8 +20,6 @@ import org.deegree.style.se.unevaluated.Style;
 
 import org.jdom.Element;
 
-import org.openide.util.Exceptions;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -30,8 +28,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
-
-import de.cismet.cids.search.QuerySearchMethod;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
@@ -81,6 +77,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private String tableName;
     private MetaClass metaClass;
     private String metaDocumentLink;
+    private boolean downloadAllowed;
     private String geometryType = AbstractFeatureService.UNKNOWN;
     private Integer maxFeaturesPerPage = null;
     private Double maxArea = null;
@@ -99,6 +96,10 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         query = cl.getQuery();
         metaClass = cl.metaClass;
         metaDocumentLink = cl.metaDocumentLink;
+        downloadAllowed = cl.downloadAllowed;
+        maxFeaturesPerPage = cl.maxFeaturesPerPage;
+        maxArea = cl.maxArea;
+        maxScale = cl.maxScale;
         setAttributeTableRuleSet();
         // sldDefinition = cl.sldDefinition;
     }
@@ -113,6 +114,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public CidsLayer(final Element e) throws Exception {
         super(e);
         additionalInitializationFromElement(e);
+        evaluateClassAttributes();
         // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml")); name = "CidsLayer";
         // cidsStatement = new CidsLayerSearchStatement();
     }
@@ -130,13 +132,22 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         tableName = clazz.getTableName();
         metaClass = clazz;
         setAttributeTableRuleSet();
-        final ClassAttribute metaDocumentAttr = metaClass.getClassAttribute("metaDocument");
+        evaluateClassAttributes();
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void evaluateClassAttributes() {
+        final ClassAttribute metaDocumentAttr = getMetaClass().getClassAttribute("metaDocument");
 
         if ((metaDocumentAttr != null) && (metaDocumentAttr.getValue() != null)) {
             metaDocumentLink = metaDocumentAttr.getValue().toString();
         }
 
-        final ClassAttribute maxPageSizeAttr = metaClass.getClassAttribute("maxPageSize");
+        final ClassAttribute maxPageSizeAttr = getMetaClass().getClassAttribute("maxPageSize");
 
         if ((maxPageSizeAttr != null) && (maxPageSizeAttr.getValue() != null)) {
             try {
@@ -148,10 +159,50 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             }
         }
 
-        // sldDefinition = new InputStreamReader(getClass().getResourceAsStream("/testSLD.xml"));
-    }
+        try {
+            String camalizedName = DefaultLayerProperties.camelize(getMetaClass().getName());
+            camalizedName = String.valueOf(camalizedName.charAt(0)).toLowerCase() + camalizedName.substring(1);
+            final String downloadForbiddenName = camalizedName + "DownloadForbidden";
+            final String attrForbidden = SessionManager.getProxy()
+                        .getConfigAttr(SessionManager.getSession().getUser(), downloadForbiddenName);
 
-    //~ Methods ----------------------------------------------------------------
+            if (attrForbidden != null) {
+                final String downloadAllowedName = camalizedName + "DownloadAllowed";
+                final String attrAllowed = SessionManager.getProxy()
+                            .getConfigAttr(SessionManager.getSession().getUser(), downloadAllowedName);
+                downloadAllowed = (attrAllowed != null);
+            } else {
+                downloadAllowed = true;
+            }
+        } catch (Exception e) {
+            LOG.error("Error while checking the download permissions", e);
+            downloadAllowed = false;
+        }
+
+        final ClassAttribute areaAttr = metaClass.getClassAttribute("maxArea");
+
+        if ((areaAttr != null) && (areaAttr.getValue() != null)) {
+            try {
+                maxArea = Double.parseDouble(areaAttr.getValue().toString());
+            } catch (Exception e) {
+                LOG.error("the max scale attribute does not contain a valid number: "
+                            + areaAttr.getValue().toString(),
+                    e);
+            }
+        }
+
+        final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxScale");
+
+        if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
+            try {
+                maxScale = Double.parseDouble(scaleAttr.getValue().toString());
+            } catch (Exception e) {
+                LOG.error("the max scale attribute does not contain a valid number: "
+                            + scaleAttr.getValue().toString(),
+                    e);
+            }
+        }
+    }
 
     @Override
     protected LayerProperties createLayerProperties() {
@@ -222,6 +273,10 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     @Override
     public void setQuery(final String query) {
         this.query = query;
+
+        if (featureFactory != null) {
+            ((CidsFeatureFactory)featureFactory).initEnvelope(query);
+        }
     }
 
     @Override
@@ -259,13 +314,6 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             parentElement.addContent(queryElement);
         }
 
-        if (metaDocumentLink != null) {
-            parentElement.setAttribute("metaDocumentLink", metaDocumentLink);
-        }
-
-        if (maxFeaturesPerPage != null) {
-            parentElement.setAttribute("maxFeaturesPerPage", maxFeaturesPerPage.toString());
-        }
         return parentElement;
     }
 
@@ -289,49 +337,10 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         if (queryText != null) {
             setQuery(queryText);
         }
-
-        metaDocumentLink = element.getAttributeValue("metaDocumentLink");
-        try {
-            if (element.getAttributeValue("maxFeaturesPerPage") != null) {
-                maxFeaturesPerPage = Integer.parseInt(element.getAttributeValue("maxFeaturesPerPage"));
-            }
-        } catch (NumberFormatException e) {
-            LOG.warn("maxFeaturesPerPage attribute has an invalid value: "
-                        + element.getAttributeValue("maxFeaturesPerPage"),
-                e);
-        }
     }
 
     @Override
     public boolean isVisibleInBoundingBox(final XBoundingBox box) {
-        if ((getMaxArea() == null) && (metaClass != null)) {
-            final ClassAttribute areaAttr = metaClass.getClassAttribute("maxArea");
-
-            if ((areaAttr != null) && (areaAttr.getValue() != null)) {
-                try {
-                    maxArea = Double.parseDouble(areaAttr.getValue().toString());
-                } catch (Exception e) {
-                    LOG.error("the max scale attribute does not contain a valid number: "
-                                + areaAttr.getValue().toString(),
-                        e);
-                }
-            }
-        }
-
-        if ((getMaxScale() == null) && (metaClass != null)) {
-            final ClassAttribute scaleAttr = metaClass.getClassAttribute("maxScale");
-
-            if ((scaleAttr != null) && (scaleAttr.getValue() != null)) {
-                try {
-                    maxScale = Double.parseDouble(scaleAttr.getValue().toString());
-                } catch (Exception e) {
-                    LOG.error("the max scale attribute does not contain a valid number: "
-                                + scaleAttr.getValue().toString(),
-                        e);
-                }
-            }
-        }
-
         if (((getMaxArea() != null) || (getMaxScale() != null)) && (box != null)) {
             Geometry bbox = box.getGeometry();
             bbox = CrsTransformer.transformToMetricCrs(bbox);
@@ -529,5 +538,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public Double getMaxScale() {
         return maxScale;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the downloadAllowed
+     */
+    public boolean isDownloadAllowed() {
+        return downloadAllowed;
     }
 }

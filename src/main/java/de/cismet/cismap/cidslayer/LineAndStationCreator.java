@@ -74,6 +74,8 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
     private final String stationProperty;
     private final MetaClass routeClass;
     private final LinearReferencingHelper helper;
+    private float minDistance = 0;
+    private float maxDistance = Float.MAX_VALUE;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -103,8 +105,6 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
 
                 @Override
                 public void run() {
-                    final String oldInteractionMode = mc.getInteractionMode();
-
                     final CreateNewGeometryListener listener = new CreaterGeometryListener(
                             mc,
                             new GeometryFinishedListener() {
@@ -116,7 +116,9 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
 
                                     if (feature instanceof DefaultFeatureServiceFeature) {
                                         try {
-                                            fillFeatureWithDefaultValues((DefaultFeatureServiceFeature)feature);
+                                            fillFeatureWithDefaultValues(
+                                                (DefaultFeatureServiceFeature)feature,
+                                                properties);
                                             final WaitingDialogThread dia = new WaitingDialogThread<Void>(
                                                     null,
                                                     true,
@@ -132,7 +134,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
                                                                 g.getCoordinates()[0],
                                                                 g.getFactory());
                                                         final Geometry lastPoint = createPointFromCoords(
-                                                                g.getCoordinates()[g.getNumPoints()],
+                                                                g.getCoordinates()[g.getNumPoints() - 1],
                                                                 g.getFactory());
                                                         ;
                                                         final String query = String.format(

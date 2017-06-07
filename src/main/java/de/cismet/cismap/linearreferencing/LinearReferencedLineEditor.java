@@ -70,6 +70,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import de.cismet.cids.dynamics.CidsBean;
+import de.cismet.cids.dynamics.CidsBeanStore;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
 import de.cismet.cids.editors.EditorClosedEvent;
@@ -196,6 +197,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private boolean allowDoubleValues = true;
     private boolean routesComboInitialised = false;
     private String routeMetaClassName;
+    private CidsBeanStore cidsBeanStore;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnFromBadGeom;
@@ -294,6 +296,34 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                     }
                 }
             });
+        cbPossibleRoute.setRenderer(new DefaultListCellRenderer() {
+
+                @Override
+                public Component getListCellRendererComponent(final JList list,
+                        final Object value,
+                        final int index,
+                        final boolean isSelected,
+                        final boolean cellHasFocus) {
+                    Object newValue = value;
+
+                    if (value instanceof CidsLayerFeature) {
+                        final Object prop = ((CidsLayerFeature)value).getProperty(routeNamePropertyName);
+
+                        if (prop != null) {
+                            newValue = String.valueOf(prop);
+                        }
+                    } else {
+                        if (value != null) {
+                            newValue = value.toString();
+                        } else {
+                            newValue = " ";
+                        }
+                    }
+
+                    return super.getListCellRendererComponent(list, newValue, index, isSelected, cellHasFocus);
+                }
+            });
+
         setEditable(isEditable);
         setDrawingFeaturesEnabled(isDrawingFeaturesEnabled);
 
@@ -636,7 +666,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 initPoint(FROM);
                 initPoint(TO);
 
-                if (isDrawingFeaturesEnabled()) {
+                if (isDrawingFeaturesEnabled() && (linearReferencingHelper.getGeomBeanFromLineBean(lineBean) != null)) {
                     // feature erzeugen
                     final LinearReferencedLineFeature lineFeature = FEATURE_REGISTRY.addLinearReferencedLineFeature(
                             lineBean,
@@ -662,10 +692,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                     btnRoute.setText(routeText);
                 }
 
-                showCard(Card.edit);
+                if (linearReferencingHelper.getGeomBeanFromLineBean(lineBean) != null) {
+                    showCard(Card.edit);
 
-                updateOtherLinesPanelVisibility();
-
+                    updateOtherLinesPanelVisibility();
+                }
                 setInited(true);
             } else {
                 if (isEditable()) {
@@ -684,8 +715,10 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isFrom  DOCUMENT ME!
      */
     private void initSpinner(final boolean isFrom) {
-        ((SpinnerNumberModel)getPointSpinner(isFrom).getModel()).setMaximum(Math.ceil(
-                getRouteGeometry().getLength()));
+        if (getRouteGeometry() != null) {
+            ((SpinnerNumberModel)getPointSpinner(isFrom).getModel()).setMaximum(Math.ceil(
+                    getRouteGeometry().getLength()));
+        }
     }
 
     /**
@@ -748,6 +781,22 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         // neu initialisieren
         initLine();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  cidsBeanStore  DOCUMENT ME!
+     * @param  line           DOCUMENT ME!
+     */
+    public void setCidsBeanStore(final CidsBeanStore cidsBeanStore, final CidsBean line) {
+        this.cidsBeanStore = cidsBeanStore;
+
+        if (line != null) {
+            setCidsBean(line);
+        } else {
+            setCidsBean(null);
+        }
     }
 
     /**
@@ -898,7 +947,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * DOCUMENT ME!
      */
     private void updateOtherLinesOnBaseline() {
-        if (getLineBean() != null) {
+        if ((getLineBean() != null) && (getLineBean().getProperty("von.route.id") != null)) {
             if (otherLines == null) {
                 final int route_id = (Integer)getLineBean().getProperty("von.route.id");
                 final int id = (Integer)getLineBean().getProperty("id");
@@ -1232,7 +1281,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 }
             }
 
-            if (isDrawingFeaturesEnabled()) {
+            if (isDrawingFeaturesEnabled()
+                        && (linearReferencingHelper.getPointGeometryFromStationBean(pointBean) != null)) {
                 FEATURE_REGISTRY.addListener(pointBean, getFeatureRegistryListener(isFrom));
 
                 // feature erzeugen
@@ -1602,21 +1652,23 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             final CidsBean pointBean = getPointBean(isFrom);
 
             if (pointBean != null) {
-                final double value = (Double)pointBean.getProperty(PROP_STATION_VALUE);
+                final Double value = (Double)pointBean.getProperty(PROP_STATION_VALUE);
 
-                if (isEditable()) {
-                    setPointValueToSpinner(value, isFrom);
-                } else {
-                    setPointValueToLabel(value, isFrom);
-                }
+                if (value != null) {
+                    if (isEditable()) {
+                        setPointValueToSpinner(value, isFrom);
+                    } else {
+                        setPointValueToLabel(value, isFrom);
+                    }
 
-                if (isDrawingFeaturesEnabled()) {
-                    setPointValueToFeature(value, isFrom);
-                }
+                    if (isDrawingFeaturesEnabled()) {
+                        setPointValueToFeature(value, isFrom);
+                    }
 
-                // realgeoms nur nach manueller eingabe updaten
-                if (isInited()) {
-                    updateRealGeoms(isFrom);
+                    // realgeoms nur nach manueller eingabe updaten
+                    if (isInited()) {
+                        updateRealGeoms(isFrom);
+                    }
                 }
             }
         } finally {
@@ -2669,6 +2721,9 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {
                     setLineBeanFromRouteBean(routeBean);
                     setChangedSinceDrop(false);
+                }
+                if (cidsBeanStore != null) {
+                    cidsBeanStore.setCidsBean(cidsBean);
                 }
                 if (isAutoZoomActivated) {
                     zoomToFeatureCollection(getZoomFeatures());
