@@ -1145,7 +1145,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     public void setParentFeature(final FeatureServiceFeature parentFeature) {
         this.parentFeature = parentFeature;
-        setButRemoveVisibility();
+//        setButRemoveVisibility();
     }
 
     /**
@@ -1164,6 +1164,6 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      */
     public void setStationProperty(final String stationProperty) {
         this.stationProperty = stationProperty;
-        setButRemoveVisibility();
+//        setButRemoveVisibility();
     }
 }

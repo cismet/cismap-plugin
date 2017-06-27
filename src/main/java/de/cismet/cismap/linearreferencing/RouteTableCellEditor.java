@@ -292,7 +292,12 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
         if (newValue == null) {
             return null;
         } else {
-            return String.valueOf(((CidsLayerFeature)newValue).getProperty(routeNamePropName));
+            if (newValue instanceof String) {
+                // the routes are still loading
+                return oldValue;
+            } else {
+                return String.valueOf(((CidsLayerFeature)newValue).getProperty(routeNamePropName));
+            }
         }
     }
 

@@ -64,7 +64,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
     private CidsBean geometryBean;
     private MetaObjectNode metaObjectNode;
     private MetaClass metaClass;
-    private CismapPlugin cismap;
     private Feature selectedFeature = null;
     private CidsFeature cidsFeature = null;
     private CismapGeometryComboModel comboModel = null;
@@ -86,23 +85,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      * @param  editable  DOCUMENT ME!
      */
     public DefaultCismapGeometryComboBoxEditor(final boolean editable) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("cismap: " + PluginRegistry.getRegistry().getPlugin(CISMAP_PLUGIN_ID)); // NOI18N
-        }
-
-        if (editable) {
-            try {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("getting & setting plugin"); // NOI18N
-                }
-
-                cismap = (CismapPlugin)PluginRegistry.getRegistry().getPlugin(CISMAP_PLUGIN_ID);
-            } catch (final Exception e) {
-                LOG.error("Error during init of " + this.getClass(), e); // NOI18N
-                // TODO: isn't that a reason to cancel init?
-            }
-        }
-
         comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
         setModel(comboModel);
         setRenderer(new FeatureComboBoxRenderer());
@@ -329,32 +311,6 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
     @Override
     public Validator getValidator() {
         return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public CismapPlugin getCismap() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("getting plugin: " + cismap); // NOI18N
-        }
-
-        return cismap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  cismap  DOCUMENT ME!
-     */
-    public void setCismap(final CismapPlugin cismap) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("setting plugin to: " + cismap); // NOI18N
-        }
-
-        this.cismap = cismap;
     }
 
     /**

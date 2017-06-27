@@ -97,7 +97,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
             boolean hasNotNewObject = false;
 
             for (final Feature f : features) {
-                if (((CidsLayerFeature)f).getId() != -1) {
+                if (((CidsLayerFeature)f).getId() > 0) {
                     hasNotNewObject = true;
                 }
             }
