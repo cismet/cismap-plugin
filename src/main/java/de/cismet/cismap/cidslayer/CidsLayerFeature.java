@@ -232,7 +232,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     for (final ObjectAttribute oa : mo.getAttribs()) {
                         if (!oa.isPrimaryKey() && !oa.isArray()) {
                             try {
-                                mo.getBean().setProperty(oa.getKey().toString(), oa.getValue());
+                                mo.getBean()
+                                        .setProperty(oa.getMai().getFieldName().toLowerCase(),
+                                            ((CidsBean)geomObject).getProperty(
+                                                oa.getMai().getFieldName().toLowerCase()));
                             } catch (Exception ex) {
                                 LOG.error("Cannot copy attribute", ex);
                             }

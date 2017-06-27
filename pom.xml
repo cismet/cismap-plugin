@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0</version>
+                <version>5.0.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0</version>
+                <version>5.0.2</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.0.4</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.0.4</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
