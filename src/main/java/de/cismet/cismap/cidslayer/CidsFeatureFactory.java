@@ -392,7 +392,8 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                     try {
                         final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(
                                 metaClass,
-                                SessionManager.getSession().getUser());
+                                SessionManager.getSession().getUser(),
+                                query);
                         final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager
                                     .getProxy().customServerSearch(SessionManager.getSession().getUser(), serverSearch);
                         final String crs = CismapBroker.getInstance().getDefaultCrs();
