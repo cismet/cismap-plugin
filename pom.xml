@@ -97,7 +97,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0.4</version>
+                <version>5.0.5</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
