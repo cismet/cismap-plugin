@@ -166,7 +166,7 @@ public class RouteCombo extends javax.swing.JPanel {
      *
      * @param  value  DOCUMENT ME!
      */
-    private void fillRoutesCombo(final Object value) {
+    public void fillRoutesCombo(final Object value) {
         routesComboInitialised = true;
         cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(

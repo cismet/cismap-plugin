@@ -180,14 +180,11 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
      * DOCUMENT ME!
      */
     public void refresh() {
-        if (log.isDebugEnabled()) {
-            log.debug("refreshing: " + editor.getCismap()); // NOI18N
-        }
         newFeaturesInMap = getAllNewFeatures();
         try {
             this.fireContentsChanged(this, 0, getSize() - 1);
         } catch (Throwable t) {
-            log.error("Error in refresh()", t);             // NOI18N
+            log.error("Error in refresh()", t); // NOI18N
         }
     }
 
@@ -200,8 +197,8 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
         // Vector<Feature> allFeatures =
         // CismapBroker.getInstance().getMappingComponent().getFeatureCollection().getAllFeatures();
         final List<Feature> allNewFeatures = new ArrayList<Feature>();
-        if (editor.getCismap() != null) {
-            final List<Feature> allFeatures = editor.getCismap()
+        if (CismapBroker.getInstance().getMappingComponent() != null) {
+            final List<Feature> allFeatures = CismapBroker.getInstance()
                         .getMappingComponent()
                         .getFeatureCollection()
                         .getAllFeatures();

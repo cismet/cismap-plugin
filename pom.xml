@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>5.0.2</version>
+    <version>5.0.3</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-        <tag>v5.0.2</tag>
+        <tag>v5.0.3</tag>
     </scm>
 
     <ciManagement>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0</version>
+                <version>5.0.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0</version>
+                <version>5.0.2</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.0.5</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>5.0</version>
+                <version>5.0.4</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
