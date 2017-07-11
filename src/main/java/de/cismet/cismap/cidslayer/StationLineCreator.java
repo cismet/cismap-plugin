@@ -199,7 +199,8 @@ public class StationLineCreator extends AbstractFeatureCreator {
                             routeClass,
                             routeName,
                             minDistance,
-                            maxDistance);
+                            maxDistance,
+                            check);
                     listener.setIdenticalPositionDelta(minDistance);
                     mc.addInputListener(
                         CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE,
@@ -217,5 +218,9 @@ public class StationLineCreator extends AbstractFeatureCreator {
     @Override
     public String getTypeName() {
         return "stationierte Linie";
+    }
+
+    @Override
+    public void cancel() {
     }
 }
