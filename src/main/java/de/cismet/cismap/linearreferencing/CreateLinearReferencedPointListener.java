@@ -24,7 +24,10 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
+import de.cismet.cismap.cidslayer.StationCreationCheck;
 
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.gui.MappingComponent;
@@ -32,6 +35,8 @@ import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateLinearReferencedMarksListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
+
+import de.cismet.tools.gui.StaticSwingTools;
 
 /**
  * DOCUMENT ME!
@@ -59,14 +64,32 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
      * @param  mc                     DOCUMENT ME!
      * @param  pointFinishedListener  DOCUMENT ME!
      * @param  acceptedRoute          DOCUMENT ME!
+     * @param  routeName              DOCUMENT ME!
+     * @param  check                  DOCUMENT ME!
      */
     public CreateLinearReferencedPointListener(final MappingComponent mc,
             final CreateStationListener pointFinishedListener,
-            final MetaClass acceptedRoute) {
+            final MetaClass acceptedRoute,
+            final String routeName,
+            final StationCreationCheck check) {
         super(mc);
         mcModus = CREATE_LINEAR_REFERENCED_POINT_MODE;
         this.pointFinishedListener = pointFinishedListener;
         this.acceptedRoute = acceptedRoute;
+
+        if (getSelectedLinePFeature() == null) {
+            JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
+                "Sie müssen genau ein "
+                        + routeName
+                        + " wählen.",
+                "Fehler Thema-/Gewässerwahl",
+                JOptionPane.WARNING_MESSAGE);
+            pointFinishedListener.pointFinished(null, null, 0);
+        } else {
+            if ((check != null) && !check.isRouteValid(getSelectedLinePFeature())) {
+                pointFinishedListener.pointFinished(null, null, 0);
+            }
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
