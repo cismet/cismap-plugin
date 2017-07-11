@@ -241,4 +241,8 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
     public String getTypeName() {
         return NbBundle.getMessage(LineAndStationCreator.class, "PointAndStationCreator.getTypeName()");
     }
+
+    @Override
+    public void cancel() {
+    }
 }

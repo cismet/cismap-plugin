@@ -56,6 +56,8 @@ public class StationCreator extends AbstractFeatureCreator {
     private final String property;
     private final MetaClass routeClass;
     private final LinearReferencingHelper helper;
+    private final String routeName;
+    private StationCreationCheck check;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,15 +66,38 @@ public class StationCreator extends AbstractFeatureCreator {
      *
      * @param  property    mode DOCUMENT ME!
      * @param  routeClass  DOCUMENT ME!
+     * @param  routeName   DOCUMENT ME!
      * @param  helper      DOCUMENT ME!
      */
-    public StationCreator(final String property, final MetaClass routeClass, final LinearReferencingHelper helper) {
+    public StationCreator(final String property,
+            final MetaClass routeClass,
+            final String routeName,
+            final LinearReferencingHelper helper) {
         this.property = property;
         this.routeClass = routeClass;
         this.helper = helper;
+        this.routeName = routeName;
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the check
+     */
+    public StationCreationCheck getCheck() {
+        return check;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  check  the check to set
+     */
+    public void setCheck(final StationCreationCheck check) {
+        this.check = check;
+    }
 
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
@@ -90,6 +115,10 @@ public class StationCreator extends AbstractFeatureCreator {
                                 public void pointFinished(final CidsBean route,
                                         Geometry pointGeom,
                                         final double point) {
+                                    if (route == null) {
+                                        // the creation was canceled
+                                        return;
+                                    }
 //                                    mc.setInteractionMode(oldInteractionMode);
                                     pointGeom = CrsTransformer.transformToDefaultCrs(pointGeom);
                                     pointGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
@@ -115,7 +144,9 @@ public class StationCreator extends AbstractFeatureCreator {
                                     }
                                 }
                             },
-                            routeClass);
+                            routeClass,
+                            routeName,
+                            check);
                     mc.addInputListener(
                         CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE,
                         listener);
@@ -132,5 +163,9 @@ public class StationCreator extends AbstractFeatureCreator {
     @Override
     public String getTypeName() {
         return "Station";
+    }
+
+    @Override
+    public void cancel() {
     }
 }

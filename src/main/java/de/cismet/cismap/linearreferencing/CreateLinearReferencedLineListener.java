@@ -107,6 +107,7 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
         this.acceptedRoute = acceptedRoute;
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
+
         if (getSelectedLinePFeature() == null) {
             JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
                 "Sie müssen genau ein "
@@ -153,6 +154,7 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
 
                     final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
                     lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);
+                    removeAllMarks();
                     counter = 0;
                 } else {
                     // the last click was not valid. So restore the ounter

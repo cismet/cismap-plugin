@@ -16,11 +16,8 @@ import Sirius.navigator.connection.SessionManager;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 
-import com.vividsolutions.jts.algorithm.PointLocator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 
 import org.apache.log4j.Logger;
@@ -36,23 +33,17 @@ import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
 
-import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
-import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
-import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
-import de.cismet.cismap.commons.gui.attributetable.FeatureCreator;
 import de.cismet.cismap.commons.gui.attributetable.creator.AbstractFeatureCreator;
 import de.cismet.cismap.commons.gui.attributetable.creator.CreaterGeometryListener;
 import de.cismet.cismap.commons.gui.attributetable.creator.GeometryFinishedListener;
-import de.cismet.cismap.commons.gui.attributetable.creator.PrimitiveGeometryCreator;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
-import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
@@ -212,5 +203,9 @@ public class PointAndStationCreator extends AbstractFeatureCreator {
     @Override
     public String getTypeName() {
         return NbBundle.getMessage(PointAndStationCreator.class, "PointAndStationCreator.getTypeName()");
+    }
+
+    @Override
+    public void cancel() {
     }
 }
