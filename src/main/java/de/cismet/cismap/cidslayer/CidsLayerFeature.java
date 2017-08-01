@@ -346,6 +346,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
                     SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
+                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unselect(this);
+                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addToSelection(this);
                     backgroundColor = new Color(255, 91, 0);
                 }
 
@@ -501,7 +503,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * @return  the underlaying object
      */
     public Object getPropertyObject(final String propertyName) {
-        if (layerInfo.isCatalogue(propertyName)) {
+        if (layerInfo.isCatalogue(propertyName) && (getCatalogueCombo(propertyName) != null)) {
             return getCatalogueCombo(propertyName).getSelectedItem();
         } else {
             return getProperty(propertyName);
@@ -696,6 +698,21 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         }
         // to decrease the memory usage
         metaObject = null;
+
+        fillBackupObjects();
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void fillBackupObjects() {
+        backupGeometry = null;
+        backupProperties = null;
+
+        if (getGeometry() != null) {
+            backupGeometry = (Geometry)getGeometry().clone();
+        }
+        backupProperties = (HashMap)super.getProperties().clone();
     }
 
     /**
@@ -764,6 +781,14 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final CidsBean bean = getMetaObject().getBean();
         bean.delete();
         bean.persist();
+    }
+
+    @Override
+    public void restore() throws Exception {
+        final CidsBean bean = getMetaObject().getBean();
+        bean.getMetaObject().setStatus(MetaObject.NEW);
+        bean.persist();
+        metaObject = null;
     }
 
     @Override
@@ -868,7 +893,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     }
                 } else if (layerInfo.isStation(colName)) {
                     final StationInfo info = layerInfo.getStationInfo(colName);
-                    final Double value = (Double)getProperty(colName);
+                    final Object valueObject = getProperty(colName);
+
+                    if (!(valueObject instanceof Double)) {
+                        continue;
+                    }
+
+                    final Double value = (Double)valueObject;
                     final Object routeNameObject = getProperty(info.getRoutePropertyName());
 
                     if ((value == null) || (routeNameObject == null)) {
@@ -1052,7 +1083,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final Geometry oldGeom = getGeometry();
 
         if (((oldGeom == null) != (geom == null))
-                    || ((oldGeom != null) && (geom != null) && !oldGeom.equalsExact(geom))) {
+                    || ((oldGeom != null) && (geom != null)
+                        && (!oldGeom.getEnvelope().equalsExact(geom.getEnvelope()) || !oldGeom.equalsExact(geom)))) {
             // the old geometry and the new geometry are different
             super.setGeometry(geom);
 
@@ -1177,10 +1209,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * @throws  ConnectionException  DOCUMENT ME!
      */
     private MetaClass getMetaClass(final int classId) throws ConnectionException {
-        return SessionManager.getConnection()
-                    .getMetaClass(SessionManager.getSession().getUser(),
-                        classId,
-                        metaClass.getDomain());
+        return ClassCacheMultiple.getMetaClass(metaClass.getDomain(), classId);
+//        return SessionManager.getConnection()
+//                    .getMetaClass(SessionManager.getSession().getUser(),
+//                        classId,
+//                        metaClass.getDomain());
     }
 
     @Override

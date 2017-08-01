@@ -37,6 +37,8 @@ import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import java.text.DecimalFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -82,6 +84,7 @@ import de.cismet.cismap.commons.gui.layerwidget.ZoomToLayerWorker;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.interaction.DefaultQueryButtonAction;
 import de.cismet.cismap.commons.tools.FeatureTools;
+import de.cismet.cismap.commons.util.SelectionManager;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
@@ -106,8 +109,16 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     public static final List<DefaultQueryButtonAction> SQL_QUERY_BUTTONS = new ArrayList<DefaultQueryButtonAction>();
     private static final GeomFromWktConverter converter = new GeomFromWktConverter();
     private static final String RECEIVE_CATALOGUE_QUERY = "SELECT DISTINCT %1$s, %2$s FROM %3$s;";
+    private static final DecimalFormat formatter;
 
     static {
+        formatter = new java.text.DecimalFormat();
+//        final java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
+//        symbols.setDecimalSeparator(',');
+//        symbols.setGroupingSeparator('.');
+//        formatter.setDecimalFormatSymbols(symbols);
+        formatter.setGroupingUsed(false);
+
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".x", "x") {
 
                 {
@@ -733,39 +744,51 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     boolean setAlreadyFilled = false;
 
                     if (service instanceof CidsLayer) {
-                        final CidsLayer cidsLayer = (CidsLayer)service;
-                        final CidsLayerInfo layerInfo = CidsLayerUtil.getCidsLayerInfo(
-                                cidsLayer.getMetaClass(),
-                                SessionManager.getSession().getUser());
-                        if (layerInfo.isCatalogue(attributeInfo.getName())) {
-                            try {
-                                final int classId = layerInfo.getCatalogueClass(attributeInfo.getName());
-                                final MetaClass mc = SessionManager.getConnection()
-                                            .getMetaClass(
-                                                SessionManager.getSession().getUser(),
-                                                classId,
-                                                cidsLayer.getMetaClass().getDomain());
-                                final String query = String.format(
-                                        RECEIVE_CATALOGUE_QUERY,
-                                        mc.getID(),
-                                        mc.getPrimaryKey(),
-                                        mc.getTableName());
-                                final MetaObject[] mos = SessionManager.getProxy()
-                                            .getMetaObjectByQuery(SessionManager.getSession().getUser(), query);
+                        try {
+                            final FeatureServiceFeature firstFeature = featureList.get(0);
+                            final CidsLayer cidsLayer = (CidsLayer)service;
+                            final CidsLayerInfo layerInfo = CidsLayerUtil.getCidsLayerInfo(
+                                    cidsLayer.getMetaClass(),
+                                    SessionManager.getSession().getUser());
 
-                                if ((mos != null) && (mos.length > 0)) {
-                                    for (final MetaObject mo : mos) {
-                                        final String name = mo.getBean().toString();
+                            if (layerInfo.isCatalogue(attributeInfo.getName())) {
+                                final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
 
-                                        if (name != null) {
-                                            set.add(name);
+                                if (cf.getCatalogueCombo(attribute.getName()) != null) {
+                                    final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
+
+                                    waitForModel(model);
+
+                                    for (int i = 0; i < model.getSize(); ++i) {
+                                        if (model.getElementAt(i) != null) {
+                                            set.add(model.getElementAt(i).toString());
+                                        }
+                                    }
+                                } else {
+                                    final int referencedForeignClassId = layerInfo.getCatalogueClass(
+                                            attribute.getName());
+
+                                    final MetaClass foreignClass = getMetaClass(
+                                            referencedForeignClassId,
+                                            cf.getBean().getMetaObject().getMetaClass());
+                                    final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
+                                        new DefaultCidsLayerBindableReferenceCombo(
+                                            foreignClass,
+                                            true);
+                                    final ComboBoxModel model = catalogueEditor.getModel();
+
+                                    waitForModel(model);
+
+                                    for (int i = 0; i < model.getSize(); ++i) {
+                                        if (model.getElementAt(i) != null) {
+                                            set.add(model.getElementAt(i).toString());
                                         }
                                     }
                                 }
-
                                 setAlreadyFilled = true;
-                            } catch (Exception e) {
                             }
+                        } catch (Exception e) {
+                            LOG.error("Cannot load features", e);
                         }
                     }
 
@@ -882,9 +905,12 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                             code = substituteLeft(code, feature);
                             code = substituteRight(code, feature);
                             code = dataDefinition + "\n " + code;
-                            final Object result = engine.eval(code);
+                            Object result = engine.eval(code);
 
                             if (catElements != null) {
+                                if (result instanceof Double) {
+                                    result = formatter.format(result);
+                                }
                                 for (final Object element : catElements) {
                                     if (((element != null) && (result != null)
                                                     && element.toString().equals(result.toString()))
@@ -933,6 +959,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                                 if ((selectedFeatures != null) && !selectedFeatures.isEmpty()) {
                                     table.applySelection(this, selectedFeatures, false);
                                 }
+                                SelectionManager.getInstance().addSelectedFeatures(featureList);
                                 lblBusyIcon.setEnabled(false);
                                 lblBusyIcon.setBusy(false);
                             }

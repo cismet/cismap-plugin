@@ -61,6 +61,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
     //~ Instance fields --------------------------------------------------------
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
+    private final Map<String, MetaClass> LOCK_GROUP_MC_MAP = new HashMap<String, MetaClass>();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -248,7 +249,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCKS_TN + " does not exist in the domain " + domain);
             }
-//            LOCK_MC_MAP.put(domain, lockMc);
+            LOCK_MC_MAP.put(domain, lockMc);
         }
 
         return lockMc;
@@ -265,7 +266,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
      */
     protected MetaClass getLockGroupMetaClassForBean(final String domain) throws Exception {
         // determine the cs_locks meta class
-        MetaClass lockMc = LOCK_MC_MAP.get(domain);
+        MetaClass lockMc = LOCK_GROUP_MC_MAP.get(domain);
 
         if (lockMc == null) {
             lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCK_GROUP_TN);
@@ -273,7 +274,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCK_GROUP_TN + " does not exist in the domain " + domain);
             }
-//            LOCK_MC_MAP.put(domain, lockMc);
+            LOCK_GROUP_MC_MAP.put(domain, lockMc);
         }
 
         return lockMc;
