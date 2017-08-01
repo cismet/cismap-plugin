@@ -37,6 +37,7 @@ import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
+import de.cismet.cismap.commons.gui.attributetable.AttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.interaction.CismapBroker;
@@ -374,7 +375,11 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             initAndWait();
 
             final CidsLayerInfo info = ((CidsFeatureFactory)getFeatureFactory()).getLayerInfo();
+            final AttributeTableRuleSet ruleSet = getLayerProperties().getAttributeTableRuleSet();
 
+            if ((ruleSet != null) && (ruleSet.getAdditionalFieldFormula(name) != null)) {
+                return decorateQuery(ruleSet.getAdditionalFieldFormula(name));
+            }
             return getSQLName(info, name);
         } catch (Exception ex) {
             LOG.error("Error while decorating property name", ex);

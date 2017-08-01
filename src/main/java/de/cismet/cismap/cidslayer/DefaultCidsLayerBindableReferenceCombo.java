@@ -468,7 +468,12 @@ public class DefaultCidsLayerBindableReferenceCombo extends JComboBox implements
                 cache.clear();
             }
 
-            final List<CidsLayerFeature> featureList = cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
+            List<CidsLayerFeature> featureList = cache.get(new CatalogueDefinition(mc, nullable, sortingColumn));
+
+            if (featureList != null) {
+                // to avoid a java.util.ConcurrentModificationException
+                featureList = new ArrayList<CidsLayerFeature>(featureList);
+            }
 
             if ((sortingColumn == null) && (featureList != null) && (mc.getClassAttribute("sortingColumn") == null)) {
                 // Sorts the model using String comparison on the bean's toString()

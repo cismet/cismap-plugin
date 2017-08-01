@@ -362,6 +362,8 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             return Types.FLOAT;
         } else if (type.equalsIgnoreCase("integer") || type.equalsIgnoreCase("int")) {
             return Types.INTEGER;
+        } else if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("int8")) {
+            return Types.BIGINT;
         } else if (type.toLowerCase().contains("timestamp")) {
             return Types.TIMESTAMP;
         } else if (type.toLowerCase().contains("time")) {
@@ -519,6 +521,10 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             resultArray = CidsLayerSearchStatement.uncompressResult(resultArray);
         }
 
+        if (resultArray == null) {
+            return new ArrayList<CidsLayerFeature>();
+        }
+
         final Vector<CidsLayerFeature> features = new Vector<CidsLayerFeature>();
         final GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING),
                 CrsTransformer.extractSridFromCrs(crs));
@@ -635,7 +641,9 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 query);
         }
 
-        logger.error("time to receive features" + (System.currentTimeMillis() - startTime));
+        if (logger.isDebugEnabled()) {
+            logger.debug("time to receive features" + (System.currentTimeMillis() - startTime));
+        }
 
         return features;
     }
