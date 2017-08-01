@@ -235,6 +235,13 @@ public class RouteCombo extends javax.swing.JPanel {
 
     /**
      * DOCUMENT ME!
+     */
+    public static void clearRouteCache() {
+        cache.clear();
+    }
+
+    /**
+     * DOCUMENT ME!
      *
      * @param  features    DOCUMENT ME!
      * @param  defaultVal  DOCUMENT ME!
