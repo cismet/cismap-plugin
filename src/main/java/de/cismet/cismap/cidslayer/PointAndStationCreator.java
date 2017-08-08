@@ -35,6 +35,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
@@ -44,7 +45,9 @@ import de.cismet.cismap.commons.gui.attributetable.creator.GeometryFinishedListe
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.cismap.linearreferencing.CreateLinearReferencedPointListener;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
 import de.cismet.tools.gui.WaitingDialogThread;
@@ -73,6 +76,7 @@ public class PointAndStationCreator extends AbstractFeatureCreator {
     private final String stationProperty;
     private final MetaClass routeClass;
     private final LinearReferencingHelper helper;
+    private AbstractFeatureService service = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -98,6 +102,9 @@ public class PointAndStationCreator extends AbstractFeatureCreator {
 
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
+        if ((feature != null) && (feature.getLayerProperties() != null)) {
+            service = feature.getLayerProperties().getFeatureService();
+        }
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -207,5 +214,15 @@ public class PointAndStationCreator extends AbstractFeatureCreator {
 
     @Override
     public void cancel() {
+    }
+
+    @Override
+    public void resume() {
+        CismapBroker.getInstance().getMappingComponent().setInteractionMode(SIMPLE_GEOMETRY_LISTENER_KEY);
+    }
+
+    @Override
+    public AbstractFeatureService getService() {
+        return service;
     }
 }
