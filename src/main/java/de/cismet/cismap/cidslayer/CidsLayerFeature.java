@@ -876,7 +876,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final Map<Integer, CidsBean> stationLines = new HashMap<Integer, CidsBean>();
 
         try {
-            for (final String colName : layerInfo.getColumnNames()) {
+            for (int i = 0; i < layerInfo.getColumnNames().length; ++i) {
+                final String colName = layerInfo.getColumnNames()[i];
+
                 if (layerInfo.isCatalogue(colName)) {
                     final Object propValue = getProperty(colName);
 
@@ -910,7 +912,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     if (info.isStationLine()) {
                         CidsBean firstStation = stationLines.get(info.getLineId());
 
-                        if (firstStation == null) {
+                        if (firstStation != null) {
                             final LinearReferencingHelper helper = FeatureRegistry.getInstance()
                                         .getLinearReferencingSolver();
                             final CidsBean secondStation = createStationBean(info, value);
@@ -922,13 +924,17 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                 line = helper.createLineBeanFromStationBean(firstStation, secondStation);
                             }
 
-                            bean.setProperty(colName, line);
+                            String lineColName = layerInfo.getColumnPropertyNames()[i];
+                            lineColName = lineColName.substring(0, lineColName.indexOf("."));
+                            bean.setProperty(lineColName, line);
                         } else {
                             firstStation = createStationBean(info, value);
                             stationLines.put(info.getLineId(), firstStation);
                         }
                     } else {
-                        bean.setProperty(colName, createStationBean(info, value));
+                        String lineColName = layerInfo.getColumnPropertyNames()[i];
+                        lineColName = lineColName.substring(0, lineColName.indexOf("."));
+                        bean.setProperty(lineColName, createStationBean(info, value));
                     }
                 } else if (layerInfo.isPrimitive(colName)) {
                     bean.setProperty(colName, getProperty(colName));
