@@ -27,6 +27,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
@@ -60,6 +61,7 @@ public class StationLineCreator extends AbstractFeatureCreator {
     private float maxDistance = Float.MAX_VALUE;
     private String routeName;
     private StationCreationCheck check;
+    private AbstractFeatureService service = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -140,6 +142,9 @@ public class StationLineCreator extends AbstractFeatureCreator {
 
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
+        if ((feature != null) && (feature.getLayerProperties() != null)) {
+            service = feature.getLayerProperties().getFeatureService();
+        }
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -222,5 +227,17 @@ public class StationLineCreator extends AbstractFeatureCreator {
 
     @Override
     public void cancel() {
+    }
+
+    @Override
+    public void resume() {
+        CismapBroker.getInstance()
+                .getMappingComponent()
+                .setInteractionMode(CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE);
+    }
+
+    @Override
+    public AbstractFeatureService getService() {
+        return service;
     }
 }

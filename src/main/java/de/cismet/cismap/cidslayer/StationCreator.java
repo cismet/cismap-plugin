@@ -27,12 +27,14 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
 import de.cismet.cismap.commons.gui.attributetable.creator.AbstractFeatureCreator;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.cismap.linearreferencing.CreateLinearReferencedLineListener;
 import de.cismet.cismap.linearreferencing.CreateLinearReferencedPointListener;
 import de.cismet.cismap.linearreferencing.CreateStationListener;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
@@ -58,6 +60,7 @@ public class StationCreator extends AbstractFeatureCreator {
     private final LinearReferencingHelper helper;
     private final String routeName;
     private StationCreationCheck check;
+    private AbstractFeatureService service = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -101,6 +104,9 @@ public class StationCreator extends AbstractFeatureCreator {
 
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
+        if ((feature != null) && (feature.getLayerProperties() != null)) {
+            service = feature.getLayerProperties().getFeatureService();
+        }
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -167,5 +173,17 @@ public class StationCreator extends AbstractFeatureCreator {
 
     @Override
     public void cancel() {
+    }
+
+    @Override
+    public void resume() {
+        CismapBroker.getInstance()
+                .getMappingComponent()
+                .setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
+    }
+
+    @Override
+    public AbstractFeatureService getService() {
+        return service;
     }
 }

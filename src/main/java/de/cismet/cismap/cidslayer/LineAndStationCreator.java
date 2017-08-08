@@ -36,6 +36,7 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
@@ -45,6 +46,7 @@ import de.cismet.cismap.commons.gui.attributetable.creator.GeometryFinishedListe
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateNewGeometryListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
@@ -76,6 +78,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
     private final LinearReferencingHelper helper;
     private float minDistance = 0;
     private float maxDistance = Float.MAX_VALUE;
+    private AbstractFeatureService service = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -99,8 +102,29 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the stationProperty
+     */
+    public String getStationProperty() {
+        return stationProperty;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the routeClass
+     */
+    public MetaClass getRouteClass() {
+        return routeClass;
+    }
+
     @Override
     public void createFeature(final MappingComponent mc, final FeatureServiceFeature feature) {
+        if ((feature != null) && (feature.getLayerProperties() != null)) {
+            service = feature.getLayerProperties().getFeatureService();
+        }
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -136,12 +160,12 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
                                                         final Geometry lastPoint = createPointFromCoords(
                                                                 g.getCoordinates()[g.getNumPoints() - 1],
                                                                 g.getFactory());
-                                                        ;
+
                                                         final String query = String.format(
                                                                 SUITABLE_ROUTE_QUERY,
-                                                                routeClass.getID(),
-                                                                routeClass.getPrimaryKey(),
-                                                                routeClass.getTableName(),
+                                                                getRouteClass().getID(),
+                                                                getRouteClass().getPrimaryKey(),
+                                                                getRouteClass().getTableName(),
                                                                 firstPoint.toText());
                                                         final MetaObject[] mo = SessionManager.getProxy()
                                                                         .getMetaObjectByQuery(
@@ -170,7 +194,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
                                                             helper.setLinearValueToStationBean(
                                                                 lastVal,
                                                                 helper.getStationBeanFromLineBean(lineBean, false));
-                                                            feature.setProperty(stationProperty, lineBean);
+                                                            feature.setProperty(getStationProperty(), lineBean);
                                                         }
 
                                                         ((DefaultFeatureServiceFeature)feature).saveChanges();
@@ -244,5 +268,15 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
 
     @Override
     public void cancel() {
+    }
+
+    @Override
+    public void resume() {
+        CismapBroker.getInstance().getMappingComponent().setInteractionMode(SIMPLE_GEOMETRY_LISTENER_KEY);
+    }
+
+    @Override
+    public AbstractFeatureService getService() {
+        return service;
     }
 }
