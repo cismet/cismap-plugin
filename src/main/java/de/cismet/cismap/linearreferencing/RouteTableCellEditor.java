@@ -11,10 +11,13 @@
  */
 package de.cismet.cismap.linearreferencing;
 
+import com.vividsolutions.jts.algorithm.MinimumBoundingCircle;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 
@@ -181,6 +184,7 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
                 LOG.error("Error while deleting property", e);
             }
         } else if ((newValue != oldValue) && !newValueName.equals(oldValue)) {
+            cidsFeature.removeStations();
             CidsBean bean = (CidsBean)cidsFeature.getBean().getProperty(columnName);
             final CidsLayerFeature routeFeature = (CidsLayerFeature)newValue;
             final CidsBean routeBean = routeFeature.getBean();
@@ -214,7 +218,18 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
                         Geometry exEndPoint;
                         final Geometry formerGeom = cidsFeature.getGeometry();
 
-                        if ((formerGeom == null) || !(formerGeom instanceof LineString)) {
+                        if ((formerGeom != null) && (formerGeom instanceof Polygon)) {
+                            final Geometry polGeom = (Geometry)formerGeom;
+                            final Coordinate[] coords = new MinimumBoundingCircle(polGeom).getExtremalPoints();
+
+                            if ((coords != null) && (coords.length == 2)) {
+                                exPoint = polGeom.getFactory().createPoint(coords[0]);
+                                exEndPoint = polGeom.getFactory().createPoint(coords[1]);
+                            } else {
+                                exPoint = linHelper.getPointGeometryFromStationBean(end);
+                                exEndPoint = linHelper.getPointGeometryFromStationBean(start);
+                            }
+                        } else if ((formerGeom == null) || !(formerGeom instanceof LineString)) {
                             exPoint = linHelper.getPointGeometryFromStationBean(end);
                             exEndPoint = linHelper.getPointGeometryFromStationBean(start);
                         } else {
@@ -284,7 +299,7 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
                 }
             }
 
-            if (oldValue == null) {
+            if (newValue != null) {
                 cidsFeature.initStations();
             }
         }
