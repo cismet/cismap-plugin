@@ -480,18 +480,20 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * DOCUMENT ME!
      */
     public void removeStations() {
-        for (final String key : stations.keySet()) {
-            final DisposableCidsBeanStore editor = stations.get(key);
+        if (stations != null) {
+            for (final String key : stations.keySet()) {
+                final DisposableCidsBeanStore editor = stations.get(key);
 
-            if (editor instanceof TableLinearReferencedLineEditor) {
-                ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
-            }
+                if (editor instanceof TableLinearReferencedLineEditor) {
+                    ((TableLinearReferencedLineEditor)editor).removePropertyChangeListener(propListener);
+                }
 
-            if (stations.get(key) != null) {
-                stations.get(key).dispose();
+                if (stations.get(key) != null) {
+                    stations.get(key).dispose();
+                }
             }
+            stations.clear();
         }
-        stations.clear();
     }
 
     /**
