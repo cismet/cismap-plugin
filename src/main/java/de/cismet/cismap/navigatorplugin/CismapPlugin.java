@@ -182,6 +182,7 @@ import de.cismet.cismap.commons.interaction.StatusListener;
 import de.cismet.cismap.commons.interaction.events.MapDnDEvent;
 import de.cismet.cismap.commons.interaction.events.StatusEvent;
 import de.cismet.cismap.commons.interaction.memento.MementoInterface;
+import de.cismet.cismap.commons.rasterservice.georeferencing.RasterGeoReferencingBackend;
 import de.cismet.cismap.commons.util.DnDUtils;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
@@ -659,6 +660,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             ((JHistoryButton)cmdForward).setHistoryModel(mapC);
             ((JHistoryButton)cmdBack).setHistoryModel(mapC);
 
+            CismapBroker.getInstance()
+                    .addActiveLayerListener(RasterGeoReferencingBackend.getInstance().getActiveLayerListenerHandler());
             CismapBroker.getInstance().addCapabilityListener(serverInfo);
             CismapBroker.getInstance().addCapabilityListener(layerInfo);
             CismapBroker.getInstance().addActiveLayerListener(serverInfo);
