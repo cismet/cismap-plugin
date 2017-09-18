@@ -99,6 +99,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private CidsLayerInfo layerInfo;
     private Map<String, DisposableCidsBeanStore> stations = null;
     private Map<String, DefaultCidsLayerBindableReferenceCombo> combos = null;
+    private Map<String, FeatureServiceFeature> initCatalogueValue = null;
     private Color backgroundColor;
     private PropertyChangeListener propListener = new PropertyChangeListener() {
 
@@ -360,6 +361,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
                                 if (combos == null) {
                                     combos = new HashMap<String, DefaultCidsLayerBindableReferenceCombo>();
+                                    initCatalogueValue = new HashMap<String, FeatureServiceFeature>();
                                 }
                                 final MetaClass foreignClass = getMetaClass(referencedForeignClassId);
                                 final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
@@ -376,6 +378,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                 }
                                 catalogueEditor.setSelectedItem(feature);
                                 combos.put(col, catalogueEditor);
+                                initCatalogueValue.put(col, feature);
                             }
                         } catch (Exception e) {
                             LOG.error("Error while receiving meta class", e);
@@ -527,7 +530,12 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public void setProperty(final String propertyName, final Object propertyValue) {
+        final Object oldValue = getProperty(propertyName);
         super.setProperty(propertyName, propertyValue);
+
+        if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
+            firePropertyChange(propertyName, oldValue, propertyValue);
+        }
 
         if (isEditable()) {
             modified = true;
@@ -1100,6 +1108,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 super.addProperty(layerInfo.getGeoField(), geom);
             }
 
+            if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
+                firePropertyChange(layerInfo.getGeoField(), oldGeom, geom);
+            }
             if (isEditable()) {
                 modified = true;
             }
@@ -1171,6 +1182,20 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final DefaultCidsLayerBindableReferenceCombo c = combos.get(columnName);
 
         return c;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   columnName  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public FeatureServiceFeature getInitialCalatogueValue(final String columnName) {
+        if (initCatalogueValue == null) {
+            return null;
+        }
+        return initCatalogueValue.get(columnName);
     }
 
     /**
