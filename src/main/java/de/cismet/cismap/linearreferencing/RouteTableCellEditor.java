@@ -153,7 +153,7 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
     }
 
     /**
-     * This method is similar to the <code>getTableCellEditorComponent(JTable,Object,boolean,int,int)</code> method
+     * This method is similar to the <code>getTableCellEditorComponent(JTable,Object,boolean,int,int)</code> method.
      *
      * @param   feature  DOCUMENT ME!
      * @param   value    DOCUMENT ME!

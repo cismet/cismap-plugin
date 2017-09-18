@@ -332,23 +332,22 @@ public class RouteCombo extends javax.swing.JPanel {
                 routes.add(retrieveFeature(routeNamePropertyName, String.valueOf(defaultVal), routeMc));
             }
         }
-        Collections.sort(routes, new Comparator<Feature>() {
+        final Comparator<Object> comp = new Comparator<Object>() {
 
                 @Override
-                public int compare(final Feature o1, final Feature o2) {
+                public int compare(final Object o1, final Object o2) {
                     return featureToString(o1).compareTo(featureToString(o2));
                 }
-            });
+            };
+
+        Collections.sort(routes, comp);
         cbPossibleRoute.setModel(new DefaultComboBoxModel(routes.toArray()));
 
         if (defaultVal != null) {
-            for (final Feature f : routes) {
-                if (f instanceof CidsLayerFeature) {
-                    if (((CidsLayerFeature)f).getProperty(routeNamePropertyName).equals(defaultVal)) {
-                        cbPossibleRoute.setSelectedItem(f);
-                        break;
-                    }
-                }
+            final int index = Collections.binarySearch(routes, defaultVal, comp);
+
+            if (index >= 0) {
+                cbPossibleRoute.setSelectedItem(routes.get(index));
             }
         } else {
             cbPossibleRoute.setSelectedItem(null);
