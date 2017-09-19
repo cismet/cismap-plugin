@@ -152,6 +152,22 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
         return stat;
     }
 
+    /**
+     * This method is similar to the <code>getTableCellEditorComponent(JTable,Object,boolean,int,int)</code> method.
+     *
+     * @param   feature  DOCUMENT ME!
+     * @param   value    DOCUMENT ME!
+     *
+     * @return  the component for editing
+     */
+    public Component getFeatureComponent(final CidsLayerFeature feature, final Object value) {
+        cidsFeature = feature;
+        oldValue = (String)value;
+        stat = new RouteCombo(routeName, value);
+
+        return stat;
+    }
+
     @Override
     public Object getCellEditorValue() {
         final String routeNamePropName = linHelper.getRouteNamePropertyFromRouteByClassName(routeName);
