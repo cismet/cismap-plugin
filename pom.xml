@@ -17,7 +17,7 @@
         <names.cismap-plugin>cismap Plugin</names.cismap-plugin>
     </properties>
     
-    <name>${names.cismap-plugin}</name>
+    <name>${names.cismap-plugin} [${project.version}]</name>
     <description>!!! description pending !!!</description>
 
     <scm>
