@@ -4467,6 +4467,20 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         } catch (Exception x) {
             log.info("No server profile available, or error while cerating analysis.", x); // NOI18N
         }
+
+        try {
+            final Element disableRasterGeoReferencing = prefs.getChild("disableRasterGeoReferencing"); // NOI18N
+
+            if (disableRasterGeoReferencing != null) {
+                if ((disableRasterGeoReferencing.getText() != null)
+                            && disableRasterGeoReferencing.getText().equalsIgnoreCase("true")) {
+                    // this feature is usually enabled, but can be disabled if disableRasterGeoReferencing = true
+                    CismapBroker.getInstance().setEnableRasterGeoReferencingToolbar(false);
+                }
+            }
+        } catch (Exception x) {
+            log.info("RasterGeoReferencingToolbarComponentProvider properties available", x); // NOI18N
+        }
     }
 
     /**
