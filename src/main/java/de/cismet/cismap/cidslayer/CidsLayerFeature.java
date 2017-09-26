@@ -128,7 +128,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
                     final TableStationEditor stat = (TableStationEditor)evt.getSource();
                     final String routeProperty = stat.getStationProperty();
-                    String routeName = null;
+                    String routeName = null;stat.getCidsBean();
 
                     if (stat.getCidsBean() != null) {
                         routeName = helper.getRouteNameFromStationBean(stat.getCidsBean());
@@ -142,6 +142,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private HashMap backupProperties;
     private Geometry backupGeometry;
     private boolean modified;
+    private boolean doNotChangeBackup = false;
+    private boolean undoOnServer = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -185,6 +187,28 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the doNotChangeBackup
+     */
+    public boolean isDoNotChangeBackup() {
+        return doNotChangeBackup;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  doNotChangeBackup  the doNotChangeBackup to set
+     */
+    public void setDoNotChangeBackup(final boolean doNotChangeBackup) {
+        this.doNotChangeBackup = doNotChangeBackup;
+
+        if (doNotChangeBackup) {
+            this.undoOnServer = false;
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -332,18 +356,22 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
                     if ((getLayerProperties().getAttributeTableRuleSet() != null)
                                 && getLayerProperties().getAttributeTableRuleSet().isCatThree()) {
-                        backupGeometry = (Geometry)getGeometry().clone();
-                        backupProperties = (HashMap)super.getProperties().clone();
+                        if (!doNotChangeBackup) {
+                            backupGeometry = (Geometry)getGeometry().clone();
+                            backupProperties = (HashMap)super.getProperties().clone();
+                        }
                         CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                         CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
                         SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
 //                        backgroundColor = new Color(255, 91, 0);
                     }
                 } else {
-                    if (getGeometry() != null) {
-                        backupGeometry = (Geometry)getGeometry().clone();
+                    if (!doNotChangeBackup) {
+                        if (getGeometry() != null) {
+                            backupGeometry = (Geometry)getGeometry().clone();
+                        }
+                        backupProperties = (HashMap)super.getProperties().clone();
                     }
-                    backupProperties = (HashMap)super.getProperties().clone();
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
                     SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
@@ -536,7 +564,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
             firePropertyChange(propertyName, oldValue, propertyValue);
         }
-
+        
         if (isEditable()) {
             modified = true;
         }
@@ -709,6 +737,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         // to decrease the memory usage
         metaObject = null;
 
+        if (doNotChangeBackup) {
+            undoOnServer = true;
+        }
         fillBackupObjects();
     }
 
@@ -716,13 +747,15 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * DOCUMENT ME!
      */
     private void fillBackupObjects() {
-        backupGeometry = null;
-        backupProperties = null;
+        if (!doNotChangeBackup) {
+            backupGeometry = null;
+            backupProperties = null;
 
-        if (getGeometry() != null) {
-            backupGeometry = (Geometry)getGeometry().clone();
+            if (getGeometry() != null) {
+                backupGeometry = (Geometry)getGeometry().clone();
+            }
+            backupProperties = (HashMap)super.getProperties().clone();
         }
-        backupProperties = (HashMap)super.getProperties().clone();
     }
 
     /**
@@ -1090,6 +1123,14 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 } else if (editor instanceof TableStationEditor) {
                     ((TableStationEditor)editor).undoChanges();
                 }
+            }
+        }
+
+        if (undoOnServer) {
+            try {
+                saveChangesWithoutReload();
+            } catch (Exception e) {
+                LOG.error("Cannot undo changes on server", e);
             }
         }
     }
