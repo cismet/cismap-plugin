@@ -72,7 +72,8 @@ public class ExportMapToFileAction extends AbstractExportMapAction implements Ci
         putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
         putValue(
             SMALL_ICON,
-            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/watergis/res/icons16/icon-exportfile.png")));
+            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png")));
+//            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/icons16/icon-exportfile.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
     }
 
