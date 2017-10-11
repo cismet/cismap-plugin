@@ -144,21 +144,34 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
                 final Double[] pos = getMarkPositionsOfSelectedFeature();
 
                 if ((pos != null) && (pos.length == 2)) {
-                    final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
-                    final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
-                    final Geometry point2 = LinearReferencedPointFeature.getPointOnLine(pos[1], route);
+                    try {
+                        final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
+                        final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
+                        final Geometry point2 = LinearReferencedPointFeature.getPointOnLine(pos[1], route);
 
-                    final LengthIndexedLine lil = new LengthIndexedLine(route);
-                    final Geometry g = lil.extractLine(lil.indexOf(point1.getCoordinate()),
-                            lil.indexOf(point2.getCoordinate()));
+                        final LengthIndexedLine lil = new LengthIndexedLine(route);
+                        final Geometry g = lil.extractLine(lil.indexOf(point1.getCoordinate()),
+                                lil.indexOf(point2.getCoordinate()));
 
-                    final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
-                    lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);
-                    removeAllMarks();
+                        final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
+                        lineFinishedListener.lineFinished(feature.getBean(), g, point1, point2, pos[0], pos[1]);
+                    } finally {
+                        counter = 0;
+                        removeAllMarks();
+                    }
+                } else if (pos.length > 2) {
                     counter = 0;
+                    removeAllMarks();
                 } else {
-                    // the last click was not valid. So restore the ounter
+                    // the last click was not valid. So restore the counter
                     --counter;
+                }
+            } else {
+                final Double[] pos = getMarkPositionsOfSelectedFeature();
+
+                if (pos.length != counter) {
+                    counter = 0;
+                    removeAllMarks();
                 }
             }
         }
