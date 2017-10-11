@@ -128,7 +128,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     final LinearReferencingHelper helper = FeatureRegistry.getInstance().getLinearReferencingSolver();
                     final TableStationEditor stat = (TableStationEditor)evt.getSource();
                     final String routeProperty = stat.getStationProperty();
-                    String routeName = null;stat.getCidsBean();
+                    String routeName = null;
 
                     if (stat.getCidsBean() != null) {
                         routeName = helper.getRouteNameFromStationBean(stat.getCidsBean());
@@ -564,7 +564,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
             firePropertyChange(propertyName, oldValue, propertyValue);
         }
-        
+
         if (isEditable()) {
             modified = true;
         }

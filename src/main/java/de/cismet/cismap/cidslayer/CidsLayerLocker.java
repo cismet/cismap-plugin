@@ -56,7 +56,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
 //                + " FROM %3$s WHERE class_id = %4$s limit 1;";
     private static final String LOCK_QUERY = "SELECT DISTINCT %1$s, g.%2$s "
                 + " FROM %3$s g join lock_lock_group lg on (g.objects = lg.lock_group_reference) join "
-                + " lock l on (lg.lock = l.id) WHERE l.class_id = %4$s and l.object_id = any(ARRAY[%4$s]) limit 1;";
+                + " lock l on (lg.lock = l.id) WHERE l.class_id = %4$s and l.object_id = any(ARRAY[%5$s]) limit 1;";
 
     //~ Instance fields --------------------------------------------------------
 
