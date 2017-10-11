@@ -57,7 +57,7 @@ public class StationLineCreator extends AbstractFeatureCreator {
     private String property;
     private MetaClass routeClass;
     private LinearReferencingHelper helper;
-    private float minDistance = 0.01f;
+    private float minDistance = 0.004f;
     private float maxDistance = Float.MAX_VALUE;
     private String routeName;
     private StationCreationCheck check;
