@@ -23,11 +23,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
 
@@ -37,7 +39,7 @@ import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerTreeModel implements TreeModel, StringFilter {
+public class CidsLayerTreeModel implements TreeModel, StringFilter, ClientConnectionContextProvider {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -60,7 +62,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
         this.domain = domain;
         this.title = title;
         try {
-            final MetaClass[] mc = SessionManager.getProxy().getClasses(domain);
+            final MetaClass[] mc = SessionManager.getProxy().getClasses(domain, getClientConnectionContext());
 
             for (final MetaClass clazz : mc) {
                 final Collection attributes = clazz.getAttributeByName("cidsLayer");
@@ -261,6 +263,11 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter {
         }
 
         return false;
+    }
+
+    @Override
+    public final ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.cidslayer.CidsLayer;
 
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
-import de.cismet.cismap.commons.featureservice.H2FeatureService;
 
 import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
 
@@ -37,7 +39,8 @@ import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = LinearReferencedGeomProvider.class)
-public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider {
+public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,7 +55,7 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
         for (final String domain : helper.getDomainOfRouteTable(null)) {
             try {
-                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain);
+                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain, getClientConnectionContext());
 
                 for (final MetaClass clazz : classes) {
                     final Collection attributes = clazz.getAttributeByName("LinRefBaseGeom");
@@ -88,7 +91,10 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
         return null;
     }
-
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
+    }
     @Override
     public String getInternalServiceName(final AbstractFeatureService service) {
         if (service instanceof CidsLayer) {

@@ -51,6 +51,8 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.cidslayer.StationInfo;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 import de.cismet.cids.tools.tostring.CidsLayerFeatureToStringConverter;
 import de.cismet.cids.tools.tostring.ToStringConverter;
@@ -83,7 +85,9 @@ import de.cismet.cismap.linearreferencing.TableStationEditor;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerFeature extends DefaultFeatureServiceFeature implements ModifiableFeature, PermissionProvider {
+public class CidsLayerFeature extends DefaultFeatureServiceFeature implements ModifiableFeature,
+    PermissionProvider,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -899,7 +903,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                             .getMetaObject(SessionManager.getSession().getUser(),
                                     CidsLayerFeature.this.getId(),
                                     metaClass.getID(),
-                                    SessionManager.getSession().getUser().getDomain());
+                                    SessionManager.getSession().getUser().getDomain(),
+                                    getClientConnectionContext());
 
                 if (metaObject == null) {
                     metaObject = metaClass.getEmptyInstance();
@@ -1050,7 +1055,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
         try {
             final MetaObject[] mos = SessionManager.getConnection()
-                        .getMetaObjectByQuery(SessionManager.getSession().getUser(), query);
+                        .getMetaObjectByQuery(SessionManager.getSession().getUser(),
+                            query,
+                            getClientConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject object : mos) {
@@ -1088,7 +1095,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
         try {
             final MetaObject[] mos = SessionManager.getConnection()
-                        .getMetaObjectByQuery(SessionManager.getSession().getUser(), query);
+                        .getMetaObjectByQuery(SessionManager.getSession().getUser(),
+                            query,
+                            getClientConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 return mos[0].getBean();
@@ -1314,6 +1323,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         } else {
             return super.toString();
         }
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

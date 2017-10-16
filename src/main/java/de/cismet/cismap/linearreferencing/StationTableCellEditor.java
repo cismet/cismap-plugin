@@ -30,6 +30,9 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
@@ -47,7 +50,8 @@ import de.cismet.cismap.linearreferencing.tools.StationTableCellEditorInterface;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = StationTableCellEditorInterface.class)
-public class StationTableCellEditor extends AbstractCellEditor implements StationTableCellEditorInterface {
+public class StationTableCellEditor extends AbstractCellEditor implements StationTableCellEditorInterface,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -144,7 +148,9 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                         info.getTrgLinRefJoinField(),
                         feature.getProperty(info.getSrcLinRefJoinField()));
                 final MetaObject[] mos = SessionManager.getProxy()
-                            .getMetaObjectByQuery(SessionManager.getSession().getUser(), routeQuery);
+                            .getMetaObjectByQuery(SessionManager.getSession().getUser(),
+                                routeQuery,
+                                getClientConnectionContext());
 
                 if ((mos != null) && (mos.length == 1)) {
                     final MetaObject routeObject = mos[0];
@@ -248,5 +254,10 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     @Override
     public void setLinRefInfos(final List<LinearReferencingInfo> linRefInfos) {
         this.linRefInfos = linRefInfos;
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 }

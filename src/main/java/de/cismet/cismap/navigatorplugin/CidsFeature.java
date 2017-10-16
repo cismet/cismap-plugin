@@ -40,6 +40,9 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.interfaces.CidsBeanAction;
 import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
@@ -77,7 +80,8 @@ public class CidsFeature implements XStyledFeature,
     FeatureGroup,
     CidsBeanActionsProvider,
     InfoNodeAwareFeature,
-    FeatureRendererAwareFeature {
+    FeatureRendererAwareFeature,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -190,7 +194,7 @@ public class CidsFeature implements XStyledFeature,
         this.parentFeatureRenderer = rootRenderer;
         try {
             this.mo = mo;
-            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
+            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey(), getClientConnectionContext());
             initFeatureSettings();
 
             // evaluate renderFeature
@@ -1093,5 +1097,10 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public boolean hasInfoNode() {
         return infoNodeEnabled;
+    }
+
+    @Override
+    public final ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 }

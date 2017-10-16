@@ -29,6 +29,9 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.attributetable.FeatureLockingInterface;
@@ -42,7 +45,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = FeatureLockingInterface.class)
-public class CidsLayerLocker implements FeatureLockingInterface {
+public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -115,7 +118,8 @@ public class CidsLayerLocker implements FeatureLockingInterface {
                     lockGroupMc.getTableName(),
                     mo.getMetaClass().getID(),
                     getIds(features));
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy()
+                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject metaObject : mos) {
@@ -301,6 +305,11 @@ public class CidsLayerLocker implements FeatureLockingInterface {
         }
 
         return ((sb == null) ? "" : sb.toString());
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

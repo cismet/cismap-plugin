@@ -138,6 +138,9 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
@@ -233,7 +236,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     MapDnDListener,
     StatusListener,
     HistoryModelListener,
-    FeatureCollectionListener {
+    FeatureCollectionListener,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -1138,6 +1142,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
+    }
 
     /**
      * DOCUMENT ME!
@@ -4292,7 +4301,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         boolean visible;
         try {
             visible = SessionManager.getConnection()
-                        .getConfigAttr(SessionManager.getSession().getUser(), "extendedSelectionCapabilities") != null;
+                        .getConfigAttr(SessionManager.getSession().getUser(),
+                                "extendedSelectionCapabilities",
+                                getClientConnectionContext()) != null;
         } catch (final Exception ex) {
             visible = false;
         }

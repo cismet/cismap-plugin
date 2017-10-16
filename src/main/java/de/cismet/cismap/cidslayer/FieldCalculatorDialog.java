@@ -67,9 +67,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 
-import de.cismet.cids.dynamics.CidsBean;
-
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 import de.cismet.cids.tools.CidsLayerUtil;
 
@@ -101,7 +101,7 @@ import static de.cismet.cids.search.QuerySearch.PROP_VALUES;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class FieldCalculatorDialog extends javax.swing.JDialog {
+public class FieldCalculatorDialog extends javax.swing.JDialog implements ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -329,6 +329,11 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
+    }
 
     /**
      * Converts the given value to a string.
@@ -1027,7 +1032,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
         return SessionManager.getConnection()
                     .getMetaClass(SessionManager.getSession().getUser(),
                         classId,
-                        metaClass.getDomain());
+                        metaClass.getDomain(),
+                        getClientConnectionContext());
     }
 
     /**

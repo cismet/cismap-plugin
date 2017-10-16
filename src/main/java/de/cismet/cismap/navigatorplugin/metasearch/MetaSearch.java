@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import org.jdom.Element;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.util.ArrayList;
@@ -28,6 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JDialog;
+
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
 
 import de.cismet.cids.utils.MetaClassCacheService;
 
@@ -42,7 +44,7 @@ import de.cismet.tools.configuration.NoWriteError;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class MetaSearch implements Configurable, MetaSearchFacade {
+public class MetaSearch implements Configurable, MetaSearchFacade, ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -422,7 +424,9 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
             if ((checkActionTag != null) && (checkActionTag.trim().length() > 0)) {
                 try {
                     final boolean actionCheck = SessionManager.getConnection()
-                                .hasConfigAttr(SessionManager.getSession().getUser(), actionTag);
+                                .hasConfigAttr(SessionManager.getSession().getUser(),
+                                    actionTag,
+                                    getClientConnectionContext());
                     if (("enable".equalsIgnoreCase(checkActionTag) || "1".equalsIgnoreCase(checkActionTag))) {
                         isEnabled = actionCheck;
                     } else if (("disable".equalsIgnoreCase(checkActionTag) || "0".equalsIgnoreCase(checkActionTag))) {
@@ -490,6 +494,11 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
 
         return result;
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

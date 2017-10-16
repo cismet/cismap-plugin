@@ -81,6 +81,9 @@ import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
 import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.cidslayer.CidsLayer;
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
@@ -119,7 +122,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     EditorSaveListener,
     LinearReferencingSingletonInstances,
     PointBeanMergeRequestListener,
-    WindowListener {
+    WindowListener,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -391,6 +395,10 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
+    }
     /**
      * DOCUMENT ME!
      *
@@ -975,7 +983,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 }
                 MetaObject[] mosOtherLines = null;
                 try {
-                    mosOtherLines = SessionManager.getProxy().getMetaObjectByQuery(queryOtherLines, 0);
+                    mosOtherLines = SessionManager.getProxy()
+                                .getMetaObjectByQuery(queryOtherLines, 0, getClientConnectionContext());
                 } catch (Exception ex) {
                     LOG.error("error while loading other lines on baseline", ex);
                 }
@@ -3174,7 +3183,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  targetIsFrom  DOCUMENT ME!
      * @param  lineBean      DOCUMENT ME!
      */
-    private static void updateSnappedRealGeoms(final boolean isFrom,
+    private void updateSnappedRealGeoms(final boolean isFrom,
             final boolean targetIsFrom,
             final CidsBean lineBean) {
         final MetaClass mcLine = lineBean.getMetaObject().getMetaClass();
@@ -3196,7 +3205,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         try {
             // stationierte Linien mit gleicher Station am Ende 'targetIsFrom' holen
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy()
+                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
 
             for (final MetaObject mo : mos) {
                 // bean der stationierten Linie
@@ -3246,7 +3256,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isFrom    DOCUMENT ME!
      * @param  lineBean  DOCUMENT ME!
      */
-    private static void updateSnappedRealGeoms(final boolean isFrom, final CidsBean lineBean) {
+    private void updateSnappedRealGeoms(final boolean isFrom, final CidsBean lineBean) {
         updateSnappedRealGeoms(isFrom, FROM, lineBean);
         updateSnappedRealGeoms(isFrom, TO, lineBean);
     }

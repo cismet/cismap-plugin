@@ -27,6 +27,9 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
@@ -37,7 +40,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class CidsBeanLocker {
+public class CidsBeanLocker implements ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -88,7 +91,8 @@ public class CidsBeanLocker {
                     lockMc.getTableName(),
                     bean.getMetaObject().getMetaClass().getID(),
                     bean.getMetaObject().getID());
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy()
+                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -152,7 +156,8 @@ public class CidsBeanLocker {
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
                     mc.getID());
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy()
+                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -233,6 +238,11 @@ public class CidsBeanLocker {
         }
 
         return lockMc;
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

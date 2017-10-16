@@ -20,6 +20,9 @@ import java.util.List;
 
 import javax.swing.Action;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapDataProvider;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapFileTypes;
@@ -38,7 +41,9 @@ import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
  * @author   Gilles Baatz
  * @version  $Revision$, $Date$
  */
-public class MapExportPanel extends javax.swing.JPanel implements Configurable, ExportMapDataProvider {
+public class MapExportPanel extends javax.swing.JPanel implements Configurable,
+    ExportMapDataProvider,
+    ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -93,7 +98,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     private boolean checkActionTag() {
         boolean result;
         try {
-            result = SessionManager.getConnection().getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG)
+            result = SessionManager.getConnection()
+                        .getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getClientConnectionContext())
                         != null;
         } catch (ConnectionException ex) {
             LOG.error("Can not check ActionTag!", ex);
@@ -302,5 +308,10 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
         } else {
             return cismapPlugin.getHttpInterfacePort();
         }
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 }

@@ -34,6 +34,9 @@ import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
@@ -60,7 +63,7 @@ import static de.cismet.cismap.commons.gui.attributetable.FeatureCreator.SIMPLE_
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class LineAndStationCreator extends AbstractFeatureCreator {
+public class LineAndStationCreator extends AbstractFeatureCreator implements ClientConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -170,7 +173,8 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
                                                         final MetaObject[] mo = SessionManager.getProxy()
                                                                         .getMetaObjectByQuery(
                                                                             SessionManager.getSession().getUser(),
-                                                                            query);
+                                                                            query,
+                                                                            getClientConnectionContext());
 
                                                         if ((mo != null) && (mo.length == 1)) {
                                                             final CidsBean routeBean = mo[0].getBean();
@@ -278,5 +282,10 @@ public class LineAndStationCreator extends AbstractFeatureCreator {
     @Override
     public AbstractFeatureService getService() {
         return service;
+    }
+
+    @Override
+    public ClientConnectionContext getClientConnectionContext() {
+        return ClientConnectionContext.create(getClass().getSimpleName());
     }
 }
