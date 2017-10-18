@@ -61,6 +61,7 @@ public class StationCreator extends AbstractFeatureCreator {
     private final String routeName;
     private StationCreationCheck check;
     private AbstractFeatureService service = null;
+    private CreateLinearReferencedPointListener lastListener = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -157,6 +158,7 @@ public class StationCreator extends AbstractFeatureCreator {
                         CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE,
                         listener);
                     mc.setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
+                    lastListener = listener;
                 }
             });
     }
@@ -180,6 +182,10 @@ public class StationCreator extends AbstractFeatureCreator {
         CismapBroker.getInstance()
                 .getMappingComponent()
                 .setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
+        if (lastListener != null) {
+            lastListener.resumed();
+            ;
+        }
     }
 
     @Override
