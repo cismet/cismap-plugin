@@ -62,6 +62,7 @@ public class StationLineCreator extends AbstractFeatureCreator {
     private String routeName;
     private StationCreationCheck check;
     private AbstractFeatureService service = null;
+    private CreateLinearReferencedLineListener lastListener = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -211,6 +212,7 @@ public class StationLineCreator extends AbstractFeatureCreator {
                         CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE,
                         listener);
                     mc.setInteractionMode(CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE);
+                    lastListener = listener;
                 }
             });
     }
@@ -234,6 +236,10 @@ public class StationLineCreator extends AbstractFeatureCreator {
         CismapBroker.getInstance()
                 .getMappingComponent()
                 .setInteractionMode(CreateLinearReferencedLineListener.CREATE_LINEAR_REFERENCED_LINE_MODE);
+
+        if (lastListener != null) {
+            lastListener.resumed();
+        }
     }
 
     @Override
