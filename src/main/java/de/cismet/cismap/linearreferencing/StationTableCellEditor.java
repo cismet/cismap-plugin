@@ -120,6 +120,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
             }
         }
 
+        stat.requestFocus();
         return stat;
     }
 
@@ -149,7 +150,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                 if ((mos != null) && (mos.length == 1)) {
                     final MetaObject routeObject = mos[0];
 
-                    if (info.getTillField() == null) {
+                    if ((info.getTillField() == null) || info.getTillField().isEmpty()) {
                         // create station
                         final CidsBean stationBean = linHelper.createStationBeanFromRouteBean(routeObject.getBean(),
                                 (Double)feature.getProperty(info.getFromField()));

@@ -159,8 +159,10 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
     /**
      * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public void recreateGeometry() {
+    public Geometry recreateGeometry() {
         if ((fromStation != null) && (toStation != null)) {
             final double from = (Double)fromStation.getValue();
             final double to = (Double)toStation.getValue();
@@ -176,7 +178,11 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
             } catch (Exception e) {
                 LOG.error("Cannot create line geometry", e);
             }
+
+            return lineGeom;
         }
+
+        return null;
     }
 
     @Override
