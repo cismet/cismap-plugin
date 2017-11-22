@@ -37,6 +37,7 @@ import java.beans.PropertyChangeListener;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -364,6 +365,54 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
                         SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
 //                        backgroundColor = new Color(255, 91, 0);
+                    } else {
+                        final Iterator<String> it = stations.keySet().iterator();
+                        String stationKey = it.next();
+                        StationInfo station = layerInfo.getStationInfo(stationKey);
+
+                        if ((station != null) && station.isStationLine()) {
+                            final DisposableCidsBeanStore beanStore = stations.get(String.valueOf(station.getLineId()));
+
+                            if (beanStore instanceof TableLinearReferencedLineEditor) {
+                                final TableLinearReferencedLineEditor te = (TableLinearReferencedLineEditor)beanStore;
+
+                                final Geometry g = te.recreateGeometry();
+
+                                if (g != null) {
+                                    setGeometry(g);
+                                }
+                            }
+                        } else if ((station != null) && !station.isStationLine()) {
+                            final DisposableCidsBeanStore beanStore = stations.get(stationKey);
+
+                            if (beanStore instanceof TableStationEditor) {
+                                final TableStationEditor te = (TableStationEditor)beanStore;
+
+                                final Geometry g = te.updateGeometry();
+
+                                if (g != null) {
+                                    setGeometry(g);
+                                }
+                            }
+                        } else if (station == null) {
+                            stationKey = it.next();
+                            station = layerInfo.getStationInfo(stationKey);
+                            if ((station != null) && station.isStationLine()) {
+                                final DisposableCidsBeanStore beanStore = stations.get(String.valueOf(
+                                            station.getLineId()));
+
+                                if (beanStore instanceof TableLinearReferencedLineEditor) {
+                                    final TableLinearReferencedLineEditor te = (TableLinearReferencedLineEditor)
+                                        beanStore;
+
+                                    final Geometry g = te.recreateGeometry();
+
+                                    if (g != null) {
+                                        setGeometry(g);
+                                    }
+                                }
+                            }
+                        }
                     }
                 } else {
                     if (!doNotChangeBackup) {
@@ -475,7 +524,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                             st.setCidsBean(bean);
                             st.addPropertyChangeListener(propListener);
                             backgroundColor = st.getLineColor();
-
                             stations.put(String.valueOf(statInfo.getLineId()), st);
                         }
 

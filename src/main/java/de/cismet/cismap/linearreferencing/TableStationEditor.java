@@ -31,6 +31,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -427,7 +428,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butExpandActionPerformed
+    private void butExpandActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butExpandActionPerformed
         final View w = getParentView(this);
 
         if (w != null) {
@@ -506,14 +507,14 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                     }
                 }
             });
-    } //GEN-LAST:event_butExpandActionPerformed
+    }//GEN-LAST:event_butExpandActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butRemoveActionPerformed
+    private void butRemoveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRemoveActionPerformed
         final int ans = JOptionPane.showConfirmDialog(
                 ComponentRegistry.getRegistry().getMainWindow(),
                 NbBundle.getMessage(
@@ -530,7 +531,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
                 parentFeature.setProperty(stationProperty, null);
             }
         }
-    } //GEN-LAST:event_butRemoveActionPerformed
+    }//GEN-LAST:event_butRemoveActionPerformed
 
     @Override
     public CidsBean getCidsBean() {
@@ -959,19 +960,25 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
     /**
      * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    private void updateGeometry() {
+    public Geometry updateGeometry() {
         try {
             final Geometry geom = LinearReferencedPointFeature.getPointOnLine(
                     linearReferencingHelper.getLinearValueFromStationBean(cidsBean),
                     linearReferencingHelper.getRouteGeometryFromStationBean(cidsBean));
             geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
             linearReferencingHelper.setPointGeometryToStationBean(geom, getCidsBean());
+
+            return geom;
         } catch (Exception ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("error while setting the station geometry", ex);
             }
         }
+
+        return null;
     }
 
     /**

@@ -61,6 +61,7 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
     private final MetaClass acceptedRoute;
     private String routeName = null;
     private boolean resumed = false;
+    private int counter = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -103,17 +104,22 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
 
     @Override
     public void mouseClicked(final PInputEvent event) {
-        super.mouseClicked(event);
+        synchronized (this) {
+            super.mouseClicked(event);
 
-        if (event.isLeftMouseButton()) {
-            final Double[] pos = getMarkPositionsOfSelectedFeature();
+            if (event.isLeftMouseButton()) {
+                final Double[] pos = getMarkPositionsOfSelectedFeature();
 
-            if ((pos != null) && (pos.length == 1)) {
-                final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
-                final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
+                if ((pos != null) && (pos.length == 1) && (counter == 0)) {
+                    ++counter;
+                    final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
+                    final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
 
-                final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
-                pointFinishedListener.pointFinished(feature.getBean(), point1, pos[0]);
+                    final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
+                    pointFinishedListener.pointFinished(feature.getBean(), point1, pos[0]);
+                } else if (pos.length > 1) {
+                    removeAllMarks();
+                }
             }
         }
     }

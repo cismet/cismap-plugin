@@ -860,37 +860,41 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
                     try {
                         final FeatureServiceFeature firstFeature = featureList.get(0);
                         List<Object> catElements = null;
-                        final CidsLayerInfo layerInfo = ((CidsLayerFeature)firstFeature).getLayerInfo();
 
-                        if ((firstFeature instanceof CidsLayerFeature) && layerInfo.isCatalogue(attribute.getName())) {
-                            final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
-                            catElements = new ArrayList<Object>();
+                        if (firstFeature instanceof CidsLayerFeature) {
+                            final CidsLayerInfo layerInfo = ((CidsLayerFeature)firstFeature).getLayerInfo();
 
-                            if (cf.getCatalogueCombo(attribute.getName()) != null) {
-                                final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
-
-                                waitForModel(model);
-
-                                for (int i = 0; i < model.getSize(); ++i) {
-                                    catElements.add(model.getElementAt(i));
-                                }
-                            } else {
-                                final int referencedForeignClassId = layerInfo.getCatalogueClass(attribute.getName());
-
-                                final MetaClass foreignClass = getMetaClass(
-                                        referencedForeignClassId,
-                                        cf.getBean().getMetaObject().getMetaClass());
-                                final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
-                                    new DefaultCidsLayerBindableReferenceCombo(
-                                        foreignClass,
-                                        true);
-                                final ComboBoxModel model = catalogueEditor.getModel();
+                            if (layerInfo.isCatalogue(attribute.getName())) {
+                                final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
                                 catElements = new ArrayList<Object>();
 
-                                waitForModel(model);
+                                if (cf.getCatalogueCombo(attribute.getName()) != null) {
+                                    final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
 
-                                for (int i = 0; i < model.getSize(); ++i) {
-                                    catElements.add(model.getElementAt(i));
+                                    waitForModel(model);
+
+                                    for (int i = 0; i < model.getSize(); ++i) {
+                                        catElements.add(model.getElementAt(i));
+                                    }
+                                } else {
+                                    final int referencedForeignClassId = layerInfo.getCatalogueClass(
+                                            attribute.getName());
+
+                                    final MetaClass foreignClass = getMetaClass(
+                                            referencedForeignClassId,
+                                            cf.getBean().getMetaObject().getMetaClass());
+                                    final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
+                                        new DefaultCidsLayerBindableReferenceCombo(
+                                            foreignClass,
+                                            true);
+                                    final ComboBoxModel model = catalogueEditor.getModel();
+                                    catElements = new ArrayList<Object>();
+
+                                    waitForModel(model);
+
+                                    for (int i = 0; i < model.getSize(); ++i) {
+                                        catElements.add(model.getElementAt(i));
+                                    }
                                 }
                             }
                         }
@@ -1284,7 +1288,13 @@ public class FieldCalculatorDialog extends javax.swing.JDialog {
 
             vars.append(propName.replace((CharSequence)"app:", (CharSequence)"")).append("=");
             if ((value != null) && (cl.equals(String.class) || cl.equals(Date.class))) {
-                vars.append("\"").append(value).append("\"");
+                if (cl.equals(String.class)) {
+                    vars.append("\"")
+                            .append(String.valueOf(value).replace("\\", "\\\\").replace("\"", "\\\""))
+                            .append("\"");
+                } else {
+                    vars.append("\"").append(value).append("\"");
+                }
             } else {
                 vars.append(String.valueOf(value));
             }
