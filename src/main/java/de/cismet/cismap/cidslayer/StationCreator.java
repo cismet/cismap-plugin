@@ -184,7 +184,6 @@ public class StationCreator extends AbstractFeatureCreator {
                 .setInteractionMode(CreateLinearReferencedPointListener.CREATE_LINEAR_REFERENCED_POINT_MODE);
         if (lastListener != null) {
             lastListener.resumed();
-            ;
         }
     }
 
