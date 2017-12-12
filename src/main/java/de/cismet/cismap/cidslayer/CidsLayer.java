@@ -23,6 +23,7 @@ import org.jdom.Element;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -552,5 +553,21 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public boolean isDownloadAllowed() {
         return downloadAllowed;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof CidsLayer) {
+            return ((CidsLayer)obj).getMetaClass().equals(metaClass);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = (97 * hash) + Objects.hashCode(this.metaClass);
+        return hash;
     }
 }
