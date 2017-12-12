@@ -20,6 +20,9 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.NbBundle;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,6 +117,13 @@ public class CidsBeanLocker {
             lockBean.setProperty("class_id", bean.getMetaObject().getMetaClass().getID());
             lockBean.setProperty("object_id", bean.getMetaObject().getId());
             lockBean.setProperty("user_string", userString);
+
+            try {
+                final InetAddress addr = InetAddress.getLocalHost();
+                lockBean.setProperty("additional_info", addr.getHostName());
+            } catch (UnknownHostException e) {
+                LOG.error("cnnot determine the computer name", e);
+            }
             lockBean = lockBean.persist();
 
             return lockBean;
