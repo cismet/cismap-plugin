@@ -330,4 +330,17 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
     public void setStationProperty(final String stationProperty) {
         this.stationProperty = stationProperty;
     }
+
+    @Override
+    public Geometry getGeometry() {
+        try {
+            if (cidsBean != null) {
+                return (Geometry)linearReferencedHelper.getGeomBeanFromLineBean(cidsBean).getProperty("geo_field");
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot create line geometry", e);
+        }
+
+        return null;
+    }
 }
