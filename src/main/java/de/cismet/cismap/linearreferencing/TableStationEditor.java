@@ -1173,4 +1173,9 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
         this.stationProperty = stationProperty;
 //        setButRemoveVisibility();
     }
+
+    @Override
+    public Geometry getGeometry() {
+        return linearReferencingHelper.getPointGeometryFromStationBean(cidsBean);
+    }
 }
