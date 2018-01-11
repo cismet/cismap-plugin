@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>5.0.17</version>
+    <version>5.0.18</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-        <tag>v5.0.17</tag>
+        <tag>v5.0.18</tag>
     </scm>
 
     <ciManagement>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0.4</version>
+                <version>5.0.7</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>5.0.4</version>
+                <version>5.0.7</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>

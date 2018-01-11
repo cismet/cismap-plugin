@@ -168,6 +168,7 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
         setLastFeature(searchListener.getLastSearchFeature());
 
         searchListener.addPropertyChangeListener(this);
+        setFireOnArrow(true);
     }
 
     //~ Methods ----------------------------------------------------------------
