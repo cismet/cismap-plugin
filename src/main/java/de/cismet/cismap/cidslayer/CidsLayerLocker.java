@@ -20,6 +20,9 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.NbBundle;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -150,6 +153,12 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
                 lockBean.setProperty("class_id", mo.getMetaClass().getID());
                 lockBean.setProperty("object_id", ((CidsLayerFeature)f).getId());
                 lockGroupBean.addCollectionElement("objects", lockBean);
+            }
+            try {
+                final InetAddress addr = InetAddress.getLocalHost();
+                lockGroupBean.setProperty("additional_info", addr.getHostName());
+            } catch (UnknownHostException e) {
+                LOG.error("cnnot determine the computer name", e);
             }
             lockGroupBean.setProperty("user_string", userString);
             lockGroupBean = lockGroupBean.persist();

@@ -81,6 +81,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private String geometryType = AbstractFeatureService.UNKNOWN;
     private Double maxArea = null;
     private Double maxScale = null;
+    private Integer maxFeaturesPerPage = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -98,6 +99,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         this.geometryType = cff.geometryType;
         this.maxArea = cff.maxArea;
         this.maxScale = cff.maxScale;
+        this.maxFeaturesPerPage = cff.maxFeaturesPerPage;
         this.layerProperties = cff.layerProperties;
     }
 
@@ -226,6 +228,17 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 } catch (Exception e) {
                     logger.error("the max scale attribute does not contain a valid number: "
                                 + scaleAttr.getValue().toString(),
+                        e);
+                }
+            }
+            final ClassAttribute maxPageSizeAttr = metaClass.getClassAttribute("maxPageSize");
+
+            if ((maxPageSizeAttr != null) && (maxPageSizeAttr.getValue() != null)) {
+                try {
+                    maxFeaturesPerPage = Integer.parseInt(maxPageSizeAttr.getValue().toString());
+                } catch (Exception e) {
+                    logger.error("the max page size attribute does not contain a valid number: "
+                                + maxPageSizeAttr.getValue().toString(),
                         e);
                 }
             }
@@ -478,6 +491,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                     CismapBroker.getInstance().getSrs().getCode());
         }
 
+        serverSearch.setExactSearch(true);
         serverSearch.setSrid(CismapBroker.getInstance().getDefaultCrsAlias());
         String[] orderByStrings = new String[0];
 
@@ -502,7 +516,11 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         }
 
         serverSearch.setQuery(query);
-        serverSearch.setLimit(limit);
+        if ((limit == 0) && (maxFeaturesPerPage != null)) {
+            serverSearch.setLimit(maxFeaturesPerPage);
+        } else {
+            serverSearch.setLimit(limit);
+        }
         serverSearch.setOffset(offset);
         serverSearch.setOrderBy(orderByStrings);
 //        if (!saveAsLastCreated) {

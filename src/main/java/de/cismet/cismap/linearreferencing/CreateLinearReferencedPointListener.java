@@ -17,6 +17,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 
+import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PInputEvent;
 
 import org.apache.log4j.Logger;
@@ -30,11 +31,14 @@ import de.cismet.cismap.cidslayer.CidsLayerFeature;
 import de.cismet.cismap.cidslayer.StationCreationCheck;
 
 import de.cismet.cismap.commons.features.Feature;
+import de.cismet.cismap.commons.features.FeatureServiceFeature;
+import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateLinearReferencedMarksListener;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.LinearReferencedPointFeature;
-import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
+import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.cismap.commons.util.SelectionManager;
 
 import de.cismet.tools.gui.StaticSwingTools;
 
@@ -55,6 +59,9 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
 
     private final CreateStationListener pointFinishedListener;
     private final MetaClass acceptedRoute;
+    private String routeName = null;
+    private boolean resumed = false;
+    private int counter = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,6 +83,7 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
         mcModus = CREATE_LINEAR_REFERENCED_POINT_MODE;
         this.pointFinishedListener = pointFinishedListener;
         this.acceptedRoute = acceptedRoute;
+        this.routeName = routeName;
 
         if (getSelectedLinePFeature() == null) {
             JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
@@ -96,17 +104,22 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
 
     @Override
     public void mouseClicked(final PInputEvent event) {
-        super.mouseClicked(event);
+        synchronized (this) {
+            super.mouseClicked(event);
 
-        if (event.isLeftMouseButton()) {
-            final Double[] pos = getMarkPositionsOfSelectedFeature();
+            if (event.isLeftMouseButton()) {
+                final Double[] pos = getMarkPositionsOfSelectedFeature();
 
-            if ((pos != null) && (pos.length == 1)) {
-                final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
-                final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
+                if ((pos != null) && (pos.length == 1) && (counter == 0)) {
+                    ++counter;
+                    final Geometry route = getSelectedLinePFeature().getFeature().getGeometry();
+                    final Geometry point1 = LinearReferencedPointFeature.getPointOnLine(pos[0], route);
 
-                final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
-                pointFinishedListener.pointFinished(feature.getBean(), point1, pos[0]);
+                    final CidsLayerFeature feature = (CidsLayerFeature)getSelectedLinePFeature().getFeature();
+                    pointFinishedListener.pointFinished(feature.getBean(), point1, pos[0]);
+                } else if (pos.length > 1) {
+                    removeAllMarks();
+                }
             }
         }
     }
@@ -118,30 +131,68 @@ public class CreateLinearReferencedPointListener extends CreateLinearReferencedM
      */
     @Override
     public PFeature getSelectedLinePFeature() {
-        final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
-        final List<PFeature> fl = sl.getAllSelectedPFeatures();
-        final List<PFeature> acceptedFeatures = new ArrayList<PFeature>();
+        final List<Feature> fl = SelectionManager.getInstance().getSelectedFeatures();
+        final List<Feature> acceptedFeatures = new ArrayList<Feature>();
 
-        for (final PFeature f : fl) {
-            final Feature feature = f.getFeature();
-
+        for (final Feature feature : fl) {
             if (feature instanceof CidsLayerFeature) {
                 final CidsLayerFeature cidsFeature = (CidsLayerFeature)feature;
 
                 if (cidsFeature.getBean().getMetaObject().getMetaClass().equals(acceptedRoute)) {
-                    acceptedFeatures.add(f);
+                    acceptedFeatures.add(feature);
                 }
             }
         }
 
         if (acceptedFeatures.size() == 1) {
-            final Geometry geom = acceptedFeatures.get(0).getFeature().getGeometry();
+            final Geometry geom = acceptedFeatures.get(0).getGeometry();
 
             if ((geom != null) || (geom instanceof MultiLineString) || (geom instanceof LineString)) {
-                return acceptedFeatures.get(0);
+                final Feature feature = acceptedFeatures.get(0);
+                PFeature f = CismapBroker.getInstance().getMappingComponent().getPFeatureHM().get(feature);
+
+                if ((f == null) && (feature instanceof FeatureServiceFeature)) {
+                    final LayerProperties lp = ((FeatureServiceFeature)feature).getLayerProperties();
+
+                    if ((lp != null) && (lp.getFeatureService() != null)
+                                && (lp.getFeatureService().getPNode() != null)) {
+                        final PNode node = lp.getFeatureService().getPNode();
+
+                        for (int i = 0; i < node.getChildrenCount(); ++i) {
+                            if (node.getChild(i) instanceof PFeature) {
+                                final Object pfeature = node.getChild(i);
+
+                                if ((pfeature instanceof PFeature)
+                                            && ((PFeature)pfeature).getFeature().equals(feature)) {
+                                    f = (PFeature)pfeature;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return f;
             }
         }
 
+        if (resumed) {
+            resumed = false;
+            JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
+                "Sie müssen genau ein "
+                        + routeName
+                        + " wählen.",
+                "Fehler Thema-/Gewässerwahl",
+                JOptionPane.WARNING_MESSAGE);
+            pointFinishedListener.pointFinished(null, null, 0);
+        }
+
         return null;
+    }
+    /**
+     * DOCUMENT ME!
+     */
+    public void resumed() {
+        resumed = true;
     }
 }

@@ -31,6 +31,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -959,19 +960,25 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
 
     /**
      * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    private void updateGeometry() {
+    public Geometry updateGeometry() {
         try {
             final Geometry geom = LinearReferencedPointFeature.getPointOnLine(
                     linearReferencingHelper.getLinearValueFromStationBean(cidsBean),
                     linearReferencingHelper.getRouteGeometryFromStationBean(cidsBean));
             geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
             linearReferencingHelper.setPointGeometryToStationBean(geom, getCidsBean());
+
+            return geom;
         } catch (Exception ex) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("error while setting the station geometry", ex);
             }
         }
+
+        return null;
     }
 
     /**
@@ -1165,5 +1172,10 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
     public void setStationProperty(final String stationProperty) {
         this.stationProperty = stationProperty;
 //        setButRemoveVisibility();
+    }
+
+    @Override
+    public Geometry getGeometry() {
+        return linearReferencingHelper.getPointGeometryFromStationBean(cidsBean);
     }
 }
