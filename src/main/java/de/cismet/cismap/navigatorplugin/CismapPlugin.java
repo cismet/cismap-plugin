@@ -138,6 +138,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextStore;
 import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.BoundingBox;
@@ -1231,6 +1232,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             for (final ToolbarComponentsProvider toolbarCompProvider : toolbarCompProviders) {
                 if (log.isDebugEnabled()) {
                     log.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName()); // NOI18N
+                }
+
+                if (toolbarCompProvider instanceof ClientConnectionContextStore) {
+                    ((ClientConnectionContextStore)toolbarCompProvider).setConnectionContext(getConnectionContext());
+                    ((ClientConnectionContextStore)toolbarCompProvider).initAfterConnectionContext();
                 }
 
                 final Collection<ToolbarComponentDescription> componentDescriptions =

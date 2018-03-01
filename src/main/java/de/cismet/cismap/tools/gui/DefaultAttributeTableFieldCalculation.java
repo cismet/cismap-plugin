@@ -43,6 +43,10 @@ public class DefaultAttributeTableFieldCalculation implements AttributeTableFiel
     //~ Methods ----------------------------------------------------------------
 
     @Override
+    public void initAfterConnectionContext() {
+    }
+
+    @Override
     public boolean openPanel(final AttributeTable table,
             final AbstractFeatureService service,
             final FeatureServiceAttribute attribute,
