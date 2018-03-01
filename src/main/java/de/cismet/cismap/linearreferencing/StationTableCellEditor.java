@@ -31,7 +31,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
@@ -51,7 +51,7 @@ import de.cismet.cismap.linearreferencing.tools.StationTableCellEditorInterface;
  */
 @org.openide.util.lookup.ServiceProvider(service = StationTableCellEditorInterface.class)
 public class StationTableCellEditor extends AbstractCellEditor implements StationTableCellEditorInterface,
-    ClientConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,6 +64,8 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     private List<LinearReferencingInfo> linRefInfos;
     private LinearReferencingHelper linHelper = FeatureRegistry.getInstance().getLinearReferencingSolver();
 
+    private final ClientConnectionContext connectionContext;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -71,15 +73,18 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
      * {@link #setColumnName(java.lang.String) } must be invoked to set the column name, this editor is used on
      */
     public StationTableCellEditor() {
+        this(null, ClientConnectionContext.createDeprecated());
     }
 
     /**
      * Creates a new StationTableCellEditor object.
      *
-     * @param  columnName  DOCUMENT ME!
+     * @param  columnName         DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
-    public StationTableCellEditor(final String columnName) {
+    public StationTableCellEditor(final String columnName, final ClientConnectionContext connectionContext) {
         this.columnName = columnName;
+        this.connectionContext = connectionContext;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -151,7 +156,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
                 final MetaObject[] mos = SessionManager.getProxy()
                             .getMetaObjectByQuery(SessionManager.getSession().getUser(),
                                 routeQuery,
-                                getClientConnectionContext());
+                                getConnectionContext());
 
                 if ((mos != null) && (mos.length == 1)) {
                     final MetaObject routeObject = mos[0];
@@ -258,7 +263,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

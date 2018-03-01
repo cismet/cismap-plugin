@@ -41,7 +41,7 @@ import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.interfaces.CidsBeanAction;
@@ -81,7 +81,7 @@ public class CidsFeature implements XStyledFeature,
     CidsBeanActionsProvider,
     InfoNodeAwareFeature,
     FeatureRendererAwareFeature,
-    ClientConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -118,6 +118,9 @@ public class CidsFeature implements XStyledFeature,
     private String myAttributeStringInParentFeature = null;
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
     private boolean infoNodeEnabled = true;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -194,7 +197,7 @@ public class CidsFeature implements XStyledFeature,
         this.parentFeatureRenderer = rootRenderer;
         try {
             this.mo = mo;
-            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey(), getClientConnectionContext());
+            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey(), getConnectionContext());
             initFeatureSettings();
 
             // evaluate renderFeature
@@ -1100,7 +1103,7 @@ public class CidsFeature implements XStyledFeature,
     }
 
     @Override
-    public final ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

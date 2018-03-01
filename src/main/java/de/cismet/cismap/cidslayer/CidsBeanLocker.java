@@ -31,7 +31,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
@@ -43,7 +43,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class CidsBeanLocker implements ClientConnectionContextProvider {
+public class CidsBeanLocker implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,6 +58,9 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
     //~ Instance fields --------------------------------------------------------
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -94,8 +97,7 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
                     lockMc.getTableName(),
                     bean.getMetaObject().getMetaClass().getID(),
                     bean.getMetaObject().getID());
-            final MetaObject[] mos = SessionManager.getProxy()
-                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -128,7 +130,7 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
             } catch (UnknownHostException e) {
                 LOG.error("cnnot determine the computer name", e);
             }
-            lockBean = lockBean.persist();
+            lockBean = lockBean.persist(getConnectionContext());
 
             return lockBean;
         } catch (LockAlreadyExistsException e) {
@@ -166,8 +168,7 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
                     mc.getID());
-            final MetaObject[] mos = SessionManager.getProxy()
-                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -194,7 +195,7 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
             lockBean.setProperty("object_id", null);
             lockBean.setProperty("user_string", userString);
             lockBean.setProperty("additional_info", "locks the whole table");
-            lockBean = lockBean.persist();
+            lockBean = lockBean.persist(getConnectionContext());
 
             return lockBean;
         } catch (LockAlreadyExistsException e) {
@@ -218,7 +219,7 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
                 return;
             }
             bean.delete();
-            bean.persist();
+            bean.persist(getConnectionContext());
         } catch (Exception e) {
             LOG.error("Cannot remove lock with id " + bean.getProperty("id"));
             throw e;
@@ -251,8 +252,8 @@ public class CidsBeanLocker implements ClientConnectionContextProvider {
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

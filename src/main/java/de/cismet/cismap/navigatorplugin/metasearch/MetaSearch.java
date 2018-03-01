@@ -29,7 +29,7 @@ import java.util.List;
 import javax.swing.JDialog;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.utils.MetaClassCacheService;
 
@@ -44,7 +44,7 @@ import de.cismet.tools.configuration.NoWriteError;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class MetaSearch implements Configurable, MetaSearchFacade, ClientConnectionContextProvider {
+public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -71,6 +71,9 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ClientConnect
     private final Collection<MetaSearchListener> listeners = new ArrayList<MetaSearchListener>();
     private final ListenerHandler listenerHandler = new ListenerHandler();
     private final SearchTopicListener searchTopicListener = new SearchTopicListenerImpl();
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -426,7 +429,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ClientConnect
                     final boolean actionCheck = SessionManager.getConnection()
                                 .hasConfigAttr(SessionManager.getSession().getUser(),
                                     actionTag,
-                                    getClientConnectionContext());
+                                    getConnectionContext());
                     if (("enable".equalsIgnoreCase(checkActionTag) || "1".equalsIgnoreCase(checkActionTag))) {
                         isEnabled = actionCheck;
                     } else if (("disable".equalsIgnoreCase(checkActionTag) || "0".equalsIgnoreCase(checkActionTag))) {
@@ -497,8 +500,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ClientConnect
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

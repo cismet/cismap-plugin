@@ -24,6 +24,10 @@ import java.util.HashSet;
 
 import javax.swing.JLabel;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 
 /**
@@ -32,7 +36,13 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSearchProtocolStep> {
+public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSearchProtocolStep>
+        implements ConnectionContextProvider {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
@@ -80,7 +90,8 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
                                 metaSearchProtocolStepPanelSearchObjectsTree1,
                                 new ObjectTreeNode(
                                     (MetaObjectNode)metaSearchProtocolStepPanelSearchObjectsTree1.getResultNodes().get(
-                                        0)),
+                                        0),
+                                    getConnectionContext()),
                                 false,
                                 false,
                                 false,
@@ -145,13 +156,14 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         jLabel4 = new javax.swing.JLabel();
         lblTitle = new javax.swing.JLabel();
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
-                ((GeoSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep());
+                ((GeoSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep(),
+                getConnectionContext());
         jPanel1 = new javax.swing.JPanel();
         jXHyperlink1 = new org.jdesktop.swingx.JXHyperlink();
         jScrollPane2 = new javax.swing.JScrollPane();
         try {
             metaSearchProtocolStepPanelSearchObjectsTree1 =
-                new de.cismet.cismap.navigatorplugin.protocol.MetaObjectNodeTree();
+                new de.cismet.cismap.navigatorplugin.protocol.MetaObjectNodeTree(getConnectionContext());
         } catch (java.lang.Exception e1) {
             e1.printStackTrace();
         }
@@ -335,5 +347,10 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
         }
 
         revalidate();
+    }
+
+    @Override
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

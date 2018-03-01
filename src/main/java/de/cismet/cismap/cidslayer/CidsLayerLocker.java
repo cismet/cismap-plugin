@@ -33,7 +33,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
@@ -48,7 +48,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = FeatureLockingInterface.class)
-public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectionContextProvider {
+public class CidsLayerLocker implements FeatureLockingInterface, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -68,6 +68,9 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
     private final Map<String, MetaClass> LOCK_GROUP_MC_MAP = new HashMap<String, MetaClass>();
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -121,8 +124,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
                     lockGroupMc.getTableName(),
                     mo.getMetaClass().getID(),
                     getIds(features));
-            final MetaObject[] mos = SessionManager.getProxy()
-                        .getMetaObjectByQuery(query, 0, getClientConnectionContext());
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject metaObject : mos) {
@@ -161,7 +163,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
                 LOG.error("cnnot determine the computer name", e);
             }
             lockGroupBean.setProperty("user_string", userString);
-            lockGroupBean = lockGroupBean.persist();
+            lockGroupBean = lockGroupBean.persist(getConnectionContext());
 
             return lockGroupBean;
         } catch (LockAlreadyExistsException e) {
@@ -231,7 +233,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
                 return;
             }
             bean.delete();
-            bean.persist();
+            bean.persist(getConnectionContext());
         } catch (Exception e) {
             LOG.error("Cannot remove lock with id " + bean.getProperty("id"));
             throw e;
@@ -317,8 +319,8 @@ public class CidsLayerLocker implements FeatureLockingInterface, ClientConnectio
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

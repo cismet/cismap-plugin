@@ -29,7 +29,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
 
@@ -39,7 +39,7 @@ import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsLayerTreeModel implements TreeModel, StringFilter, ClientConnectionContextProvider {
+public class CidsLayerTreeModel implements TreeModel, StringFilter, ConnectionContextProvider {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -49,6 +49,9 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ClientConnec
     private String title;
     private List<Object> classes = new ArrayList<Object>();
     private String filterString;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -62,7 +65,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ClientConnec
         this.domain = domain;
         this.title = title;
         try {
-            final MetaClass[] mc = SessionManager.getProxy().getClasses(domain, getClientConnectionContext());
+            final MetaClass[] mc = SessionManager.getProxy().getClasses(domain, getConnectionContext());
 
             for (final MetaClass clazz : mc) {
                 final Collection attributes = clazz.getAttributeByName("cidsLayer");
@@ -266,8 +269,8 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ClientConnec
     }
 
     @Override
-    public final ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

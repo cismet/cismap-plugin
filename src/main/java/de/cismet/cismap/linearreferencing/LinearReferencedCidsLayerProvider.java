@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.cidslayer.CidsLayer;
 
@@ -39,12 +39,16 @@ import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = LinearReferencedGeomProvider.class)
-public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider,
-    ClientConnectionContextProvider {
+public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static Logger LOG = Logger.getLogger(LinearReferencedCidsLayerProvider.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Methods ----------------------------------------------------------------
 
@@ -55,7 +59,7 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
         for (final String domain : helper.getDomainOfRouteTable(null)) {
             try {
-                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain, getClientConnectionContext());
+                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain, getConnectionContext());
 
                 for (final MetaClass clazz : classes) {
                     final Collection attributes = clazz.getAttributeByName("LinRefBaseGeom");
@@ -91,10 +95,12 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
         return null;
     }
+
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
+
     @Override
     public String getInternalServiceName(final AbstractFeatureService service) {
         if (service instanceof CidsLayer) {

@@ -69,7 +69,7 @@ import javax.swing.text.BadLocationException;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.tools.CidsLayerUtil;
 
@@ -101,7 +101,7 @@ import static de.cismet.cids.search.QuerySearch.PROP_VALUES;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class FieldCalculatorDialog extends javax.swing.JDialog implements ClientConnectionContextProvider {
+public class FieldCalculatorDialog extends javax.swing.JDialog implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -214,6 +214,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Client
     private AttributeTable table;
     private boolean calculationStarted = false;
 
+    private final ClientConnectionContext connectionContext;
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel HintPanel;
     private javax.swing.JButton btnSearchCancel;
@@ -244,22 +246,25 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Client
     /**
      * Creates new form LinearReferencingDialog.
      *
-     * @param  table        DOCUMENT ME!
-     * @param  modal        DOCUMENT ME!
-     * @param  service      DOCUMENT ME!
-     * @param  attribute    DOCUMENT ME!
-     * @param  featureList  DOCUMENT ME!
+     * @param  table              DOCUMENT ME!
+     * @param  modal              DOCUMENT ME!
+     * @param  service            DOCUMENT ME!
+     * @param  attribute          DOCUMENT ME!
+     * @param  featureList        DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
     public FieldCalculatorDialog(final AttributeTable table,
             final boolean modal,
             final AbstractFeatureService service,
             final FeatureServiceAttribute attribute,
-            final List<FeatureServiceFeature> featureList) {
+            final List<FeatureServiceFeature> featureList,
+            final ClientConnectionContext connectionContext) {
         super(StaticSwingTools.getParentFrame(table), modal);
         this.service = service;
         this.attribute = attribute;
         this.featureList = featureList;
         this.table = table;
+        this.connectionContext = connectionContext;
         initComponents();
         jAttributesLi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jAttributesLi.addMouseListener(new MouseAdapterImpl());
@@ -331,8 +336,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Client
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     /**
@@ -1037,7 +1042,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Client
                     .getMetaClass(SessionManager.getSession().getUser(),
                         classId,
                         metaClass.getDomain(),
-                        getClientConnectionContext());
+                        getConnectionContext());
     }
 
     /**

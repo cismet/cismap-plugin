@@ -35,7 +35,7 @@ import java.util.Map;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
@@ -63,7 +63,7 @@ import static de.cismet.cismap.commons.gui.attributetable.FeatureCreator.SIMPLE_
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class LineAndStationCreator extends AbstractFeatureCreator implements ClientConnectionContextProvider {
+public class LineAndStationCreator extends AbstractFeatureCreator implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -82,6 +82,9 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Cli
     private float minDistance = 0;
     private float maxDistance = Float.MAX_VALUE;
     private AbstractFeatureService service = null;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -174,7 +177,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Cli
                                                                         .getMetaObjectByQuery(
                                                                             SessionManager.getSession().getUser(),
                                                                             query,
-                                                                            getClientConnectionContext());
+                                                                            getConnectionContext());
 
                                                         if ((mo != null) && (mo.length == 1)) {
                                                             final CidsBean routeBean = mo[0].getBean();
@@ -285,7 +288,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Cli
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

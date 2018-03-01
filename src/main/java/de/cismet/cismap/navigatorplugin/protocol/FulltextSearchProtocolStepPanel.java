@@ -13,6 +13,10 @@ import java.awt.Component;
 
 import java.util.ArrayList;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContext;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
@@ -23,7 +27,13 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<FulltextSearchProtocolStep> {
+public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<FulltextSearchProtocolStep>
+        implements ConnectionContextProvider {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
@@ -91,7 +101,8 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         lblIconBoth = new javax.swing.JLabel();
         lblTitle = new javax.swing.JLabel();
         cidsServerSearchProtocolStepPanel1 = new Sirius.navigator.search.CidsServerSearchProtocolStepPanel(
-                ((FulltextSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep());
+                ((FulltextSearchProtocolStepImpl)getProtocolStep()).getCidsServerSearchProtocolStep(),
+                getConnectionContext());
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
@@ -210,4 +221,9 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(geometryProtocolStepPanel1, gridBagConstraints);
     } // </editor-fold>//GEN-END:initComponents
+
+    @Override
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 }

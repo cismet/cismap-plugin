@@ -21,7 +21,7 @@ import java.util.List;
 import javax.swing.Action;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapDataProvider;
@@ -43,7 +43,7 @@ import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
  */
 public class MapExportPanel extends javax.swing.JPanel implements Configurable,
     ExportMapDataProvider,
-    ClientConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,6 +55,9 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
     private final ExportMapToClipboardAction exportMapToClipboardAction;
     private final ExportGeoPointToClipboardAction exportGeoPointToClipboardAction;
     private final ExportMapToFileAction exportMapToFileAction;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private de.cismet.tools.gui.JPopupMenuButton btnClipboard;
@@ -99,7 +102,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
         boolean result;
         try {
             result = SessionManager.getConnection()
-                        .getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getClientConnectionContext())
+                        .getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getConnectionContext())
                         != null;
         } catch (ConnectionException ex) {
             LOG.error("Can not check ActionTag!", ex);
@@ -311,7 +314,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

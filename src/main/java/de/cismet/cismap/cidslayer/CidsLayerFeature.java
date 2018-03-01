@@ -53,7 +53,7 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.cidslayer.StationInfo;
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.tools.tostring.CidsLayerFeatureToStringConverter;
 import de.cismet.cids.tools.tostring.ToStringConverter;
@@ -88,7 +88,7 @@ import de.cismet.cismap.linearreferencing.TableStationEditor;
  */
 public class CidsLayerFeature extends DefaultFeatureServiceFeature implements ModifiableFeature,
     PermissionProvider,
-    ClientConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -149,6 +149,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private boolean modified;
     private boolean doNotChangeBackup = false;
     private boolean undoOnServer = false;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -776,8 +779,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 bean.setProperty(propKey, propertyMap.get(key));
             }
         }
-//LOG.error(bean.getMOString());
-        final CidsBean newBean = bean.persist();
+
+        final CidsBean newBean = bean.persist(getConnectionContext());
 
         if (newBean != null) {
             setId(newBean.getMetaObject().getID());
@@ -875,14 +878,14 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     public void delete() throws Exception {
         final CidsBean bean = getMetaObject().getBean();
         bean.delete();
-        bean.persist();
+        bean.persist(getConnectionContext());
     }
 
     @Override
     public void restore() throws Exception {
         final CidsBean bean = getMetaObject().getBean();
         bean.getMetaObject().setStatus(MetaObject.NEW);
-        bean.persist();
+        bean.persist(getConnectionContext());
         metaObject = null;
     }
 
@@ -952,7 +955,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                     CidsLayerFeature.this.getId(),
                                     metaClass.getID(),
                                     SessionManager.getSession().getUser().getDomain(),
-                                    getClientConnectionContext());
+                                    getConnectionContext());
 
                 if (metaObject == null) {
                     metaObject = metaClass.getEmptyInstance();
@@ -1105,7 +1108,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             final MetaObject[] mos = SessionManager.getConnection()
                         .getMetaObjectByQuery(SessionManager.getSession().getUser(),
                             query,
-                            getClientConnectionContext());
+                            getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject object : mos) {
@@ -1145,7 +1148,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             final MetaObject[] mos = SessionManager.getConnection()
                         .getMetaObjectByQuery(SessionManager.getSession().getUser(),
                             query,
-                            getClientConnectionContext());
+                            getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 return mos[0].getBean();
@@ -1374,8 +1377,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

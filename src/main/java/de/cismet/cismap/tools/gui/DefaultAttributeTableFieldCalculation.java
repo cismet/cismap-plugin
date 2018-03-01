@@ -13,6 +13,9 @@ package de.cismet.cismap.tools.gui;
 
 import java.util.List;
 
+import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
+import de.cismet.cids.server.connectioncontext.ClientConnectionContextStore;
+
 import de.cismet.cismap.cidslayer.FieldCalculatorDialog;
 
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
@@ -30,7 +33,12 @@ import de.cismet.tools.gui.StaticSwingTools;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = AttributeTableFieldCalculation.class)
-public class DefaultAttributeTableFieldCalculation implements AttributeTableFieldCalculation {
+public class DefaultAttributeTableFieldCalculation implements AttributeTableFieldCalculation,
+    ClientConnectionContextStore {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private ClientConnectionContext connectionContext;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -39,15 +47,27 @@ public class DefaultAttributeTableFieldCalculation implements AttributeTableFiel
             final AbstractFeatureService service,
             final FeatureServiceAttribute attribute,
             final List<FeatureServiceFeature> featureList) {
-        final FieldCalculatorDialog dialog = new FieldCalculatorDialog(table,
+        final FieldCalculatorDialog dialog = new FieldCalculatorDialog(
+                table,
                 true,
                 service,
                 attribute,
-                featureList);
+                featureList,
+                getConnectionContext());
 
         dialog.setSize(540, 500);
         StaticSwingTools.showDialog(dialog);
 
         return dialog.isCalculationStarted();
+    }
+
+    @Override
+    public void setConnectionContext(final ClientConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
+
+    @Override
+    public ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

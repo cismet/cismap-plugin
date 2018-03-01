@@ -8,7 +8,6 @@
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.connection.SessionManager;
-import Sirius.navigator.exception.ConnectionException;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -139,7 +138,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
@@ -237,7 +236,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     StatusListener,
     HistoryModelListener,
     FeatureCollectionListener,
-    ClientConnectionContextProvider {
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -338,6 +337,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
     private MetaSearchHelper metaSearchComponentFactory;
     private WindowAdapter loadLayoutWhenOpenedAdapter = null;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
@@ -1144,8 +1146,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     /**
@@ -4303,7 +4305,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             visible = SessionManager.getConnection()
                         .getConfigAttr(SessionManager.getSession().getUser(),
                                 "extendedSelectionCapabilities",
-                                getClientConnectionContext()) != null;
+                                getConnectionContext()) != null;
         } catch (final Exception ex) {
             visible = false;
         }

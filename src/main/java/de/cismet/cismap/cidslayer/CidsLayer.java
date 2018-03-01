@@ -32,7 +32,7 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.XBoundingBox;
@@ -50,8 +50,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
  *
  * @version  $Revision$, $Date$
  */
-public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String>
-        implements ClientConnectionContextProvider {
+public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -87,6 +86,9 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String>
     private Integer maxFeaturesPerPage = null;
     private Double maxArea = null;
     private Double maxScale = null;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -171,14 +173,14 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String>
             final String attrForbidden = SessionManager.getProxy()
                         .getConfigAttr(SessionManager.getSession().getUser(),
                             downloadForbiddenName,
-                            getClientConnectionContext());
+                            getConnectionContext());
 
             if (attrForbidden != null) {
                 final String downloadAllowedName = camalizedName + "DownloadAllowed";
                 final String attrAllowed = SessionManager.getProxy()
                             .getConfigAttr(SessionManager.getSession().getUser(),
                                 downloadAllowedName,
-                                getClientConnectionContext());
+                                getConnectionContext());
                 downloadAllowed = (attrAllowed != null);
             } else {
                 downloadAllowed = true;
@@ -563,8 +565,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String>
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override

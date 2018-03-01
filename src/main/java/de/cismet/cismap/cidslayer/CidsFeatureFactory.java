@@ -38,7 +38,7 @@ import javax.swing.SwingWorker;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextProvider;
+import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.builtin.CidsLayerInitStatement;
 import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
@@ -64,7 +64,7 @@ import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
  * @version  $Revision$, $Date$
  */
 public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String>
-        implements ClientConnectionContextProvider {
+        implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -82,6 +82,9 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private Double maxArea = null;
     private Double maxScale = null;
     private Integer maxFeaturesPerPage = null;
+
+    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
+                    .getSimpleName());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -255,7 +258,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager.getProxy()
                             .customServerSearch(SessionManager.getSession().getUser(),
                                     serverSearch,
-                                    getClientConnectionContext());
+                                    getConnectionContext());
 
                 for (final ArrayList row : resultArray) {
                     if (row.get(0) != null) {
@@ -418,7 +421,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                                     .getProxy()
                                     .customServerSearch(SessionManager.getSession().getUser(),
                                             serverSearch,
-                                            getClientConnectionContext());
+                                            getConnectionContext());
                         final String crs = CismapBroker.getInstance().getDefaultCrs();
 
                         for (final ArrayList row : resultArray) {
@@ -538,7 +541,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         final Collection resultCollection = SessionManager.getProxy()
                     .customServerSearch(SessionManager.getSession().getUser(),
                         serverSearch,
-                        getClientConnectionContext());
+                        getConnectionContext());
         if (checkCancelled(workerThread, "PostQuery")) {
             return null;
         }
@@ -705,7 +708,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             final Collection resultCollection = SessionManager.getProxy()
                         .customServerSearch(SessionManager.getSession().getUser(),
                             serverSearch,
-                            getClientConnectionContext());
+                            getConnectionContext());
 
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
@@ -756,7 +759,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     }
 
     @Override
-    public ClientConnectionContext getClientConnectionContext() {
-        return ClientConnectionContext.create(getClass().getSimpleName());
+    public final ClientConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }
