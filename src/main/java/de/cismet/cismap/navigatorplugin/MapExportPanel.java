@@ -20,14 +20,14 @@ import java.util.List;
 
 import javax.swing.Action;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
-
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportGeoPointToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapDataProvider;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapFileTypes;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;

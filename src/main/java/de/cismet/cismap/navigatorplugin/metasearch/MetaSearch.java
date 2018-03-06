@@ -28,12 +28,12 @@ import java.util.List;
 
 import javax.swing.JDialog;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
-
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchFacade;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;

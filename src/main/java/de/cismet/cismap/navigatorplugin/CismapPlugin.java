@@ -137,10 +137,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContextStore;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
-
 import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.RestrictedFileSystemView;
@@ -195,6 +191,10 @@ import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardA
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
 
 import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ClientConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.ext.CExtContext;
 import de.cismet.ext.CExtManager;

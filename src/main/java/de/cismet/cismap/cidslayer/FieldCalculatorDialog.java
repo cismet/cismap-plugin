@@ -68,8 +68,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.tools.CidsLayerUtil;
 
@@ -89,6 +87,9 @@ import de.cismet.cismap.commons.util.SelectionManager;
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
 import de.cismet.commons.converter.ConversionException;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.gui.StaticSwingTools;
 

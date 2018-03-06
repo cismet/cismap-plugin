@@ -40,9 +40,6 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.featurerenderer.CustomCidsFeatureRenderer;
 import de.cismet.cids.featurerenderer.SubFeatureAwareFeatureRenderer;
 
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
-
 import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cids.utils.interfaces.CidsBeanAction;
 import de.cismet.cids.utils.interfaces.CidsBeanActionsProvider;
@@ -66,6 +63,9 @@ import de.cismet.cismap.commons.raster.wms.featuresupportlayer.SimpleFeatureSupp
 import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.commons.classloading.BlacklistClassloading;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!

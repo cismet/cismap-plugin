@@ -37,8 +37,6 @@ import java.util.Vector;
 import javax.swing.SwingWorker;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 import de.cismet.cids.server.search.builtin.CidsLayerInitStatement;
 import de.cismet.cids.server.search.builtin.CidsLayerSearchStatement;
 
@@ -56,6 +54,9 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.commons.tools.FeatureTools;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!

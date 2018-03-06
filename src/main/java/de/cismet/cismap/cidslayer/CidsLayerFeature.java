@@ -52,8 +52,6 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 import de.cismet.cids.server.cidslayer.StationInfo;
-import de.cismet.cids.server.connectioncontext.ClientConnectionContext;
-import de.cismet.cids.server.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.cids.tools.tostring.CidsLayerFeatureToStringConverter;
 import de.cismet.cids.tools.tostring.ToStringConverter;
@@ -79,6 +77,9 @@ import de.cismet.cismap.linearreferencing.FeatureRegistry;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
 import de.cismet.cismap.linearreferencing.TableStationEditor;
+
+import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -106,7 +107,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private Map<String, DefaultCidsLayerBindableReferenceCombo> combos = null;
     private Map<String, FeatureServiceFeature> initCatalogueValue = null;
     private Color backgroundColor;
-    private PropertyChangeListener propListener = new PropertyChangeListener() {
+    private final PropertyChangeListener propListener = new PropertyChangeListener() {
 
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
