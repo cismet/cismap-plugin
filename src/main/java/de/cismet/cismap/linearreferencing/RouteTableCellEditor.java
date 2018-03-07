@@ -35,7 +35,6 @@ import javax.swing.table.TableCellEditor;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.cidslayer.CidsLayerInfo;
-import de.cismet.cids.server.cidslayer.StationInfo;
 
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
@@ -44,6 +43,8 @@ import de.cismet.cismap.commons.featureservice.LinearReferencingInfo;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -51,7 +52,7 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class RouteTableCellEditor extends AbstractCellEditor implements TableCellEditor {
+public class RouteTableCellEditor extends AbstractCellEditor implements TableCellEditor, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -68,9 +69,15 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
     private CidsLayerFeature cidsFeature;
     private final boolean line;
     private String routeQuery = null;
+    private final ConnectionContext connectionContext;
 
     //~ Constructors -----------------------------------------------------------
 
+    @Deprecated
+    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line) {
+        this(routeName, columnName, line, ConnectionContext.createDeprecated());
+    }
+    
     /**
      * Creates a new RouteTableCellEditor object.
      *
@@ -78,10 +85,11 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
      * @param  columnName  DOCUMENT ME!
      * @param  line        DOCUMENT ME!
      */
-    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line) {
+    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line, final ConnectionContext connectionContext) {
         this.routeName = routeName;
         this.columnName = columnName;
         this.line = line;
+        this.connectionContext = connectionContext;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -134,7 +142,7 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
                 cidsFeature = (CidsLayerFeature)feature;
 //                stat = cidsFeature.getStationEditor(getColumnName());
                 oldValue = (String)value;
-                stat = new RouteCombo(routeName, value);
+                stat = new RouteCombo(routeName, value, getConnectionContext());
             }
         } else if (o.getParent() instanceof FeatureInfoPanel) {
             final FeatureInfoPanel infoPanel = (FeatureInfoPanel)o.getParent();
@@ -142,10 +150,10 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
 
             if (feature instanceof CidsLayerFeature) {
                 cidsFeature = (CidsLayerFeature)feature;
-                stat = new RouteCombo(routeName, value);
+                stat = new RouteCombo(routeName, value, getConnectionContext());
 //                stat = cidsFeature.getStationEditor(getColumnName());
                 oldValue = (String)value;
-                stat = new RouteCombo(routeName, value);
+                stat = new RouteCombo(routeName, value, getConnectionContext());
             }
         }
 
@@ -163,7 +171,7 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
     public Component getFeatureComponent(final CidsLayerFeature feature, final Object value) {
         cidsFeature = feature;
         oldValue = (String)value;
-        stat = new RouteCombo(routeName, value);
+        stat = new RouteCombo(routeName, value, getConnectionContext());
 
         return stat;
     }
@@ -350,4 +358,9 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
 //    public void setColumnName(final String columnName) {
 //        this.columnName = columnName;
 //    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 }

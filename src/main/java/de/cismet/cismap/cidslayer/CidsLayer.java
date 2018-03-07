@@ -43,7 +43,7 @@ import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -88,8 +88,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private Double maxArea = null;
     private Double maxScale = null;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -339,7 +339,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public void additionalInitializationFromElement(final Element element) throws Exception {
         tableName = element.getChildText("className").trim();
         metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
-                tableName);
+                tableName, getConnectionContext());
         if (metaClass == null) {
             return;
         }
@@ -566,7 +566,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

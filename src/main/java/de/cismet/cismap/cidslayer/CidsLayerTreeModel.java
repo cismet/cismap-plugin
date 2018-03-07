@@ -30,7 +30,7 @@ import javax.swing.tree.TreePath;
 
 import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -50,8 +50,8 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ConnectionCo
     private List<Object> classes = new ArrayList<Object>();
     private String filterString;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -269,7 +269,7 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ConnectionCo
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

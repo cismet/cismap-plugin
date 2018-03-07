@@ -21,10 +21,10 @@ import de.cismet.cismap.commons.featureservice.FeatureServiceAttribute;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableFieldCalculation;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
-import de.cismet.connectioncontext.ClientConnectionContextStore;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -34,16 +34,17 @@ import de.cismet.tools.gui.StaticSwingTools;
  */
 @org.openide.util.lookup.ServiceProvider(service = AttributeTableFieldCalculation.class)
 public class DefaultAttributeTableFieldCalculation implements AttributeTableFieldCalculation,
-    ClientConnectionContextStore {
+    ConnectionContextStore {
 
     //~ Instance fields --------------------------------------------------------
 
-    private ClientConnectionContext connectionContext;
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public void initAfterConnectionContext() {
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
     }
 
     @Override
@@ -66,12 +67,7 @@ public class DefaultAttributeTableFieldCalculation implements AttributeTableFiel
     }
 
     @Override
-    public void setConnectionContext(final ClientConnectionContext connectionContext) {
-        this.connectionContext = connectionContext;
-    }
-
-    @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

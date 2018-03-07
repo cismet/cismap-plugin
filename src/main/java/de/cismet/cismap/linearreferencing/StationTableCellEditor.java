@@ -40,7 +40,7 @@ import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
 
 import de.cismet.cismap.linearreferencing.tools.StationTableCellEditorInterface;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -64,7 +64,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     private List<LinearReferencingInfo> linRefInfos;
     private LinearReferencingHelper linHelper = FeatureRegistry.getInstance().getLinearReferencingSolver();
 
-    private final ClientConnectionContext connectionContext;
+    private final ConnectionContext connectionContext;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -73,7 +73,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
      * {@link #setColumnName(java.lang.String) } must be invoked to set the column name, this editor is used on
      */
     public StationTableCellEditor() {
-        this(null, ClientConnectionContext.createDeprecated());
+        this(null, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -82,7 +82,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
      * @param  columnName         DOCUMENT ME!
      * @param  connectionContext  DOCUMENT ME!
      */
-    public StationTableCellEditor(final String columnName, final ClientConnectionContext connectionContext) {
+    public StationTableCellEditor(final String columnName, final ConnectionContext connectionContext) {
         this.columnName = columnName;
         this.connectionContext = connectionContext;
     }
@@ -142,7 +142,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
      */
     private TableStationEditor createEditor(final JDBCFeature feature) {
         final LinearReferencingInfo info = getInfoForColumn(columnName);
-        final MetaClass metaClass = ClassCacheMultiple.getMetaClass(info.getDomain(), info.getLinRefReferenceName());
+        final MetaClass metaClass = ClassCacheMultiple.getMetaClass(info.getDomain(), info.getLinRefReferenceName(), getConnectionContext());
         if (metaClass != null) {
             try {
                 final String query = "SELECT %s, %s FROM %s WHERE %s = '%s';";
@@ -263,7 +263,7 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     }
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

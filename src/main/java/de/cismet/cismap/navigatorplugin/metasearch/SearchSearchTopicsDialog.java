@@ -46,7 +46,6 @@ import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
 
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -69,8 +68,8 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     private final SearchControlPanel pnlSearchCancel;
     private boolean searchRunning = false;
     private final SearchTopicsDialogModel model = new SearchTopicsDialogModel();
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
 //    private SwingWorker searchThread;
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -364,50 +363,50 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void txtSearchParameterActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtSearchParameterActionPerformed
+    private void txtSearchParameterActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchParameterActionPerformed
         // Avoid invalid input.
         if (pnlSearchCancel.isEnabled()) {
             pnlSearchCancel.startSearch();
         }
-    } //GEN-LAST:event_txtSearchParameterActionPerformed
+    }//GEN-LAST:event_txtSearchParameterActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnCloseActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnCloseActionPerformed
+    private void btnCloseActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         setVisible(false);
-    }                                                                            //GEN-LAST:event_btnCloseActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void formWindowClosing(final java.awt.event.WindowEvent evt) { //GEN-FIRST:event_formWindowClosing
+    private void formWindowClosing(final java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         if (!searchRunning) {
             setVisible(false);
         }
-    }                                                                      //GEN-LAST:event_formWindowClosing
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void chkCaseSensitiveActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkCaseSensitiveActionPerformed
+    private void chkCaseSensitiveActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkCaseSensitiveActionPerformed
         model.setCaseSensitiveEnabled(chkCaseSensitive.isSelected());
-    }                                                                                    //GEN-LAST:event_chkCaseSensitiveActionPerformed
+    }//GEN-LAST:event_chkCaseSensitiveActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void chkHereActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_chkHereActionPerformed
+    private void chkHereActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkHereActionPerformed
         model.setSearchGeometryEnabled(chkHere.isSelected());
-    }                                                                           //GEN-LAST:event_chkHereActionPerformed
+    }//GEN-LAST:event_chkHereActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -547,7 +546,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     }
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

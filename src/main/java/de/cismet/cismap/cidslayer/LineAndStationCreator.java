@@ -50,12 +50,12 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.gui.WaitingDialogThread;
 
 import static de.cismet.cismap.commons.gui.attributetable.FeatureCreator.SIMPLE_GEOMETRY_LISTENER_KEY;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -83,8 +83,8 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Con
     private float maxDistance = Float.MAX_VALUE;
     private AbstractFeatureService service = null;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -288,7 +288,7 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Con
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

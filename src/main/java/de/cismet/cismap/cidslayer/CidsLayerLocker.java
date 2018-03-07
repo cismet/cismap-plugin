@@ -38,7 +38,7 @@ import de.cismet.cismap.commons.gui.attributetable.FeatureLockingInterface;
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -69,8 +69,8 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
     private final Map<String, MetaClass> LOCK_GROUP_MC_MAP = new HashMap<String, MetaClass>();
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Methods ----------------------------------------------------------------
 
@@ -259,7 +259,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
         MetaClass lockMc = LOCK_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCKS_TN + " does not exist in the domain " + domain);
@@ -284,7 +284,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
         MetaClass lockMc = LOCK_GROUP_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCK_GROUP_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCK_GROUP_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCK_GROUP_TN + " does not exist in the domain " + domain);
@@ -319,7 +319,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

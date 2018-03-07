@@ -29,7 +29,7 @@ import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 
 import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -47,8 +47,8 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
     //~ Instance fields --------------------------------------------------------
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Methods ----------------------------------------------------------------
 
@@ -97,7 +97,7 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

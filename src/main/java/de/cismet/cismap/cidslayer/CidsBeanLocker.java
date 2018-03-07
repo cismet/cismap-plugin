@@ -33,7 +33,7 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -59,8 +59,8 @@ public class CidsBeanLocker implements ConnectionContextProvider {
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Methods ----------------------------------------------------------------
 
@@ -240,7 +240,7 @@ public class CidsBeanLocker implements ConnectionContextProvider {
         MetaClass lockMc = LOCK_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCKS_TN + " does not exist in the domain " + domain);
@@ -252,7 +252,7 @@ public class CidsBeanLocker implements ConnectionContextProvider {
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

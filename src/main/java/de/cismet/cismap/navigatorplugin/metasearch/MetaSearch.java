@@ -31,12 +31,13 @@ import javax.swing.JDialog;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchFacade;
+import de.cismet.connectioncontext.AbstractConnectionContext;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -66,21 +67,22 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Collection<SearchTopic> searchTopics = new LinkedList<SearchTopic>();
+    private final Collection<SearchTopic> searchTopics = new LinkedList<>();
     private final MetaClassCacheService metaClassCacheService;
-    private final Collection<MetaSearchListener> listeners = new ArrayList<MetaSearchListener>();
+    private final Collection<MetaSearchListener> listeners = new ArrayList<>();
     private final ListenerHandler listenerHandler = new ListenerHandler();
     private final SearchTopicListener searchTopicListener = new SearchTopicListenerImpl();
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext;
+                    
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new MetaSearch object.
      */
-    private MetaSearch() {
+    private MetaSearch(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         metaClassCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
     }
 
@@ -93,7 +95,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      */
     public static MetaSearch instance() {
         if (instance == null) {
-            instance = new MetaSearch();
+            instance = new MetaSearch(ConnectionContext.create(AbstractConnectionContext.Category.INSTANCE, MetaSearch.class.getSimpleName()));
         }
 
         return instance;
@@ -132,7 +134,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      * @return  DOCUMENT ME!
      */
     public Collection<SearchTopic> getSelectedSearchTopics() {
-        final List<SearchTopic> result = new LinkedList<SearchTopic>();
+        final List<SearchTopic> result = new LinkedList<>();
 
         for (final SearchTopic searchTopic : searchTopics) {
             if (searchTopic.isSelected()) {
@@ -149,7 +151,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      * @return  DOCUMENT ME!
      */
     public Collection<SearchClass> getSelectedSearchClasses() {
-        final List<SearchClass> result = new LinkedList<SearchClass>();
+        final List<SearchClass> result = new LinkedList<>();
 
         for (final SearchTopic searchTopic : searchTopics) {
             if (searchTopic.isSelected()) {
@@ -168,7 +170,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      * @return  DOCUMENT ME!
      */
     public Collection<String> getSelectedSearchClassesForQuery() {
-        final List<String> result = new LinkedList<String>();
+        final List<String> result = new LinkedList<>();
 
         if (metaClassCacheService == null) {
             LOG.error(
@@ -273,7 +275,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      * DOCUMENT ME!
      */
     private void clearTopics() {
-        final Collection<SearchTopic> removedTopics = new ArrayList<SearchTopic>(searchTopics);
+        final Collection<SearchTopic> removedTopics = new ArrayList<>(searchTopics);
         searchTopics.clear();
         for (final SearchTopic topic : removedTopics) {
             topic.removeSearchTopicListener(searchTopicListener);
@@ -362,7 +364,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
             return;
         }
 
-        final Collection<SearchTopic> searchTopics = new ArrayList<SearchTopic>();
+        final Collection<SearchTopic> searchTopics = new ArrayList<>();
 
         for (final Element searchTopicElement : searchTopicElements) {
             final String name = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_NAME);
@@ -485,7 +487,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      * @return  DOCUMENT ME!
      */
     private List<Element> getChildren(final Element parent, final String childrenTag) {
-        final List<Element> result = new LinkedList<Element>();
+        final List<Element> result = new LinkedList<>();
 
         final List children = parent.getChildren(childrenTag);
         if (children != null) {
@@ -500,7 +502,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

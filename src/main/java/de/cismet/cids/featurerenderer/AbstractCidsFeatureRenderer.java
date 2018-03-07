@@ -15,7 +15,7 @@ import Sirius.server.middleware.types.MetaObject;
 
 import de.cismet.cismap.commons.features.FeatureRenderer;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -31,7 +31,7 @@ public abstract class AbstractCidsFeatureRenderer implements FeatureRenderer, Co
     protected MetaObject metaObject;
     protected MetaClass metaClass;
 
-    private final ClientConnectionContext connectionContext;
+    private final ConnectionContext connectionContext;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -40,7 +40,7 @@ public abstract class AbstractCidsFeatureRenderer implements FeatureRenderer, Co
      *
      * @param  connectionContext  DOCUMENT ME!
      */
-    public AbstractCidsFeatureRenderer(final ClientConnectionContext connectionContext) {
+    public AbstractCidsFeatureRenderer(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractCidsFeatureRenderer implements FeatureRenderer, Co
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

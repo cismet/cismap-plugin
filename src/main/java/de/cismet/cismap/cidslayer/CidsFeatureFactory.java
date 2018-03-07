@@ -55,7 +55,7 @@ import de.cismet.cismap.commons.tools.FeatureTools;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -84,8 +84,8 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private Double maxScale = null;
     private Integer maxFeaturesPerPage = null;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -760,7 +760,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

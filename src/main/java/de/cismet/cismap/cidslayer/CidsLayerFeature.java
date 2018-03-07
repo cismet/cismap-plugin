@@ -78,7 +78,7 @@ import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 import de.cismet.cismap.linearreferencing.TableLinearReferencedLineEditor;
 import de.cismet.cismap.linearreferencing.TableStationEditor;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -151,8 +151,8 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private boolean doNotChangeBackup = false;
     private boolean undoOnServer = false;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -1101,7 +1101,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * @return  DOCUMENT ME!
      */
     private CidsBean getCatalogueElement(final String domain, final int classId, final String value) {
-        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, classId);
+        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, classId, getConnectionContext());
 
         final String query = "select " + mc.getID() + ", " + mc.getPrimaryKey() + " from " + mc.getTableName(); // NOI18N
 
@@ -1139,7 +1139,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             final String routeTable,
             final String routeNameProperty,
             final Object routeName) {
-        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, routeTable);
+        final MetaClass mc = ClassCacheMultiple.getMetaClass(domain, routeTable, getConnectionContext());
 
         final String route = ((routeName instanceof String) ? ("'" + routeName + "'") : String.valueOf(routeName));
         String query = "select " + mc.getID() + ", " + mc.getPrimaryKey() + " from " + mc.getTableName(); // NOI18N
@@ -1344,7 +1344,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      * @throws  ConnectionException  DOCUMENT ME!
      */
     private MetaClass getMetaClass(final int classId) throws ConnectionException {
-        return ClassCacheMultiple.getMetaClass(metaClass.getDomain(), classId);
+        return ClassCacheMultiple.getMetaClass(metaClass.getDomain(), classId, getConnectionContext());
 //        return SessionManager.getConnection()
 //                    .getMetaClass(SessionManager.getSession().getUser(),
 //                        classId,
@@ -1378,7 +1378,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 

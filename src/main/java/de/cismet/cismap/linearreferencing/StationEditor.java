@@ -19,7 +19,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
-import org.openide.util.NbBundle;
 
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -46,7 +45,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
@@ -59,8 +57,6 @@ import de.cismet.cids.dynamics.CidsBeanStore;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
-import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
-import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cismap.cidslayer.CidsLayer;
@@ -91,6 +87,8 @@ import de.cismet.tools.CurrentStackTrace;
 import static de.cismet.cismap.linearreferencing.LinearReferencingConstants.CN_ROUTE;
 import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInstances.FEATURE_REGISTRY;
 import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInstances.LOG;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -101,7 +99,13 @@ import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInsta
 public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     LinearReferencingConstants,
     CidsBeanDropListener,
-    LinearReferencingSingletonInstances {
+    LinearReferencingSingletonInstances,
+        ConnectionContextProvider {
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     //~ Enums ------------------------------------------------------------------
 
@@ -147,6 +151,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private boolean allowDoubleValues = true;
     private boolean routeCombo = false;
     private boolean routesComboInitialised = false;
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton badGeomButton;
@@ -173,25 +178,39 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
 
     //~ Constructors -----------------------------------------------------------
 
+    @Deprecated
+    public StationEditor(final String routeName) {
+        this(routeName, ConnectionContext.createDeprecated());
+    }
     /**
      * Creates a new StationEditor object.
      *
      * @param  routeName  DOCUMENT ME!
      */
-    public StationEditor(final String routeName) {
-        this(true, routeName, false);
+    public StationEditor(final String routeName, final ConnectionContext connectionContext) {
+        this(true, routeName, false, connectionContext);
     }
 
+    @Deprecated
+    public StationEditor(final String routeName, final boolean routeCombo) {
+        this(routeName, routeCombo, ConnectionContext.createDeprecated());        
+    }
+    
     /**
      * Creates a new StationEditor object.
      *
      * @param  routeName   DOCUMENT ME!
      * @param  routeCombo  DOCUMENT ME!
      */
-    public StationEditor(final String routeName, final boolean routeCombo) {
-        this(true, routeName, routeCombo);
+    public StationEditor(final String routeName, final boolean routeCombo, final ConnectionContext connectionContext) {
+        this(true, routeName, routeCombo, connectionContext);
     }
 
+    @Deprecated
+    public StationEditor(final boolean isEditable, final String routeName, final boolean routeCombo) {
+        this(isEditable, routeName, routeCombo, ConnectionContext.createDeprecated());
+    }
+    
     /**
      * Creates a new StationEditor object.
      *
@@ -199,7 +218,8 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      * @param  routeName   DOCUMENT ME!
      * @param  routeCombo  DOCUMENT ME!
      */
-    public StationEditor(final boolean isEditable, final String routeName, final boolean routeCombo) {
+    public StationEditor(final boolean isEditable, final String routeName, final boolean routeCombo, final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         this.routeName = routeName;
         this.routeCombo = routeCombo;
         initComponents();
@@ -1447,43 +1467,43 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_splitButtonActionPerformed
+    private void splitButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_splitButtonActionPerformed
         splitPoint();
-    }                                                                               //GEN-LAST:event_splitButtonActionPerformed
+    }//GEN-LAST:event_splitButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomButtonActionPerformed
+    private void badGeomButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomButtonActionPerformed
         switchBadGeomVisibility();
-    }                                                                                 //GEN-LAST:event_badGeomButtonActionPerformed
+    }//GEN-LAST:event_badGeomButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_badGeomCorrectButtonActionPerformed
+    private void badGeomCorrectButtonActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_badGeomCorrectButtonActionPerformed
         correctBadGeomCorrect();
-    }                                                                                        //GEN-LAST:event_badGeomCorrectButtonActionPerformed
+    }//GEN-LAST:event_badGeomCorrectButtonActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPossibleRouteActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_cbPossibleRouteActionPerformed
+    }//GEN-LAST:event_cbPossibleRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butApplyActionPerformed
+    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butApplyActionPerformed
         if (isEditable()) {
             if (cbPossibleRoute.getSelectedItem() instanceof CidsLayerFeature) {
                 final CidsLayerFeature f = (CidsLayerFeature)cbPossibleRoute.getSelectedItem();
@@ -1519,16 +1539,16 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
                 }
             }
         }
-    } //GEN-LAST:event_butApplyActionPerformed
+    }//GEN-LAST:event_butApplyActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butCancelActionPerformed
+    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butCancelActionPerformed
         showCard(Card.edit);
-    }                                                                             //GEN-LAST:event_butCancelActionPerformed
+    }//GEN-LAST:event_butCancelActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -1546,7 +1566,8 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
             cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
             final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                     linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
-                    routeName);
+                    routeName,
+                    getConnectionContext());
             final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 
             final CidsLayer layer = new CidsLayer(routeMc);
@@ -1614,7 +1635,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         final List<Feature> possibleRoutes = new ArrayList<Feature>();
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
-                routeName);
+                routeName, getConnectionContext());
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();

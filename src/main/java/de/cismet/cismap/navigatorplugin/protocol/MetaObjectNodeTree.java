@@ -9,7 +9,7 @@ package de.cismet.cismap.navigatorplugin.protocol;
 
 import Sirius.navigator.ui.tree.SearchResultsTree;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 
 /**
  * DOCUMENT ME!
@@ -28,7 +28,7 @@ public class MetaObjectNodeTree extends SearchResultsTree {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public MetaObjectNodeTree(final ClientConnectionContext connectionContext) throws Exception {
+    public MetaObjectNodeTree(final ConnectionContext connectionContext) throws Exception {
         super(connectionContext);
     }
 
@@ -43,7 +43,7 @@ public class MetaObjectNodeTree extends SearchResultsTree {
      */
     public MetaObjectNodeTree(final boolean useThread,
             final int maxThreadCount,
-            final ClientConnectionContext connectionContext) throws Exception {
+            final ConnectionContext connectionContext) throws Exception {
         super(useThread, maxThreadCount, connectionContext);
     }
 }

@@ -103,12 +103,12 @@ import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalListener;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.CurrentStackTrace;
 
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -191,7 +191,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private List<CidsBean> otherLines;
 
     private Collection<LinearReferencedLineEditorListener> listeners =
-        new ArrayList<LinearReferencedLineEditorListener>();
+        new ArrayList<>();
 
     private boolean showOtherInDialog = false;
     private LinearReferencedLineEditor externalOthersEditor;
@@ -203,7 +203,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private String routeMetaClassName;
     private CidsBeanStore cidsBeanStore;
 
-    private final ClientConnectionContext connectionContext;
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnFromBadGeom;
@@ -252,7 +252,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      */
     @Deprecated
     public LinearReferencedLineEditor(final String routeMetaClassName) {
-        this(routeMetaClassName, ClientConnectionContext.createDeprecated());
+        this(routeMetaClassName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -262,7 +262,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  connectionContext   DOCUMENT ME!
      */
     public LinearReferencedLineEditor(final String routeMetaClassName,
-            final ClientConnectionContext connectionContext) {
+            final ConnectionContext connectionContext) {
         this(true, routeMetaClassName, connectionContext);
     }
 
@@ -274,7 +274,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      */
     @Deprecated
     public LinearReferencedLineEditor(final boolean isEditable, final String routeMetaClassName) {
-        this(isEditable, routeMetaClassName, ClientConnectionContext.createDeprecated());
+        this(isEditable, routeMetaClassName, ConnectionContext.createDeprecated());
     }
 
     /**
@@ -286,7 +286,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      */
     public LinearReferencedLineEditor(final boolean isEditable,
             final String routeMetaClassName,
-            final ClientConnectionContext connectionContext) {
+            final ConnectionContext connectionContext) {
         this(isEditable, isEditable, false, routeMetaClassName);
     }
 
@@ -303,12 +303,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             final boolean isDrawingFeaturesEnabled,
             final boolean routeCombo,
             final String routeMetaClassName) {
-        this(
-            isEditable,
+        this(isEditable,
             isDrawingFeaturesEnabled,
             routeCombo,
             routeMetaClassName,
-            ClientConnectionContext.createDeprecated());
+            ConnectionContext.createDeprecated());
     }
 
     /**
@@ -324,7 +323,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             final boolean isDrawingFeaturesEnabled,
             final boolean routeCombo,
             final String routeMetaClassName,
-            final ClientConnectionContext connectionContext) {
+            final ConnectionContext connectionContext) {
         this.routeCombo = routeCombo;
         this.routeMetaClassName = routeMetaClassName;
         this.connectionContext = connectionContext;
@@ -449,7 +448,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 
@@ -2703,79 +2702,79 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromPointSplitActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromPointSplitActionPerformed
+    private void btnFromPointSplitActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromPointSplitActionPerformed
         splitPoint(FROM);
-    }                                                                                     //GEN-LAST:event_btnFromPointSplitActionPerformed
+    }//GEN-LAST:event_btnFromPointSplitActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToPointSplitActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToPointSplitActionPerformed
+    private void btnToPointSplitActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToPointSplitActionPerformed
         splitPoint(TO);
-    }                                                                                   //GEN-LAST:event_btnToPointSplitActionPerformed
+    }//GEN-LAST:event_btnToPointSplitActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToBadGeomCorrectActionPerformed
+    private void btnToBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToBadGeomCorrectActionPerformed
         correctBadGeom(TO);
-    }                                                                                       //GEN-LAST:event_btnToBadGeomCorrectActionPerformed
+    }//GEN-LAST:event_btnToBadGeomCorrectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnToBadGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnToBadGeomActionPerformed
+    private void btnToBadGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToBadGeomActionPerformed
         switchBadGeomVisibility(TO);
-    }                                                                                //GEN-LAST:event_btnToBadGeomActionPerformed
+    }//GEN-LAST:event_btnToBadGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromBadGeomCorrectActionPerformed
+    private void btnFromBadGeomCorrectActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromBadGeomCorrectActionPerformed
         correctBadGeom(FROM);
-    }                                                                                         //GEN-LAST:event_btnFromBadGeomCorrectActionPerformed
+    }//GEN-LAST:event_btnFromBadGeomCorrectActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnFromBadGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnFromBadGeomActionPerformed
+    private void btnFromBadGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFromBadGeomActionPerformed
         switchBadGeomVisibility(FROM);
-    }                                                                                  //GEN-LAST:event_btnFromBadGeomActionPerformed
+    }//GEN-LAST:event_btnFromBadGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void btnRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_btnRouteActionPerformed
+    private void btnRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRouteActionPerformed
         updateOtherLinesPanelVisibility();
-    }                                                                            //GEN-LAST:event_btnRouteActionPerformed
+    }//GEN-LAST:event_btnRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPossibleRouteActionPerformed
         // TODO add your handling code here:
-    } //GEN-LAST:event_cbPossibleRouteActionPerformed
+    }//GEN-LAST:event_cbPossibleRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butApplyActionPerformed
+    private void butApplyActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butApplyActionPerformed
         if (isEnabled() && isEditable()) {
             if (cbPossibleRoute.getSelectedItem() instanceof CidsLayerFeature) {
                 final CidsLayerFeature f = (CidsLayerFeature)cbPossibleRoute.getSelectedItem();
@@ -2793,39 +2792,39 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 }
             }
         }
-    } //GEN-LAST:event_butApplyActionPerformed
+    }//GEN-LAST:event_butApplyActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_butCancelActionPerformed
+    private void butCancelActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butCancelActionPerformed
         showCard(Card.edit);
-    }                                                                             //GEN-LAST:event_butCancelActionPerformed
+    }//GEN-LAST:event_butCancelActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panLineMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLineMouseClicked
+    private void panLineMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panLineMouseClicked
         if (!routeCombo) {
             return;
         }
         showCard(Card.add);
 
         fillRoutesCombo();
-    } //GEN-LAST:event_panLineMouseClicked
+    }//GEN-LAST:event_panLineMouseClicked
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) { //GEN-FIRST:event_panLinePointsMouseClicked
+    private void panLinePointsMouseClicked(final java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panLinePointsMouseClicked
         panLineMouseClicked(evt);
-    }                                                                             //GEN-LAST:event_panLinePointsMouseClicked
+    }//GEN-LAST:event_panLinePointsMouseClicked
 
     /**
      * DOCUMENT ME!
@@ -2843,7 +2842,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
             final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                     linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                    routeMetaClassName);
+                    routeMetaClassName, getConnectionContext());
             final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 
             final CidsLayer layer = new CidsLayer(routeMc);
@@ -2877,7 +2876,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                         }
 
                         private void complete(final List features) {
-                            final List<Feature> routes = new ArrayList<Feature>();
+                            final List<Feature> routes = new ArrayList<>();
 
                             if (features instanceof List) {
                                 final List fl = (List)features;
@@ -2908,10 +2907,10 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
         final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
         final List<PFeature> featureList = sl.getAllSelectedPFeatures();
-        final List<Feature> possibleRoutes = new ArrayList<Feature>();
+        final List<Feature> possibleRoutes = new ArrayList<>();
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                routeMetaClassName);
+                routeMetaClassName, getConnectionContext());
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();
@@ -3479,7 +3478,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                                         true);
                                 final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                                         linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                                        routeMetaClassName);
+                                        routeMetaClassName,
+                                        getConnectionContext());
 
                                 if (routeBean.getMetaObject().getMetaClass().equals(routeMc)) {
                                     if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {

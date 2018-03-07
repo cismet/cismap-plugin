@@ -17,7 +17,6 @@ import de.cismet.cismap.navigatorplugin.metasearch.SearchTopic;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -32,8 +31,8 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
 
     //~ Instance fields --------------------------------------------------------
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
@@ -223,7 +222,7 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
     } // </editor-fold>//GEN-END:initComponents
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

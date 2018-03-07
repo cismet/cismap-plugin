@@ -26,7 +26,6 @@ import javax.swing.JLabel;
 
 import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -41,8 +40,8 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
 
     //~ Instance fields --------------------------------------------------------
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
@@ -273,9 +272,9 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void jXHyperlink1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jXHyperlink1ActionPerformed
+    private void jXHyperlink1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jXHyperlink1ActionPerformed
         toggleSearchObjectsPanelVisibility();
-    }                                                                                //GEN-LAST:event_jXHyperlink1ActionPerformed
+    }//GEN-LAST:event_jXHyperlink1ActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -350,7 +349,7 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
     }
 
     @Override
-    public ClientConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }

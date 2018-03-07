@@ -64,7 +64,7 @@ import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.commons.classloading.BlacklistClassloading;
 
-import de.cismet.connectioncontext.ClientConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
@@ -119,8 +119,8 @@ public class CidsFeature implements XStyledFeature,
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
     private boolean infoNodeEnabled = true;
 
-    private final ClientConnectionContext connectionContext = ClientConnectionContext.create(getClass()
-                    .getSimpleName());
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -1103,7 +1103,7 @@ public class CidsFeature implements XStyledFeature,
     }
 
     @Override
-    public final ClientConnectionContext getConnectionContext() {
+    public final ConnectionContext getConnectionContext() {
         return connectionContext;
     }
 }
