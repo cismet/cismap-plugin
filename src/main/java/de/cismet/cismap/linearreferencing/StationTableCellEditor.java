@@ -142,7 +142,9 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
      */
     private TableStationEditor createEditor(final JDBCFeature feature) {
         final LinearReferencingInfo info = getInfoForColumn(columnName);
-        final MetaClass metaClass = ClassCacheMultiple.getMetaClass(info.getDomain(), info.getLinRefReferenceName(), getConnectionContext());
+        final MetaClass metaClass = ClassCacheMultiple.getMetaClass(info.getDomain(),
+                info.getLinRefReferenceName(),
+                getConnectionContext());
         if (metaClass != null) {
             try {
                 final String query = "SELECT %s, %s FROM %s WHERE %s = '%s';";

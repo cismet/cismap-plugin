@@ -120,7 +120,6 @@ public class CidsFeature implements XStyledFeature,
     private boolean infoNodeEnabled = true;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 

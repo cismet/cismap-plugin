@@ -12,7 +12,6 @@
  */
 package de.cismet.cismap.linearreferencing;
 
-
 import Sirius.server.middleware.types.MetaClass;
 
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
@@ -50,12 +49,13 @@ import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.CalculationCache;
 import de.cismet.tools.Calculator;
 
 import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInstances.LOG;
-import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -95,6 +95,7 @@ public class RouteCombo extends javax.swing.JPanel implements ConnectionContextP
      *
      * @param  routeMetaClassName  DOCUMENT ME!
      * @param  value               DOCUMENT ME!
+     * @param  connecitonContext   DOCUMENT ME!
      */
     public RouteCombo(final String routeMetaClassName, final Object value, final ConnectionContext connecitonContext) {
         this.connectionContext = connecitonContext;
@@ -493,22 +494,22 @@ public class RouteCombo extends javax.swing.JPanel implements ConnectionContextP
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPossibleRouteActionPerformed
+    private void cbPossibleRouteActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cbPossibleRouteActionPerformed
         for (final FocusListener l : focusListener) {
             l.focusLost(null);
         }
-    }//GEN-LAST:event_cbPossibleRouteActionPerformed
+    }                                                                                   //GEN-LAST:event_cbPossibleRouteActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cbPossibleRouteFocusLost(final java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cbPossibleRouteFocusLost
+    private void cbPossibleRouteFocusLost(final java.awt.event.FocusEvent evt) { //GEN-FIRST:event_cbPossibleRouteFocusLost
         for (final FocusListener l : focusListener) {
             l.focusLost(evt);
         }
-    }//GEN-LAST:event_cbPossibleRouteFocusLost
+    }                                                                            //GEN-LAST:event_cbPossibleRouteFocusLost
 
     @Override
     public ConnectionContext getConnectionContext() {

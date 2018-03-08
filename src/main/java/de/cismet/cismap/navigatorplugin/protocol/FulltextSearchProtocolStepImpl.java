@@ -44,13 +44,17 @@ import de.cismet.commons.gui.protocol.AbstractProtocolStepPanel;
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 import de.cismet.commons.gui.protocol.ProtocolStepMetaInfo;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep implements FulltextSearchProtocolStep {
+public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep implements FulltextSearchProtocolStep,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -88,6 +92,8 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
     @Getter @JsonIgnore private final GeometryProtocolStepImpl geometryProtocolStep;
 
     @Getter @JsonIgnore private final SearchTopicsProtocolStepImpl searchTopicsProtocolStep;
+
+    private transient ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -174,7 +180,8 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
                 if (META_CLASS_CACHE_SERVICE != null) {
                     for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
                         final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
-                                searchClass.getCidsClass());
+                                searchClass.getCidsClass(),
+                                getConnectionContext());
                         validClassesFromStrings.add(metaClass.getKey().toString());
                     }
                 }
@@ -201,7 +208,7 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
                 });
         }
 
-        CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch);
+        CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch, getConnectionContext());
     }
 
     @Override
@@ -217,5 +224,15 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
     @Override
     public Geometry getGeometry() {
         return getGeometryProtocolStep().getGeometry();
+    }
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

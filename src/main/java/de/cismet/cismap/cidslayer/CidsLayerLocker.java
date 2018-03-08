@@ -70,7 +70,6 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
     private final Map<String, MetaClass> LOCK_GROUP_MC_MAP = new HashMap<String, MetaClass>();
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Methods ----------------------------------------------------------------
 

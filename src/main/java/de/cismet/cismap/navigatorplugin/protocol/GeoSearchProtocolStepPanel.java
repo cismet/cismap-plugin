@@ -41,7 +41,6 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
     //~ Instance fields --------------------------------------------------------
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;
@@ -272,9 +271,9 @@ public class GeoSearchProtocolStepPanel extends AbstractProtocolStepPanel<GeoSea
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void jXHyperlink1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jXHyperlink1ActionPerformed
+    private void jXHyperlink1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jXHyperlink1ActionPerformed
         toggleSearchObjectsPanelVisibility();
-    }//GEN-LAST:event_jXHyperlink1ActionPerformed
+    }                                                                                //GEN-LAST:event_jXHyperlink1ActionPerformed
 
     /**
      * DOCUMENT ME!

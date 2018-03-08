@@ -27,13 +27,13 @@ import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardA
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
 
 import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
 import de.cismet.tools.gui.HighlightingRadioButtonMenuItem;
 import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -57,7 +57,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
     private final ExportMapToFileAction exportMapToFileAction;
 
     private final ConnectionContext connectionContext;
-                    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private de.cismet.tools.gui.JPopupMenuButton btnClipboard;
     private javax.swing.ButtonGroup btngDpi;
@@ -82,6 +82,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
 
     /**
      * Creates new form MapExportPanel.
+     *
+     * @param  connectionContext  DOCUMENT ME!
      */
     public MapExportPanel(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;

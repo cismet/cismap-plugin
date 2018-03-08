@@ -31,13 +31,13 @@ import javax.swing.JDialog;
 import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchFacade;
-import de.cismet.connectioncontext.AbstractConnectionContext;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
 import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -74,12 +74,13 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
     private final SearchTopicListener searchTopicListener = new SearchTopicListenerImpl();
 
     private final ConnectionContext connectionContext;
-                    
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new MetaSearch object.
+     *
+     * @param  connectionContext  DOCUMENT ME!
      */
     private MetaSearch(final ConnectionContext connectionContext) {
         this.connectionContext = connectionContext;
@@ -95,7 +96,9 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
      */
     public static MetaSearch instance() {
         if (instance == null) {
-            instance = new MetaSearch(ConnectionContext.create(AbstractConnectionContext.Category.INSTANCE, MetaSearch.class.getSimpleName()));
+            instance = new MetaSearch(ConnectionContext.create(
+                        AbstractConnectionContext.Category.INSTANCE,
+                        MetaSearch.class.getSimpleName()));
         }
 
         return instance;
@@ -185,7 +188,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
 
             for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
                 final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
-                        searchClass.getCidsClass());
+                        searchClass.getCidsClass(),
+                        getConnectionContext());
                 if (metaClass != null) {
                     result.add(metaClass.getKey().toString());
                 } else {
@@ -411,7 +415,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
 
                 if ((metaClassCacheService != null) && (currentUser != null)) {
                     final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
-                            searchClass.getCidsClass());
+                            searchClass.getCidsClass(),
+                            getConnectionContext());
 
                     if ((metaClass != null) && (metaClass.getPermissions() != null)
                                 && metaClass.getPermissions().hasReadPermission(currentUser)) {

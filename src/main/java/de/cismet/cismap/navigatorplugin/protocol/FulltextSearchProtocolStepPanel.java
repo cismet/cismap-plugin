@@ -32,7 +32,6 @@ public class FulltextSearchProtocolStepPanel extends AbstractProtocolStepPanel<F
     //~ Instance fields --------------------------------------------------------
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private Sirius.navigator.search.CidsServerSearchProtocolStepPanel cidsServerSearchProtocolStepPanel1;

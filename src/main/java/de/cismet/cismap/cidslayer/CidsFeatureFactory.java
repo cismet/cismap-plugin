@@ -85,7 +85,6 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private Integer maxFeaturesPerPage = null;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 

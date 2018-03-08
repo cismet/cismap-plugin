@@ -43,6 +43,7 @@ import de.cismet.cismap.commons.featureservice.LinearReferencingInfo;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -73,11 +74,6 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
 
     //~ Constructors -----------------------------------------------------------
 
-    @Deprecated
-    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line) {
-        this(routeName, columnName, line, ConnectionContext.createDeprecated());
-    }
-    
     /**
      * Creates a new RouteTableCellEditor object.
      *
@@ -85,7 +81,23 @@ public class RouteTableCellEditor extends AbstractCellEditor implements TableCel
      * @param  columnName  DOCUMENT ME!
      * @param  line        DOCUMENT ME!
      */
-    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line, final ConnectionContext connectionContext) {
+    @Deprecated
+    public RouteTableCellEditor(final String routeName, final String columnName, final boolean line) {
+        this(routeName, columnName, line, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new RouteTableCellEditor object.
+     *
+     * @param  routeName          DOCUMENT ME!
+     * @param  columnName         DOCUMENT ME!
+     * @param  line               DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    public RouteTableCellEditor(final String routeName,
+            final String columnName,
+            final boolean line,
+            final ConnectionContext connectionContext) {
         this.routeName = routeName;
         this.columnName = columnName;
         this.line = line;

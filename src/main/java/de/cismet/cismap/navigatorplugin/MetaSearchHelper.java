@@ -47,6 +47,8 @@ import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
 import static de.cismet.cismap.commons.gui.MappingComponent.CREATE_SEARCH_POLYGON;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -54,7 +56,7 @@ import static de.cismet.cismap.commons.gui.MappingComponent.CREATE_SEARCH_POLYGO
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchListener, Configurable {
+public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchListener, Configurable, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,12 +65,13 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
 
     //~ Instance fields --------------------------------------------------------
 
-    private MappingComponent mappingComponent;
+    private final MappingComponent mappingComponent;
 
-    private String interactionMode;
+    private final String interactionMode;
     private final String searchName;
-    private MetaSearch metaSearch;
+    private final MetaSearch metaSearch;
     private GeoSearch customGeoSearch;
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cmdPluginSearch;
@@ -88,10 +91,12 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     private MetaSearchHelper(final boolean plugin,
             final String interactionMode,
             final MappingComponent mappingComponent,
-            final String searchName) {
+            final String searchName,
+            final ConnectionContext connectionContext) {
         this.interactionMode = interactionMode;
         this.mappingComponent = mappingComponent;
         this.searchName = searchName;
+        this.connectionContext = connectionContext;
         metaSearch = MetaSearch.instance();
 
         CismapBroker.getInstance().addMapSearchListener(this);
@@ -122,8 +127,9 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     public static MetaSearchHelper createNewInstance(final boolean plugin,
             final String interactionMode,
             final MappingComponent mappingComponent,
-            final String searchName) {
-        return new MetaSearchHelper(plugin, interactionMode, mappingComponent, searchName);
+            final String searchName,
+            final ConnectionContext connectionContext) {
+        return new MetaSearchHelper(plugin, interactionMode, mappingComponent, searchName, connectionContext);
     }
 
     /**
@@ -198,7 +204,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
                     }
                 });
         }
-        CidsSearchExecutor.searchAndDisplayResultsWithDialog(geoSearch);
+        CidsSearchExecutor.searchAndDisplayResultsWithDialog(geoSearch, getConnectionContext());
     }
 
     /**
@@ -260,8 +266,8 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
-    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     @Override
     public void configure(final Element parent) {
@@ -278,5 +284,10 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     @Override
     public Element getConfiguration() throws NoWriteError {
         return metaSearch.getConfiguration();
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

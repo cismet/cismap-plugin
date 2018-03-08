@@ -89,7 +89,6 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private Double maxScale = null;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -339,7 +338,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public void additionalInitializationFromElement(final Element element) throws Exception {
         tableName = element.getChildText("className").trim();
         metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
-                tableName, getConnectionContext());
+                tableName,
+                getConnectionContext());
         if (metaClass == null) {
             return;
         }

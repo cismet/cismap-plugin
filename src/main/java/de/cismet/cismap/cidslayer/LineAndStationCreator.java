@@ -51,11 +51,11 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 import de.cismet.cismap.linearreferencing.LinearReferencingHelper;
 
 import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.gui.WaitingDialogThread;
 
 import static de.cismet.cismap.commons.gui.attributetable.FeatureCreator.SIMPLE_GEOMETRY_LISTENER_KEY;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -84,7 +84,6 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Con
     private AbstractFeatureService service = null;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 

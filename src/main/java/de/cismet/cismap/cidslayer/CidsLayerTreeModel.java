@@ -51,7 +51,6 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ConnectionCo
     private String filterString;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 

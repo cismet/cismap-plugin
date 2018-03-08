@@ -22,9 +22,9 @@ import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableFieldCalculation;
 
 import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.tools.gui.StaticSwingTools;
-import de.cismet.connectioncontext.ConnectionContextStore;
 
 /**
  * DOCUMENT ME!
@@ -33,8 +33,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = AttributeTableFieldCalculation.class)
-public class DefaultAttributeTableFieldCalculation implements AttributeTableFieldCalculation,
-    ConnectionContextStore {
+public class DefaultAttributeTableFieldCalculation implements AttributeTableFieldCalculation, ConnectionContextStore {
 
     //~ Instance fields --------------------------------------------------------
 

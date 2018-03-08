@@ -48,7 +48,6 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
     //~ Instance fields --------------------------------------------------------
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Methods ----------------------------------------------------------------
 

@@ -152,7 +152,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private boolean undoOnServer = false;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
-                    
 
     //~ Constructors -----------------------------------------------------------
 
