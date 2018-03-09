@@ -118,7 +118,7 @@ public class CidsBeanLocker implements ConnectionContextProvider {
             }
 
             // create lock
-            CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+            CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
             lockBean.setProperty("class_id", bean.getMetaObject().getMetaClass().getID());
             lockBean.setProperty("object_id", bean.getMetaObject().getId());
             lockBean.setProperty("user_string", userString);
@@ -189,7 +189,7 @@ public class CidsBeanLocker implements ConnectionContextProvider {
             }
 
             // create lock
-            CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+            CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
             lockBean.setProperty("class_id", mc.getID());
             lockBean.setProperty("object_id", null);
             lockBean.setProperty("user_string", userString);

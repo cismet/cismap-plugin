@@ -260,7 +260,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 final Object geomObject = bean.getProperty(propName);
 
                 if (geomObject instanceof CidsBean) {
-                    final MetaObject mo = ((CidsBean)geomObject).getMetaObject().getMetaClass().getEmptyInstance();
+                    final MetaObject mo = ((CidsBean)geomObject).getMetaObject().getMetaClass().getEmptyInstance(getConnectionContext());
 
                     for (final ObjectAttribute oa : mo.getAttribs()) {
                         if (!oa.isPrimaryKey() && !oa.isArray()) {
@@ -716,7 +716,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     if (layerInfo.isReferenceToCidsClass(key) && (bean.getProperty(key) == null)) {
                         // create a new object. Mostly, a new instance of geom is created
                         final CidsBean newGeoObject = getMetaClass(layerInfo.getReferencedCidsClass(key))
-                                    .getEmptyInstance().getBean();
+                                    .getEmptyInstance(getConnectionContext()).getBean();
                         bean.setProperty(colName.substring(0, colName.indexOf(".")), newGeoObject);
                     }
                     Geometry geom = getGeometry();
@@ -946,7 +946,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if (metaObject == null) {
             if (CidsLayerFeature.this.getId() < 0) {
                 // This is a new Object
-                metaObject = metaClass.getEmptyInstance();
+                metaObject = metaClass.getEmptyInstance(getConnectionContext());
 
                 copyFeaturePropertiesToMetaObject();
             } else {
@@ -958,7 +958,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                     getConnectionContext());
 
                 if (metaObject == null) {
-                    metaObject = metaClass.getEmptyInstance();
+                    metaObject = metaClass.getEmptyInstance(getConnectionContext());
                 }
             }
         }

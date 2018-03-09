@@ -147,10 +147,10 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
             }
 
             // create lock
-            CidsBean lockGroupBean = lockGroupMc.getEmptyInstance().getBean();
+            CidsBean lockGroupBean = lockGroupMc.getEmptyInstance(getConnectionContext()).getBean();
 
             for (final Feature f : features) {
-                final CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+                final CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
                 lockBean.setProperty("class_id", mo.getMetaClass().getID());
                 lockBean.setProperty("object_id", ((CidsLayerFeature)f).getId());
                 lockGroupBean.addCollectionElement("objects", lockBean);
