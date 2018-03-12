@@ -21,7 +21,6 @@ import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
-import de.cismet.cids.client.tools.ConnectionContextUtils;
 
 import org.apache.log4j.Logger;
 
@@ -29,6 +28,8 @@ import org.jdesktop.beansbinding.Converter;
 import org.jdesktop.beansbinding.Validator;
 
 import javax.swing.JComboBox;
+
+import de.cismet.cids.client.tools.ConnectionContextUtils;
 
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.Disposable;
@@ -41,6 +42,7 @@ import de.cismet.cismap.commons.features.FeatureCollection;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.navigatorplugin.CidsFeature;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
@@ -52,7 +54,10 @@ import de.cismet.tools.CurrentStackTrace;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable, MetaClassStore, Disposable, ConnectionContextProvider {
+public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable,
+    MetaClassStore,
+    Disposable,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 

@@ -79,6 +79,15 @@ public class StationTableCellEditor extends AbstractCellEditor implements Statio
     /**
      * Creates a new StationTableCellEditor object.
      *
+     * @param  columnName  DOCUMENT ME!
+     */
+    public StationTableCellEditor(final String columnName) {
+        this(columnName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new StationTableCellEditor object.
+     *
      * @param  columnName         DOCUMENT ME!
      * @param  connectionContext  DOCUMENT ME!
      */

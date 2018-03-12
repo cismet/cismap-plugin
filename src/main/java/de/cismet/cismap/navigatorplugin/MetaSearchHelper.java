@@ -43,12 +43,13 @@ import de.cismet.cismap.navigatorplugin.protocol.GeoSearchProtocolStepImpl;
 
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
 import static de.cismet.cismap.commons.gui.MappingComponent.CREATE_SEARCH_POLYGON;
-import de.cismet.connectioncontext.ConnectionContext;
-import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -56,7 +57,9 @@ import de.cismet.connectioncontext.ConnectionContextProvider;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchListener, Configurable, ConnectionContextProvider {
+public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchListener,
+    Configurable,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -83,10 +86,11 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     /**
      * Creates new form MetaSearchComponentFactory.
      *
-     * @param  plugin            DOCUMENT ME!
-     * @param  interactionMode   DOCUMENT ME!
-     * @param  mappingComponent  DOCUMENT ME!
-     * @param  searchName        DOCUMENT ME!
+     * @param  plugin             DOCUMENT ME!
+     * @param  interactionMode    DOCUMENT ME!
+     * @param  mappingComponent   DOCUMENT ME!
+     * @param  searchName         DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
      */
     private MetaSearchHelper(final boolean plugin,
             final String interactionMode,
@@ -121,6 +125,30 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
      * @param   interactionMode   DOCUMENT ME!
      * @param   mappingComponent  DOCUMENT ME!
      * @param   searchName        DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Deprecated
+    public static MetaSearchHelper createNewInstance(final boolean plugin,
+            final String interactionMode,
+            final MappingComponent mappingComponent,
+            final String searchName) {
+        return createNewInstance(
+                plugin,
+                interactionMode,
+                mappingComponent,
+                searchName,
+                ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   plugin             DOCUMENT ME!
+     * @param   interactionMode    DOCUMENT ME!
+     * @param   mappingComponent   DOCUMENT ME!
+     * @param   searchName         DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
@@ -266,8 +294,8 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
-    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     @Override
     public void configure(final Element parent) {

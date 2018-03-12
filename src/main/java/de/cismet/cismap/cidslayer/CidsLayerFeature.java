@@ -260,7 +260,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                 final Object geomObject = bean.getProperty(propName);
 
                 if (geomObject instanceof CidsBean) {
-                    final MetaObject mo = ((CidsBean)geomObject).getMetaObject().getMetaClass().getEmptyInstance(getConnectionContext());
+                    final MetaObject mo = ((CidsBean)geomObject).getMetaObject()
+                                .getMetaClass()
+                                .getEmptyInstance(getConnectionContext());
 
                     for (final ObjectAttribute oa : mo.getAttribs()) {
                         if (!oa.isPrimaryKey() && !oa.isArray()) {
