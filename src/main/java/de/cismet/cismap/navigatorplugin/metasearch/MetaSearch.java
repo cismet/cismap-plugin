@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import org.jdom.Element;
 
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import java.util.ArrayList;
@@ -33,6 +32,10 @@ import de.cismet.cids.utils.MetaClassCacheService;
 
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.MetaSearchFacade;
 
+import de.cismet.connectioncontext.AbstractConnectionContext;
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
@@ -42,7 +45,7 @@ import de.cismet.tools.configuration.NoWriteError;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class MetaSearch implements Configurable, MetaSearchFacade {
+public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,18 +67,23 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Collection<SearchTopic> searchTopics = new LinkedList<SearchTopic>();
+    private final Collection<SearchTopic> searchTopics = new LinkedList<>();
     private final MetaClassCacheService metaClassCacheService;
-    private final Collection<MetaSearchListener> listeners = new ArrayList<MetaSearchListener>();
+    private final Collection<MetaSearchListener> listeners = new ArrayList<>();
     private final ListenerHandler listenerHandler = new ListenerHandler();
     private final SearchTopicListener searchTopicListener = new SearchTopicListenerImpl();
+
+    private final ConnectionContext connectionContext;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new MetaSearch object.
+     *
+     * @param  connectionContext  DOCUMENT ME!
      */
-    private MetaSearch() {
+    private MetaSearch(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         metaClassCacheService = Lookup.getDefault().lookup(MetaClassCacheService.class);
     }
 
@@ -88,7 +96,9 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      */
     public static MetaSearch instance() {
         if (instance == null) {
-            instance = new MetaSearch();
+            instance = new MetaSearch(ConnectionContext.create(
+                        AbstractConnectionContext.Category.INSTANCE,
+                        MetaSearch.class.getSimpleName()));
         }
 
         return instance;
@@ -127,7 +137,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * @return  DOCUMENT ME!
      */
     public Collection<SearchTopic> getSelectedSearchTopics() {
-        final List<SearchTopic> result = new LinkedList<SearchTopic>();
+        final List<SearchTopic> result = new LinkedList<>();
 
         for (final SearchTopic searchTopic : searchTopics) {
             if (searchTopic.isSelected()) {
@@ -144,7 +154,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * @return  DOCUMENT ME!
      */
     public Collection<SearchClass> getSelectedSearchClasses() {
-        final List<SearchClass> result = new LinkedList<SearchClass>();
+        final List<SearchClass> result = new LinkedList<>();
 
         for (final SearchTopic searchTopic : searchTopics) {
             if (searchTopic.isSelected()) {
@@ -163,7 +173,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * @return  DOCUMENT ME!
      */
     public Collection<String> getSelectedSearchClassesForQuery() {
-        final List<String> result = new LinkedList<String>();
+        final List<String> result = new LinkedList<>();
 
         if (metaClassCacheService == null) {
             LOG.error(
@@ -178,7 +188,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
             for (final SearchClass searchClass : searchTopic.getSearchClasses()) {
                 final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
-                        searchClass.getCidsClass());
+                        searchClass.getCidsClass(),
+                        getConnectionContext());
                 if (metaClass != null) {
                     result.add(metaClass.getKey().toString());
                 } else {
@@ -268,7 +279,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * DOCUMENT ME!
      */
     private void clearTopics() {
-        final Collection<SearchTopic> removedTopics = new ArrayList<SearchTopic>(searchTopics);
+        final Collection<SearchTopic> removedTopics = new ArrayList<>(searchTopics);
         searchTopics.clear();
         for (final SearchTopic topic : removedTopics) {
             topic.removeSearchTopicListener(searchTopicListener);
@@ -357,7 +368,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
             return;
         }
 
-        final Collection<SearchTopic> searchTopics = new ArrayList<SearchTopic>();
+        final Collection<SearchTopic> searchTopics = new ArrayList<>();
 
         for (final Element searchTopicElement : searchTopicElements) {
             final String name = searchTopicElement.getAttributeValue(CONF_SEARCHTOPIC_ATTR_NAME);
@@ -404,7 +415,8 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
 
                 if ((metaClassCacheService != null) && (currentUser != null)) {
                     final MetaClass metaClass = metaClassCacheService.getMetaClass(searchClass.getCidsDomain(),
-                            searchClass.getCidsClass());
+                            searchClass.getCidsClass(),
+                            getConnectionContext());
 
                     if ((metaClass != null) && (metaClass.getPermissions() != null)
                                 && metaClass.getPermissions().hasReadPermission(currentUser)) {
@@ -422,7 +434,9 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
             if ((checkActionTag != null) && (checkActionTag.trim().length() > 0)) {
                 try {
                     final boolean actionCheck = SessionManager.getConnection()
-                                .hasConfigAttr(SessionManager.getSession().getUser(), actionTag);
+                                .hasConfigAttr(SessionManager.getSession().getUser(),
+                                    actionTag,
+                                    getConnectionContext());
                     if (("enable".equalsIgnoreCase(checkActionTag) || "1".equalsIgnoreCase(checkActionTag))) {
                         isEnabled = actionCheck;
                     } else if (("disable".equalsIgnoreCase(checkActionTag) || "0".equalsIgnoreCase(checkActionTag))) {
@@ -478,7 +492,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
      * @return  DOCUMENT ME!
      */
     private List<Element> getChildren(final Element parent, final String childrenTag) {
-        final List<Element> result = new LinkedList<Element>();
+        final List<Element> result = new LinkedList<>();
 
         final List children = parent.getChildren(childrenTag);
         if (children != null) {
@@ -490,6 +504,11 @@ public class MetaSearch implements Configurable, MetaSearchFacade {
         }
 
         return result;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

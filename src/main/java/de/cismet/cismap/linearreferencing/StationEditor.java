@@ -19,8 +19,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
-import org.openide.util.NbBundle;
-
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.HeadlessException;
@@ -46,7 +44,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
@@ -59,8 +56,6 @@ import de.cismet.cids.dynamics.CidsBeanStore;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
 
 import de.cismet.cids.navigator.utils.CidsBeanDropListener;
-import de.cismet.cids.navigator.utils.CidsBeanDropListenerComponent;
-import de.cismet.cids.navigator.utils.CidsBeanDropTarget;
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
 import de.cismet.cismap.cidslayer.CidsLayer;
@@ -86,6 +81,9 @@ import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalListener;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.CurrentStackTrace;
 
 import static de.cismet.cismap.linearreferencing.LinearReferencingConstants.CN_ROUTE;
@@ -101,7 +99,8 @@ import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInsta
 public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     LinearReferencingConstants,
     CidsBeanDropListener,
-    LinearReferencingSingletonInstances {
+    LinearReferencingSingletonInstances,
+    ConnectionContextProvider {
 
     //~ Enums ------------------------------------------------------------------
 
@@ -147,6 +146,7 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     private boolean allowDoubleValues = true;
     private boolean routeCombo = false;
     private boolean routesComboInitialised = false;
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton badGeomButton;
@@ -178,8 +178,18 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      *
      * @param  routeName  DOCUMENT ME!
      */
+    @Deprecated
     public StationEditor(final String routeName) {
-        this(true, routeName, false);
+        this(routeName, ConnectionContext.createDeprecated());
+    }
+    /**
+     * Creates a new StationEditor object.
+     *
+     * @param  routeName          DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    public StationEditor(final String routeName, final ConnectionContext connectionContext) {
+        this(true, routeName, false, connectionContext);
     }
 
     /**
@@ -188,8 +198,20 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      * @param  routeName   DOCUMENT ME!
      * @param  routeCombo  DOCUMENT ME!
      */
+    @Deprecated
     public StationEditor(final String routeName, final boolean routeCombo) {
-        this(true, routeName, routeCombo);
+        this(routeName, routeCombo, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new StationEditor object.
+     *
+     * @param  routeName          DOCUMENT ME!
+     * @param  routeCombo         DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    public StationEditor(final String routeName, final boolean routeCombo, final ConnectionContext connectionContext) {
+        this(true, routeName, routeCombo, connectionContext);
     }
 
     /**
@@ -199,7 +221,24 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
      * @param  routeName   DOCUMENT ME!
      * @param  routeCombo  DOCUMENT ME!
      */
+    @Deprecated
     public StationEditor(final boolean isEditable, final String routeName, final boolean routeCombo) {
+        this(isEditable, routeName, routeCombo, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new StationEditor object.
+     *
+     * @param  isEditable         DOCUMENT ME!
+     * @param  routeName          DOCUMENT ME!
+     * @param  routeCombo         DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    public StationEditor(final boolean isEditable,
+            final String routeName,
+            final boolean routeCombo,
+            final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         this.routeName = routeName;
         this.routeCombo = routeCombo;
         initComponents();
@@ -246,6 +285,11 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     /**
      * DOCUMENT ME!
@@ -1546,7 +1590,8 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
             cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
             final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                     linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
-                    routeName);
+                    routeName,
+                    getConnectionContext());
             final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 
             final CidsLayer layer = new CidsLayer(routeMc);
@@ -1614,7 +1659,8 @@ public class StationEditor extends JPanel implements DisposableCidsBeanStore,
         final List<Feature> possibleRoutes = new ArrayList<Feature>();
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeName)[0],
-                routeName);
+                routeName,
+                getConnectionContext());
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();

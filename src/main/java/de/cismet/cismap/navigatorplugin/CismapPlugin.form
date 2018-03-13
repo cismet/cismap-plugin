@@ -1097,6 +1097,9 @@
                       <Dimension value="[34, 34]"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.cismet.cismap.navigatorplugin.MapExportPanel(getConnectionContext())"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="cmdDownloads">
                   <Properties>

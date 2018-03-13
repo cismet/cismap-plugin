@@ -33,6 +33,9 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Can be used to lock cids beans. It will be assumed that the cids system contains a cids class with the name cs_locks
  * in the same domain as the cids bean to lock.
@@ -40,7 +43,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class CidsBeanLocker {
+public class CidsBeanLocker implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,6 +58,8 @@ public class CidsBeanLocker {
     //~ Instance fields --------------------------------------------------------
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -91,7 +96,7 @@ public class CidsBeanLocker {
                     lockMc.getTableName(),
                     bean.getMetaObject().getMetaClass().getID(),
                     bean.getMetaObject().getID());
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -113,7 +118,7 @@ public class CidsBeanLocker {
             }
 
             // create lock
-            CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+            CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
             lockBean.setProperty("class_id", bean.getMetaObject().getMetaClass().getID());
             lockBean.setProperty("object_id", bean.getMetaObject().getId());
             lockBean.setProperty("user_string", userString);
@@ -124,7 +129,7 @@ public class CidsBeanLocker {
             } catch (UnknownHostException e) {
                 LOG.error("cnnot determine the computer name", e);
             }
-            lockBean = lockBean.persist();
+            lockBean = lockBean.persist(getConnectionContext());
 
             return lockBean;
         } catch (LockAlreadyExistsException e) {
@@ -162,7 +167,7 @@ public class CidsBeanLocker {
                     lockMc.getPrimaryKey(),
                     lockMc.getTableName(),
                     mc.getID());
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 if ((mos[0].getBean().getProperty("user_string") == null)
@@ -184,12 +189,12 @@ public class CidsBeanLocker {
             }
 
             // create lock
-            CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+            CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
             lockBean.setProperty("class_id", mc.getID());
             lockBean.setProperty("object_id", null);
             lockBean.setProperty("user_string", userString);
             lockBean.setProperty("additional_info", "locks the whole table");
-            lockBean = lockBean.persist();
+            lockBean = lockBean.persist(getConnectionContext());
 
             return lockBean;
         } catch (LockAlreadyExistsException e) {
@@ -213,7 +218,7 @@ public class CidsBeanLocker {
                 return;
             }
             bean.delete();
-            bean.persist();
+            bean.persist(getConnectionContext());
         } catch (Exception e) {
             LOG.error("Cannot remove lock with id " + bean.getProperty("id"));
             throw e;
@@ -234,7 +239,7 @@ public class CidsBeanLocker {
         MetaClass lockMc = LOCK_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCKS_TN + " does not exist in the domain " + domain);
@@ -243,6 +248,11 @@ public class CidsBeanLocker {
         }
 
         return lockMc;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

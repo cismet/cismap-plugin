@@ -64,6 +64,9 @@ import de.cismet.cismap.commons.rasterservice.FeatureAwareRasterService;
 
 import de.cismet.commons.classloading.BlacklistClassloading;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
@@ -77,7 +80,8 @@ public class CidsFeature implements XStyledFeature,
     FeatureGroup,
     CidsBeanActionsProvider,
     InfoNodeAwareFeature,
-    FeatureRendererAwareFeature {
+    FeatureRendererAwareFeature,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -114,6 +118,8 @@ public class CidsFeature implements XStyledFeature,
     private String myAttributeStringInParentFeature = null;
     private Collection<CidsBeanAction> cidsBeanActions = new ArrayList<CidsBeanAction>();
     private boolean infoNodeEnabled = true;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -190,7 +196,7 @@ public class CidsFeature implements XStyledFeature,
         this.parentFeatureRenderer = rootRenderer;
         try {
             this.mo = mo;
-            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey());
+            this.mc = SessionManager.getProxy().getMetaClass(mo.getClassKey(), getConnectionContext());
             initFeatureSettings();
 
             // evaluate renderFeature
@@ -1093,5 +1099,10 @@ public class CidsFeature implements XStyledFeature,
     @Override
     public boolean hasInfoNode() {
         return infoNodeEnabled;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

@@ -103,6 +103,9 @@ import de.cismet.cismap.commons.interaction.events.CrsChangedEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalEvent;
 import de.cismet.cismap.commons.retrieval.RetrievalListener;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.CurrentStackTrace;
 
 import de.cismet.tools.gui.StaticSwingTools;
@@ -119,7 +122,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     EditorSaveListener,
     LinearReferencingSingletonInstances,
     PointBeanMergeRequestListener,
-    WindowListener {
+    WindowListener,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -186,8 +190,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private boolean isOtherLinesEnabled = true;
     private List<CidsBean> otherLines;
 
-    private Collection<LinearReferencedLineEditorListener> listeners =
-        new ArrayList<LinearReferencedLineEditorListener>();
+    private Collection<LinearReferencedLineEditorListener> listeners = new ArrayList<>();
 
     private boolean showOtherInDialog = false;
     private LinearReferencedLineEditor externalOthersEditor;
@@ -198,6 +201,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     private boolean routesComboInitialised = false;
     private String routeMetaClassName;
     private CidsBeanStore cidsBeanStore;
+
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnFromBadGeom;
@@ -244,8 +249,20 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      *
      * @param  routeMetaClassName  DOCUMENT ME!
      */
+    @Deprecated
     public LinearReferencedLineEditor(final String routeMetaClassName) {
-        this(true, routeMetaClassName);
+        this(routeMetaClassName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new LinearReferencedLineEditor object.
+     *
+     * @param  routeMetaClassName  DOCUMENT ME!
+     * @param  connectionContext   DOCUMENT ME!
+     */
+    public LinearReferencedLineEditor(final String routeMetaClassName,
+            final ConnectionContext connectionContext) {
+        this(true, routeMetaClassName, connectionContext);
     }
 
     /**
@@ -254,8 +271,43 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isEditable          DOCUMENT ME!
      * @param  routeMetaClassName  DOCUMENT ME!
      */
+    @Deprecated
     public LinearReferencedLineEditor(final boolean isEditable, final String routeMetaClassName) {
+        this(isEditable, routeMetaClassName, ConnectionContext.createDeprecated());
+    }
+
+    /**
+     * Creates a new LinearReferencedLineEditor object.
+     *
+     * @param  isEditable          DOCUMENT ME!
+     * @param  routeMetaClassName  DOCUMENT ME!
+     * @param  connectionContext   DOCUMENT ME!
+     */
+    public LinearReferencedLineEditor(final boolean isEditable,
+            final String routeMetaClassName,
+            final ConnectionContext connectionContext) {
         this(isEditable, isEditable, false, routeMetaClassName);
+    }
+
+    /**
+     * Creates a new LinearReferencedLineEditor object.
+     *
+     * @param  isEditable                DOCUMENT ME!
+     * @param  isDrawingFeaturesEnabled  DOCUMENT ME!
+     * @param  routeCombo                DOCUMENT ME!
+     * @param  routeMetaClassName        DOCUMENT ME!
+     */
+    @Deprecated
+    public LinearReferencedLineEditor(final boolean isEditable,
+            final boolean isDrawingFeaturesEnabled,
+            final boolean routeCombo,
+            final String routeMetaClassName) {
+        this(
+            isEditable,
+            isDrawingFeaturesEnabled,
+            routeCombo,
+            routeMetaClassName,
+            ConnectionContext.createDeprecated());
     }
 
     /**
@@ -265,13 +317,17 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isDrawingFeaturesEnabled  DOCUMENT ME!
      * @param  routeCombo                DOCUMENT ME!
      * @param  routeMetaClassName        DOCUMENT ME!
+     * @param  connectionContext         DOCUMENT ME!
      */
     public LinearReferencedLineEditor(final boolean isEditable,
             final boolean isDrawingFeaturesEnabled,
             final boolean routeCombo,
-            final String routeMetaClassName) {
+            final String routeMetaClassName,
+            final ConnectionContext connectionContext) {
         this.routeCombo = routeCombo;
         this.routeMetaClassName = routeMetaClassName;
+        this.connectionContext = connectionContext;
+
         initComponents();
         final String routeNamePropertyName = linearReferencingHelper.getRouteNamePropertyFromRouteByClassName(
                 routeMetaClassName);
@@ -390,6 +446,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     /**
      * DOCUMENT ME!
@@ -975,7 +1036,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                 }
                 MetaObject[] mosOtherLines = null;
                 try {
-                    mosOtherLines = SessionManager.getProxy().getMetaObjectByQuery(queryOtherLines, 0);
+                    mosOtherLines = SessionManager.getProxy()
+                                .getMetaObjectByQuery(queryOtherLines, 0, getConnectionContext());
                 } catch (Exception ex) {
                     LOG.error("error while loading other lines on baseline", ex);
                 }
@@ -2780,7 +2842,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
             cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
             final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                     linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                    routeMetaClassName);
+                    routeMetaClassName,
+                    getConnectionContext());
             final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 
             final CidsLayer layer = new CidsLayer(routeMc);
@@ -2814,7 +2877,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                         }
 
                         private void complete(final List features) {
-                            final List<Feature> routes = new ArrayList<Feature>();
+                            final List<Feature> routes = new ArrayList<>();
 
                             if (features instanceof List) {
                                 final List fl = (List)features;
@@ -2845,10 +2908,11 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
         final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
         final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
         final List<PFeature> featureList = sl.getAllSelectedPFeatures();
-        final List<Feature> possibleRoutes = new ArrayList<Feature>();
+        final List<Feature> possibleRoutes = new ArrayList<>();
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                routeMetaClassName);
+                routeMetaClassName,
+                getConnectionContext());
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();
@@ -3174,7 +3238,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  targetIsFrom  DOCUMENT ME!
      * @param  lineBean      DOCUMENT ME!
      */
-    private static void updateSnappedRealGeoms(final boolean isFrom,
+    private void updateSnappedRealGeoms(final boolean isFrom,
             final boolean targetIsFrom,
             final CidsBean lineBean) {
         final MetaClass mcLine = lineBean.getMetaObject().getMetaClass();
@@ -3196,7 +3260,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
 
         try {
             // stationierte Linien mit gleicher Station am Ende 'targetIsFrom' holen
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             for (final MetaObject mo : mos) {
                 // bean der stationierten Linie
@@ -3233,7 +3297,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                         .setGeometryToLineBean(targetLineGeometry, targetBean);
 
                 // linie speichern
-                targetBean.persist();
+                targetBean.persist(getConnectionContext());
             }
         } catch (Exception ex) {
             LOG.error("error while updating snapped real geoms", ex);
@@ -3246,7 +3310,7 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
      * @param  isFrom    DOCUMENT ME!
      * @param  lineBean  DOCUMENT ME!
      */
-    private static void updateSnappedRealGeoms(final boolean isFrom, final CidsBean lineBean) {
+    private void updateSnappedRealGeoms(final boolean isFrom, final CidsBean lineBean) {
         updateSnappedRealGeoms(isFrom, FROM, lineBean);
         updateSnappedRealGeoms(isFrom, TO, lineBean);
     }
@@ -3416,7 +3480,8 @@ public class LinearReferencedLineEditor extends JPanel implements DisposableCids
                                         true);
                                 final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                                         linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                                        routeMetaClassName);
+                                        routeMetaClassName,
+                                        getConnectionContext());
 
                                 if (routeBean.getMetaObject().getMetaClass().equals(routeMc)) {
                                     if ((getDropBehavior() == null) || getDropBehavior().checkForAdding(routeBean)) {

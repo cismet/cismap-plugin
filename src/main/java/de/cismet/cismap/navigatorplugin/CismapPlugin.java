@@ -8,7 +8,6 @@
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.connection.SessionManager;
-import Sirius.navigator.exception.ConnectionException;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -193,6 +192,10 @@ import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction
 
 import de.cismet.commons.cismap.io.AddGeometriesToMapWizardAction;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 import de.cismet.ext.CExtContext;
 import de.cismet.ext.CExtManager;
 
@@ -233,7 +236,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     MapDnDListener,
     StatusListener,
     HistoryModelListener,
-    FeatureCollectionListener {
+    FeatureCollectionListener,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -294,18 +298,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private View vOverview;
     private RootWindow rootWindow;
     private final StringViewMap viewMap = new StringViewMap();
-    private final Map<String, JMenuItem> viewMenuMap = new HashMap<String, JMenuItem>();
+    private final Map<String, JMenuItem> viewMenuMap = new HashMap<>();
     private final ConfigurationManager configurationManager = new ConfigurationManager();
     private final ShowObjectsMethod showObjectsMethod = new ShowObjectsMethod();
     private final ResetLayoutMethod resetLayoutMethod = new ResetLayoutMethod();
-    private final Map<String, PluginMethod> pluginMethods = new HashMap<String, PluginMethod>();
+    private final Map<String, PluginMethod> pluginMethods = new HashMap<>();
     private final MyPluginProperties myPluginProperties = new MyPluginProperties();
-    private final List<JMenuItem> menues = new ArrayList<JMenuItem>();
-    private final Map<DefaultMetaTreeNode, Feature> featuresInMap = new HashMap<DefaultMetaTreeNode, Feature>();
-    private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<Feature, DefaultMetaTreeNode>();
+    private final List<JMenuItem> menues = new ArrayList<>();
+    private final Map<DefaultMetaTreeNode, Feature> featuresInMap = new HashMap<>();
+    private final Map<Feature, DefaultMetaTreeNode> featuresInMapReverse = new HashMap<>();
     private WFSFormFactory wfsFormFactory;
-    private final Set<View> wfsFormViews = new HashSet<View>();
-    private final List<View> wfs = new ArrayList<View>();
+    private final Set<View> wfsFormViews = new HashSet<>();
+    private final List<View> wfs = new ArrayList<>();
     private DockingWindow[] wfsViews;
     private DockingWindow[] legendTab = new DockingWindow[3];
     private PluginContext context;
@@ -334,6 +338,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private final transient Map<BasicGuiComponentProvider, DockingWindow> extensionWindows;
     private MetaSearchHelper metaSearchComponentFactory;
     private WindowAdapter loadLayoutWhenOpenedAdapter = null;
+
+    private final ConnectionContext connectionContext = ConnectionContext.create(
+            ConnectionContext.Category.OTHER,
+            getClass().getSimpleName());
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGeometryWizard;
     private javax.swing.JButton cmdBack;
@@ -460,7 +469,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  context  DOCUMENT ME!
      */
     public CismapPlugin(final PluginContext context) {
-        this.extensionWindows = new HashMap<BasicGuiComponentProvider, DockingWindow>(1);
+        this.extensionWindows = new HashMap<>(1);
 
         if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) { // NOI18N
             RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
@@ -571,7 +580,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     plugin,
                     MappingComponent.CREATE_SEARCH_POLYGON,
                     mapC,
-                    null);
+                    null,
+                    getConnectionContext());
 
             if (plugin && (context.getEnvironment() != null) && this.context.getEnvironment().isProgressObservable()) {
                 this.context.getEnvironment()
@@ -1139,6 +1149,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -1220,6 +1235,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             for (final ToolbarComponentsProvider toolbarCompProvider : toolbarCompProviders) {
                 if (log.isDebugEnabled()) {
                     log.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName()); // NOI18N
+                }
+
+                if (toolbarCompProvider instanceof ConnectionContextStore) {
+                    ((ConnectionContextStore)toolbarCompProvider).initWithConnectionContext(getConnectionContext());
                 }
 
                 final Collection<ToolbarComponentDescription> componentDescriptions =
@@ -1488,7 +1507,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         cmdRefresh = new javax.swing.JButton();
         jSeparator6 = new javax.swing.JSeparator();
         cmdPrint = new javax.swing.JButton();
-        cmdClipboard = new de.cismet.cismap.navigatorplugin.MapExportPanel();
+        cmdClipboard = new de.cismet.cismap.navigatorplugin.MapExportPanel(getConnectionContext());
         cmdDownloads = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         togInvisible = new javax.swing.JToggleButton();
@@ -4292,7 +4311,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         boolean visible;
         try {
             visible = SessionManager.getConnection()
-                        .getConfigAttr(SessionManager.getSession().getUser(), "extendedSelectionCapabilities") != null;
+                        .getConfigAttr(SessionManager.getSession().getUser(),
+                                "extendedSelectionCapabilities",
+                                getConnectionContext()) != null;
         } catch (final Exception ex) {
             visible = false;
         }

@@ -38,6 +38,9 @@ import de.cismet.cismap.commons.gui.attributetable.FeatureLockingInterface;
 import de.cismet.cismap.commons.gui.attributetable.LockAlreadyExistsException;
 import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExistsException;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * Locks CidsLayerFeature objects.
  *
@@ -45,7 +48,7 @@ import de.cismet.cismap.commons.gui.attributetable.LockFromSameUserAlreadyExists
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = FeatureLockingInterface.class)
-public class CidsLayerLocker implements FeatureLockingInterface {
+public class CidsLayerLocker implements FeatureLockingInterface, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -65,6 +68,8 @@ public class CidsLayerLocker implements FeatureLockingInterface {
 
     private final Map<String, MetaClass> LOCK_MC_MAP = new HashMap<String, MetaClass>();
     private final Map<String, MetaClass> LOCK_GROUP_MC_MAP = new HashMap<String, MetaClass>();
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -118,7 +123,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
                     lockGroupMc.getTableName(),
                     mo.getMetaClass().getID(),
                     getIds(features));
-            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0);
+            final MetaObject[] mos = SessionManager.getProxy().getMetaObjectByQuery(query, 0, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject metaObject : mos) {
@@ -142,10 +147,10 @@ public class CidsLayerLocker implements FeatureLockingInterface {
             }
 
             // create lock
-            CidsBean lockGroupBean = lockGroupMc.getEmptyInstance().getBean();
+            CidsBean lockGroupBean = lockGroupMc.getEmptyInstance(getConnectionContext()).getBean();
 
             for (final Feature f : features) {
-                final CidsBean lockBean = lockMc.getEmptyInstance().getBean();
+                final CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
                 lockBean.setProperty("class_id", mo.getMetaClass().getID());
                 lockBean.setProperty("object_id", ((CidsLayerFeature)f).getId());
                 lockGroupBean.addCollectionElement("objects", lockBean);
@@ -157,7 +162,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
                 LOG.error("cnnot determine the computer name", e);
             }
             lockGroupBean.setProperty("user_string", userString);
-            lockGroupBean = lockGroupBean.persist();
+            lockGroupBean = lockGroupBean.persist(getConnectionContext());
 
             return lockGroupBean;
         } catch (LockAlreadyExistsException e) {
@@ -227,7 +232,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
                 return;
             }
             bean.delete();
-            bean.persist();
+            bean.persist(getConnectionContext());
         } catch (Exception e) {
             LOG.error("Cannot remove lock with id " + bean.getProperty("id"));
             throw e;
@@ -253,7 +258,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
         MetaClass lockMc = LOCK_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCKS_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCKS_TN + " does not exist in the domain " + domain);
@@ -278,7 +283,7 @@ public class CidsLayerLocker implements FeatureLockingInterface {
         MetaClass lockMc = LOCK_GROUP_MC_MAP.get(domain);
 
         if (lockMc == null) {
-            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCK_GROUP_TN);
+            lockMc = ClassCacheMultiple.getMetaClass(domain, CS_LOCK_GROUP_TN, getConnectionContext());
 
             if (lockMc == null) {
                 throw new Exception("The cids class " + CS_LOCK_GROUP_TN + " does not exist in the domain " + domain);
@@ -310,6 +315,11 @@ public class CidsLayerLocker implements FeatureLockingInterface {
         }
 
         return ((sb == null) ? "" : sb.toString());
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------

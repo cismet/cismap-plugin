@@ -43,12 +43,15 @@ import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> {
+public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -84,6 +87,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     private Integer maxFeaturesPerPage = null;
     private Double maxArea = null;
     private Double maxScale = null;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -166,12 +171,16 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             camalizedName = String.valueOf(camalizedName.charAt(0)).toLowerCase() + camalizedName.substring(1);
             final String downloadForbiddenName = camalizedName + "DownloadForbidden";
             final String attrForbidden = SessionManager.getProxy()
-                        .getConfigAttr(SessionManager.getSession().getUser(), downloadForbiddenName);
+                        .getConfigAttr(SessionManager.getSession().getUser(),
+                            downloadForbiddenName,
+                            getConnectionContext());
 
             if (attrForbidden != null) {
                 final String downloadAllowedName = camalizedName + "DownloadAllowed";
                 final String attrAllowed = SessionManager.getProxy()
-                            .getConfigAttr(SessionManager.getSession().getUser(), downloadAllowedName);
+                            .getConfigAttr(SessionManager.getSession().getUser(),
+                                downloadAllowedName,
+                                getConnectionContext());
                 downloadAllowed = (attrAllowed != null);
             } else {
                 downloadAllowed = true;
@@ -329,7 +338,8 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     public void additionalInitializationFromElement(final Element element) throws Exception {
         tableName = element.getChildText("className").trim();
         metaClass = ClassCacheMultiple.getMetaClass(SessionManager.getSession().getUser().getDomain(),
-                tableName);
+                tableName,
+                getConnectionContext());
         if (metaClass == null) {
             return;
         }
@@ -553,6 +563,11 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
      */
     public boolean isDownloadAllowed() {
         return downloadAllowed;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override

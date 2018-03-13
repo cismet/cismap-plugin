@@ -46,13 +46,17 @@ import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
 
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class SearchSearchTopicsDialog extends javax.swing.JDialog implements SearchControlListener {
+public class SearchSearchTopicsDialog extends javax.swing.JDialog implements SearchControlListener,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,6 +68,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     private final SearchControlPanel pnlSearchCancel;
     private boolean searchRunning = false;
     private final SearchTopicsDialogModel model = new SearchTopicsDialogModel();
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
 //    private SwingWorker searchThread;
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -95,7 +100,7 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
 
         initComponents();
 
-        pnlSearchCancel = new SearchControlPanel(this);
+        pnlSearchCancel = new SearchControlPanel(this, connectionContext);
         pnlSearchCancel.setEnabled(false);
         pnlButtons.remove(btnClose);
         pnlButtons.add(pnlSearchCancel);
@@ -537,6 +542,11 @@ public class SearchSearchTopicsDialog extends javax.swing.JDialog implements Sea
     @Override
     public boolean suppressEmptyResultMessage() {
         return false;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     //~ Inner Classes ----------------------------------------------------------
