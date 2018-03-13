@@ -33,6 +33,9 @@ import de.cismet.cismap.navigatorplugin.protocol.FulltextSearchProtocolStepImpl;
 
 import de.cismet.commons.gui.protocol.ProtocolHandler;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
+
 /**
  * DOCUMENT ME!
  *
@@ -41,7 +44,8 @@ import de.cismet.commons.gui.protocol.ProtocolHandler;
  */
 @ServiceProvider(service = CidsClientToolbarItem.class)
 public class FulltextSearchToolbarItem extends javax.swing.JPanel implements CidsClientToolbarItem,
-    RightStickyToolbarItem {
+    RightStickyToolbarItem,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -60,12 +64,22 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
     private de.cismet.tools.gui.JSearchTextField jSearchTextField1;
     // End of variables declaration//GEN-END:variables
 
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
+
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates new form FulltextSearchToolbarItem.
      */
     public FulltextSearchToolbarItem() {
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+
         initComponents();
 
         final Collection<SearchTopic> searchTopics = MetaSearch.instance().getSelectedSearchTopics();
@@ -133,7 +147,10 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
             });
     }
 
-    //~ Methods ----------------------------------------------------------------
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     /**
      * DOCUMENT ME!
@@ -295,7 +312,7 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
                     });
             }
 
-            CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch);
+            CidsSearchExecutor.searchAndDisplayResultsWithDialog(fullTextSearch, getConnectionContext());
         }
     } //GEN-LAST:event_jSearchTextField1ActionPerformed
 

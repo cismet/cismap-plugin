@@ -55,13 +55,17 @@ import de.cismet.cismap.commons.tools.FeatureTools;
 
 import de.cismet.commons.cismap.io.converters.GeomFromWktConverter;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 /**
  * DOCUMENT ME!
  *
  * @author   mroncoroni
  * @version  $Revision$, $Date$
  */
-public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String> {
+public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature, String>
+        implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -79,6 +83,8 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
     private Double maxArea = null;
     private Double maxScale = null;
     private Integer maxFeaturesPerPage = null;
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -250,7 +256,9 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                         metaClass,
                         SessionManager.getSession().getUser());
                 final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager.getProxy()
-                            .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+                            .customServerSearch(SessionManager.getSession().getUser(),
+                                    serverSearch,
+                                    getConnectionContext());
 
                 for (final ArrayList row : resultArray) {
                     if (row.get(0) != null) {
@@ -410,7 +418,10 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                                 SessionManager.getSession().getUser(),
                                 query);
                         final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager
-                                    .getProxy().customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+                                    .getProxy()
+                                    .customServerSearch(SessionManager.getSession().getUser(),
+                                            serverSearch,
+                                            getConnectionContext());
                         final String crs = CismapBroker.getInstance().getDefaultCrs();
 
                         for (final ArrayList row : resultArray) {
@@ -528,7 +539,9 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         serverSearch.setCompressed(compressed);
 
         final Collection resultCollection = SessionManager.getProxy()
-                    .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+                    .customServerSearch(SessionManager.getSession().getUser(),
+                        serverSearch,
+                        getConnectionContext());
         if (checkCancelled(workerThread, "PostQuery")) {
             return null;
         }
@@ -693,7 +706,9 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             serverSearch.setQuery(query);
 
             final Collection resultCollection = SessionManager.getProxy()
-                        .customServerSearch(SessionManager.getSession().getUser(), serverSearch);
+                        .customServerSearch(SessionManager.getSession().getUser(),
+                            serverSearch,
+                            getConnectionContext());
 
             final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)resultCollection;
 
@@ -741,5 +756,10 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
      */
     public String getGeometryType() {
         return geometryType;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

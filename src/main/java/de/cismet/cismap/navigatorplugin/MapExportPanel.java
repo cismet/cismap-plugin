@@ -26,6 +26,9 @@ import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapFileTypes;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToClipboardAction;
 import de.cismet.cismap.navigatorplugin.export_map_actions.ExportMapToFileAction;
 
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
+
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.NoWriteError;
 
@@ -38,7 +41,9 @@ import de.cismet.tools.gui.StayOpenCheckBoxMenuItem;
  * @author   Gilles Baatz
  * @version  $Revision$, $Date$
  */
-public class MapExportPanel extends javax.swing.JPanel implements Configurable, ExportMapDataProvider {
+public class MapExportPanel extends javax.swing.JPanel implements Configurable,
+    ExportMapDataProvider,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,6 +55,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     private final ExportMapToClipboardAction exportMapToClipboardAction;
     private final ExportGeoPointToClipboardAction exportGeoPointToClipboardAction;
     private final ExportMapToFileAction exportMapToFileAction;
+
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private de.cismet.tools.gui.JPopupMenuButton btnClipboard;
@@ -75,8 +82,11 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
 
     /**
      * Creates new form MapExportPanel.
+     *
+     * @param  connectionContext  DOCUMENT ME!
      */
-    public MapExportPanel() {
+    public MapExportPanel(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         exportMapToClipboardAction = new ExportMapToClipboardAction(this);
         exportGeoPointToClipboardAction = new ExportGeoPointToClipboardAction(this);
         exportMapToFileAction = new ExportMapToFileAction(this);
@@ -93,7 +103,8 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     private boolean checkActionTag() {
         boolean result;
         try {
-            result = SessionManager.getConnection().getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG)
+            result = SessionManager.getConnection()
+                        .getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getConnectionContext())
                         != null;
         } catch (ConnectionException ex) {
             LOG.error("Can not check ActionTag!", ex);
@@ -302,5 +313,10 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
         } else {
             return cismapPlugin.getHttpInterfacePort();
         }
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 }

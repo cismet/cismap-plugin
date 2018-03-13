@@ -12,10 +12,7 @@
  */
 package de.cismet.cismap.linearreferencing;
 
-import Sirius.navigator.connection.SessionManager;
-
 import Sirius.server.middleware.types.MetaClass;
-import Sirius.server.middleware.types.MetaObject;
 
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
@@ -44,7 +41,6 @@ import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 import de.cismet.cismap.cidslayer.CidsLayer;
 import de.cismet.cismap.cidslayer.CidsLayerFeature;
 
-import de.cismet.cismap.commons.BoundingBox;
 import de.cismet.cismap.commons.XBoundingBox;
 import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
@@ -52,8 +48,9 @@ import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
-import de.cismet.cismap.commons.retrieval.RetrievalEvent;
-import de.cismet.cismap.commons.retrieval.RetrievalListener;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.CalculationCache;
 import de.cismet.tools.Calculator;
@@ -66,7 +63,7 @@ import static de.cismet.cismap.linearreferencing.LinearReferencingSingletonInsta
  * @author   therter
  * @version  $Revision$, $Date$
  */
-public class RouteCombo extends javax.swing.JPanel {
+public class RouteCombo extends javax.swing.JPanel implements ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -84,7 +81,8 @@ public class RouteCombo extends javax.swing.JPanel {
     private Date routesComboInitialised = null;
     private String routeNamePropertyName;
     private String routeQuery;
-    private List<FocusListener> focusListener = new ArrayList<FocusListener>();
+    private List<FocusListener> focusListener = new ArrayList<>();
+    private final ConnectionContext connectionContext;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbPossibleRoute;
@@ -97,8 +95,10 @@ public class RouteCombo extends javax.swing.JPanel {
      *
      * @param  routeMetaClassName  DOCUMENT ME!
      * @param  value               DOCUMENT ME!
+     * @param  connecitonContext   DOCUMENT ME!
      */
-    public RouteCombo(final String routeMetaClassName, final Object value) {
+    public RouteCombo(final String routeMetaClassName, final Object value, final ConnectionContext connecitonContext) {
+        this.connectionContext = connecitonContext;
         initComponents();
         this.routeMetaClassName = routeMetaClassName;
         routeNamePropertyName = linearReferencingHelper.getRouteNamePropertyFromRouteByClassName(
@@ -203,7 +203,8 @@ public class RouteCombo extends javax.swing.JPanel {
         cbPossibleRoute.setModel(new DefaultComboBoxModel(new Object[] { "Lade" }));
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                routeMetaClassName);
+                routeMetaClassName,
+                getConnectionContext());
         final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
 //        final XBoundingBox currentBoundingBox = (XBoundingBox)mc.getCurrentBoundingBoxFromCamera();
         final XBoundingBox currentBoundingBox = new XBoundingBox(1, 1, 2, 2, null, true);
@@ -306,8 +307,9 @@ public class RouteCombo extends javax.swing.JPanel {
     private void fillComboBox(final List features, final Object defaultVal) {
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                routeMetaClassName);
-        final List<Feature> routes = new ArrayList<Feature>();
+                routeMetaClassName,
+                getConnectionContext());
+        final List<Feature> routes = new ArrayList<>();
         boolean hasSelectedItem = (defaultVal == null);
         boolean addSelectedItem = (defaultVal != null);
         routes.add(null);
@@ -418,10 +420,11 @@ public class RouteCombo extends javax.swing.JPanel {
         final MappingComponent mc = CismapBroker.getInstance().getMappingComponent();
         final SelectionListener sl = (SelectionListener)mc.getInputEventListener().get(MappingComponent.SELECT);
         final List<PFeature> featureList = sl.getAllSelectedPFeatures();
-        final List<Feature> possibleRoutes = new ArrayList<Feature>();
+        final List<Feature> possibleRoutes = new ArrayList<>();
         final MetaClass routeMc = ClassCacheMultiple.getMetaClass(
                 linearReferencingHelper.getDomainOfRouteTable(routeMetaClassName)[0],
-                routeMetaClassName);
+                routeMetaClassName,
+                getConnectionContext());
 
         for (final PFeature f : featureList) {
             final Feature selectedFeature = f.getFeature();
@@ -507,6 +510,11 @@ public class RouteCombo extends javax.swing.JPanel {
             l.focusLost(evt);
         }
     }                                                                            //GEN-LAST:event_cbPossibleRouteFocusLost
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     //~ Inner Classes ----------------------------------------------------------
 

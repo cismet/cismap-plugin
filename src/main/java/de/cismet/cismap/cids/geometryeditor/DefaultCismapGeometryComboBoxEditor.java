@@ -11,7 +11,6 @@
  */
 package de.cismet.cismap.cids.geometryeditor;
 
-import Sirius.navigator.plugin.PluginRegistry;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
 
@@ -30,6 +29,8 @@ import org.jdesktop.beansbinding.Validator;
 
 import javax.swing.JComboBox;
 
+import de.cismet.cids.client.tools.ConnectionContextUtils;
+
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.Disposable;
 
@@ -41,7 +42,9 @@ import de.cismet.cismap.commons.features.FeatureCollection;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.navigatorplugin.CidsFeature;
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.CurrentStackTrace;
 
@@ -51,7 +54,10 @@ import de.cismet.tools.CurrentStackTrace;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable, MetaClassStore, Disposable {
+public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable,
+    MetaClassStore,
+    Disposable,
+    ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -286,7 +292,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                     } else {
                         try {
                             if (geometryBean == null) {
-                                geometryBean = metaClass.getEmptyInstance().getBean();
+                                geometryBean = metaClass.getEmptyInstance(getConnectionContext()).getBean();
                             }
                             final Geometry oldValue = (Geometry)geometryBean.getProperty(GEOM_FIELD);
                             final Geometry geom = value.getGeometry();
@@ -399,5 +405,10 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      */
     public MetaObject getCidsMetaObject() {
         return this.cidsMetaObject;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return ConnectionContextUtils.getFirstParentClientConnectionContext(this);
     }
 }

@@ -26,9 +26,11 @@ import java.util.List;
 import de.cismet.cismap.cidslayer.CidsLayer;
 
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
-import de.cismet.cismap.commons.featureservice.H2FeatureService;
 
 import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
+
+import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextProvider;
 
 /**
  * DOCUMENT ME!
@@ -37,11 +39,15 @@ import de.cismet.cismap.linearreferencing.tools.LinearReferencedGeomProvider;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = LinearReferencedGeomProvider.class)
-public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider {
+public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomProvider, ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static Logger LOG = Logger.getLogger(LinearReferencedCidsLayerProvider.class);
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -52,7 +58,7 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
 
         for (final String domain : helper.getDomainOfRouteTable(null)) {
             try {
-                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain);
+                final MetaClass[] classes = SessionManager.getProxy().getClasses(domain, getConnectionContext());
 
                 for (final MetaClass clazz : classes) {
                     final Collection attributes = clazz.getAttributeByName("LinRefBaseGeom");
@@ -87,6 +93,11 @@ public class LinearReferencedCidsLayerProvider implements LinearReferencedGeomPr
         }
 
         return null;
+    }
+
+    @Override
+    public final ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override
