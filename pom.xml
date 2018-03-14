@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.1</version>
+                <version>6.1.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.1</version>
+                <version>6.1.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.1</version>
+                <version>6.1.1</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.1</version>
+                <version>6.1.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
