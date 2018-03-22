@@ -102,6 +102,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
         mappingComponent.addInputListener(interactionMode, listener);
         mappingComponent.addPropertyChangeListener(listener);
         CismapBroker.getInstance().setMetaSearch(metaSearch);
+        connectionContext = ConnectionContext.createDeprecated();
         initComponents();
     }
 
@@ -325,8 +326,8 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
-    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     @Override
     public void configure(final Element parent) {

@@ -44,7 +44,10 @@ import de.cismet.tools.gui.menu.CidsUiComponent;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = CidsUiComponent.class)
-public class MapExportPanel extends javax.swing.JPanel implements Configurable, ExportMapDataProvider, ConnectionContextProvider, CidsUiComponent {
+public class MapExportPanel extends javax.swing.JPanel implements Configurable,
+    ExportMapDataProvider,
+    ConnectionContextProvider,
+    CidsUiComponent {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -80,6 +83,13 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable, 
     // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates new form MapExportPanel.
+     */
+    public MapExportPanel() {
+        this(ConnectionContext.createDeprecated());
+    }
 
     /**
      * Creates new form MapExportPanel.
