@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>6.1-SNAPSHOT</version>
+                <version>6.0.1-navigatorx-pre-release-1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>6.1-SNAPSHOT</version>
+                <version>6.0.1-navigatorx-pre-release-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2-SNAPSHOT</version>
+                <version>6.1.5-navigatorx-pre-release-1</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2-SNAPSHOT</version>
+                <version>6.1.5-navigatorx-pre-release-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
