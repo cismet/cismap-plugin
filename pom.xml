@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2.1</version>
+                <version>6.2.2</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.2.1</version>
+                <version>6.2.2</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
