@@ -112,8 +112,9 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
         this.routeName = routeName;
+        final PFeature lineFeature = getSelectedLinePFeature();
 
-        if (getSelectedLinePFeature() == null) {
+        if (lineFeature == null) {
             JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
                 "Sie müssen genau ein "
                         + routeName
@@ -122,7 +123,7 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
                 JOptionPane.WARNING_MESSAGE);
             lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
         } else {
-            if ((check != null) && !check.isRouteValid(getSelectedLinePFeature())) {
+            if ((check != null) && !check.isRouteValid(lineFeature)) {
                 lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
             }
         }
@@ -189,6 +190,31 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
      */
     @Override
     public PFeature getSelectedLinePFeature() {
+        final PFeature line = getSelectedLinePFeature(mc, acceptedRoute);
+
+        if ((line == null) && resumed) {
+            resumed = false;
+            JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
+                "Sie müssen genau ein "
+                        + routeName
+                        + " wählen.",
+                "Fehler Thema-/Gewässerwahl",
+                JOptionPane.WARNING_MESSAGE);
+            lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
+        }
+
+        return line;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   mc             DOCUMENT ME!
+     * @param   acceptedRoute  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static PFeature getSelectedLinePFeature(final MappingComponent mc, final MetaClass acceptedRoute) {
         final List<Feature> fl = SelectionManager.getInstance().getSelectedFeatures();
         final List<Feature> acceptedFeatures = new ArrayList<Feature>();
 
@@ -232,17 +258,6 @@ public class CreateLinearReferencedLineListener extends CreateLinearReferencedMa
 
                 return f;
             }
-        }
-
-        if (resumed) {
-            resumed = false;
-            JOptionPane.showMessageDialog(StaticSwingTools.getParentFrame(mc),
-                "Sie müssen genau ein "
-                        + routeName
-                        + " wählen.",
-                "Fehler Thema-/Gewässerwahl",
-                JOptionPane.WARNING_MESSAGE);
-            lineFinishedListener.lineFinished(null, null, null, null, 0, 0);
         }
 
         return null;
