@@ -257,6 +257,12 @@ public class LineAndStationCreator extends AbstractFeatureCreator implements Con
                     mc.addInputListener(SIMPLE_GEOMETRY_LISTENER_KEY, listener);
                     mc.putCursor(SIMPLE_GEOMETRY_LISTENER_KEY, new Cursor(Cursor.CROSSHAIR_CURSOR));
                     listener.setMode(mode);
+                    if ((CismapBroker.getInstance() != null)
+                                && (CismapBroker.getInstance().getMappingComponent() != null)) {
+                        final CreateNewGeometryListener result = (CreateNewGeometryListener)CismapBroker
+                                    .getInstance().getMappingComponent().getInputListener(MappingComponent.NEW_POLYGON);
+                        listener.setShowCurrentLength(result.isShowCurrentLength());
+                    }
                     mc.setInteractionMode(SIMPLE_GEOMETRY_LISTENER_KEY);
                 }
             });
