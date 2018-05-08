@@ -32,6 +32,7 @@ import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedEvent;
 import de.cismet.cismap.commons.gui.attributetable.FeatureCreatedListener;
 import de.cismet.cismap.commons.gui.attributetable.creator.AbstractFeatureCreator;
+import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.linearreferencing.CreateLinearReferencedLineListener;
@@ -190,5 +191,12 @@ public class StationCreator extends AbstractFeatureCreator {
     @Override
     public AbstractFeatureService getService() {
         return service;
+    }
+
+    @Override
+    public boolean isCreationAllowed(final MappingComponent mc) {
+        final PFeature line = CreateLinearReferencedLineListener.getSelectedLinePFeature(mc, routeClass);
+
+        return (line == null) || ((check != null) && check.isRouteValid(line));
     }
 }
