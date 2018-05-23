@@ -19,6 +19,7 @@ import de.cismet.cids.search.QuerySearchMethod;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableSearchPanel;
+import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.tools.gui.StaticSwingTools;
 
@@ -53,6 +54,7 @@ public class DefaultAttributeTableSearchDialog implements AttributeTableSearchPa
                     removeFromSelectionMethod,
                     selectFromSelectionMethod
                 });
+        search.initWithConnectionContext(ConnectionContext.createDummy());
         search.enableLineWrap(true);
 
         final JDialog dialog = new JDialog(StaticSwingTools.getParentFrame(table), false);
