@@ -12,37 +12,21 @@
  */
 package de.cismet.cismap.navigatorplugin.actions;
 
-import Sirius.navigator.ui.ComponentRegistry;
-
 import org.apache.log4j.Logger;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 
-import java.io.File;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-import javax.swing.KeyStroke;
-import javax.swing.filechooser.FileFilter;
 
-import de.cismet.cismap.commons.RestrictedFileSystemView;
 import de.cismet.cismap.commons.gui.MappingComponent;
-import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
-import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.interaction.CismapBroker;
-
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
 
 import de.cismet.tools.gui.menu.CidsUiAction;
 import de.cismet.tools.gui.menu.CidsUiActionProvider;
 
-import static javax.swing.Action.ACCELERATOR_KEY;
-import static javax.swing.Action.LARGE_ICON_KEY;
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import static javax.swing.Action.SMALL_ICON;

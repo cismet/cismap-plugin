@@ -74,19 +74,19 @@ public class OpenThemeWidgetAction extends AbstractAction implements CidsUiActio
 
     @Override
     public void actionPerformed(final ActionEvent e) {
-        final CismapPlugin cismap = (CismapPlugin)PluginRegistry.getRegistry().getPlugin("cismap");
-
-        if (cismap != null) {
-            final View v = cismap.getView("themelayer");
-
-            if (v.isClosable()) {
-                v.close();
-            } else {
-                v.restore();
-            }
-        } else {
-            final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
-            navigator.select("de.cismet.cismap.commons.gui.layerwidget.ThemeLayerWidget");
-        }
+//        final CismapPlugin cismap = (CismapPlugin)PluginRegistry.getRegistry().getPlugin("cismap");
+//
+//        if (cismap != null) {
+//            final View v = cismap.getView("themelayer");
+//
+//            if (v.isClosable()) {
+//                v.close();
+//            } else {
+//                v.restore();
+//            }
+//        } else {
+        final NavigatorX navigator = (NavigatorX)ComponentRegistry.getRegistry().getMainWindow();
+        navigator.select("de.cismet.cismap.commons.gui.layerwidget.ThemeLayerWidget");
+//        }
     }
 }

@@ -22,9 +22,6 @@ import javax.swing.JOptionPane;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
-import de.cismet.cismap.navigatorplugin.GotoPointDialog;
-
 import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.menu.CidsUiAction;
 
@@ -77,7 +74,9 @@ public class ChangeScaleAction extends AbstractAction implements CidsUiAction {
             try {
                 final String s = JOptionPane.showInputDialog(
                         StaticSwingTools.getParentFrame(mapC),
-                        org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.scaleManually"),
+                        org.openide.util.NbBundle.getMessage(
+                            ChangeScaleAction.class,
+                            "ChangeScaleAction.actionPerformed"),
                         ((int)mapC.getScaleDenominator())
                                 + "");                               // NOI18N
                 final Integer i = new Integer(s);

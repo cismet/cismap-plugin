@@ -12,27 +12,11 @@
  */
 package de.cismet.cismap.navigatorplugin.actions;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import java.awt.event.ActionEvent;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 
-import de.cismet.cismap.commons.CrsTransformer;
-import de.cismet.cismap.commons.features.DefaultFeatureCollection;
-import de.cismet.cismap.commons.features.Feature;
-import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
-import de.cismet.cismap.commons.gui.piccolo.PFeature;
-import de.cismet.cismap.commons.interaction.CismapBroker;
-
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
 
 import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.menu.CidsUiAction;

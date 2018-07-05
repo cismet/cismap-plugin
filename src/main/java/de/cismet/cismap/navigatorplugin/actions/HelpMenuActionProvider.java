@@ -26,8 +26,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
-
 import de.cismet.tools.configuration.Configurable;
 import de.cismet.tools.configuration.ConfigurationManager;
 import de.cismet.tools.configuration.NoWriteError;

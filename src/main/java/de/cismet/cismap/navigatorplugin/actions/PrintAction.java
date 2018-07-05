@@ -14,20 +14,13 @@ package de.cismet.cismap.navigatorplugin.actions;
 
 import java.awt.event.ActionEvent;
 
-import java.beans.PropertyChangeListener;
-
 import javax.swing.AbstractAction;
-import javax.swing.KeyStroke;
 
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
-import de.cismet.cismap.navigatorplugin.CismapPlugin;
-
 import de.cismet.tools.gui.menu.CidsUiAction;
 
-import static javax.swing.Action.MNEMONIC_KEY;
-import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**

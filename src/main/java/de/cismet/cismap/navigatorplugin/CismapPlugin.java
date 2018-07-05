@@ -35,8 +35,6 @@ import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.infonode.docking.DockingWindow;
-import net.infonode.docking.DockingWindowAdapter;
-import net.infonode.docking.OperationAbortedException;
 import net.infonode.docking.RootWindow;
 import net.infonode.docking.SplitWindow;
 import net.infonode.docking.TabWindow;
@@ -65,7 +63,6 @@ import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -153,14 +150,10 @@ import de.cismet.cismap.commons.features.FeatureCollectionListener;
 import de.cismet.cismap.commons.features.FeatureGroup;
 import de.cismet.cismap.commons.features.FeatureGroups;
 import de.cismet.cismap.commons.features.PureNewFeature;
-import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.ToolbarComponentDescription;
 import de.cismet.cismap.commons.gui.ToolbarComponentsProvider;
 import de.cismet.cismap.commons.gui.about.AboutDialog;
-import de.cismet.cismap.commons.gui.attributetable.AttributeTable;
-import de.cismet.cismap.commons.gui.attributetable.AttributeTableFactory;
-import de.cismet.cismap.commons.gui.attributetable.AttributeTableListener;
 import de.cismet.cismap.commons.gui.capabilitywidget.CapabilityWidget;
 import de.cismet.cismap.commons.gui.featurecontrolwidget.FeatureControl;
 import de.cismet.cismap.commons.gui.featureinfowidget.FeatureInfoWidget;
@@ -171,7 +164,6 @@ import de.cismet.cismap.commons.gui.layerwidget.ActiveLayerModel;
 import de.cismet.cismap.commons.gui.layerwidget.LayerDropUtils;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidget;
 import de.cismet.cismap.commons.gui.layerwidget.LayerWidgetProvider;
-import de.cismet.cismap.commons.gui.layerwidget.ThemeLayerWidget;
 import de.cismet.cismap.commons.gui.options.CapabilityWidgetOptionsPanel;
 import de.cismet.cismap.commons.gui.overviewwidget.OverviewComponent;
 import de.cismet.cismap.commons.gui.piccolo.AngleMeasurementDialog;
@@ -191,7 +183,6 @@ import de.cismet.cismap.commons.interaction.events.StatusEvent;
 import de.cismet.cismap.commons.interaction.memento.MementoInterface;
 import de.cismet.cismap.commons.rasterservice.georeferencing.RasterGeoReferencingBackend;
 import de.cismet.cismap.commons.util.DnDUtils;
-import de.cismet.cismap.commons.util.SelectionManager;
 import de.cismet.cismap.commons.wfsforms.AbstractWFSForm;
 import de.cismet.cismap.commons.wfsforms.WFSFormFactory;
 
@@ -227,7 +218,6 @@ import de.cismet.tools.gui.CustomButtonProvider;
 import de.cismet.tools.gui.EventDispatchThreadHangMonitor;
 import de.cismet.tools.gui.JPopupMenuButton;
 import de.cismet.tools.gui.StaticSwingTools;
-import de.cismet.tools.gui.WaitingDialogThread;
 import de.cismet.tools.gui.downloadmanager.DownloadManagerAction;
 import de.cismet.tools.gui.historybutton.HistoryModelListener;
 import de.cismet.tools.gui.historybutton.JHistoryButton;
@@ -257,7 +247,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY = "/defaultCismap_"
                 + System.getProperty("user.language") + "_" + System.getProperty("user.country")
                 + ".layout";
-    private static CismapPlugin instance;
 
     //~ Enums ------------------------------------------------------------------
 
@@ -307,7 +296,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private View vFeatureInfo;
     private View vFeatureControl;
     private View vOverview;
-    private View vThemeLayer;
     private RootWindow rootWindow;
     private final StringViewMap viewMap = new StringViewMap();
     private final Map<String, JMenuItem> viewMenuMap = new HashMap<>();
@@ -341,8 +329,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private String newsUrl = null;
     private AboutDialog about;
     private OverviewComponent overviewComponent = null;
-    private ThemeLayerWidget themelayerWidget = null;
-    private HashMap<String, View> attributeTableMap = new HashMap<String, View>();
     private Dimension oldWindowDimension = new Dimension(-1, -1);
     private int oldWindowPositionX = -1;
     private int oldWindowPositionY = -1;
@@ -408,7 +394,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenu menEdit;
     private javax.swing.JMenu menExtras;
     private javax.swing.JMenu menFile;
-    private javax.swing.JMenu menGis;
     private javax.swing.JMenu menHelp;
     private javax.swing.JMenu menHistory;
     private javax.swing.JMenu menSearch;
@@ -424,7 +409,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniClose;
     private javax.swing.JMenuItem mniFeatureControl;
     private javax.swing.JMenuItem mniFeatureInfo;
-    private javax.swing.JMenuItem mniFeatureInfoBox;
     private javax.swing.JMenuItem mniForward;
     private javax.swing.JMenuItem mniGeoLinkClipboard;
     private javax.swing.JMenuItem mniGotoPoint;
@@ -452,19 +436,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenuItem mniSaveLayout;
     private javax.swing.JMenuItem mniScale;
     private javax.swing.JMenuItem mniServerInfo;
-    private javax.swing.JMenuItem mniThemeLayer;
     private javax.swing.JMenuItem mniZoomToAllObjects;
     private javax.swing.JMenuItem mniZoomToSelectedObjects;
     private javax.swing.JMenuBar mnuBar;
     private javax.swing.JMenuItem mnuConfigServer;
-    private de.cismet.cismap.navigatorplugin.actions.OpenFeatureInfoAction openFeatureInfoAction1;
-    private de.cismet.cismap.navigatorplugin.actions.OpenThemeWidgetAction openThemeWidgetAction1;
     private javax.swing.JPanel panAll;
     private javax.swing.JPanel panMain;
     private javax.swing.JPanel panStatus;
     private javax.swing.JPanel panToolbar;
     private javax.swing.JPopupMenu popMen;
-    private javax.swing.JRadioButtonMenuItem rmniFeatureInfoBox;
     private javax.swing.JSeparator sepAfterPos;
     private javax.swing.JSeparator sepBeforePos;
     private javax.swing.JSeparator sepResetWindowLayout;
@@ -615,7 +595,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             try {
                 initComponents();
-                mniFeatureInfoBox.setVisible(false);
             } catch (final Exception e) {
                 log.fatal("Error in initComponents.", e); // NOI18N
             }
@@ -660,7 +639,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             menues.add(menHistory);
             menues.add(menSearch);
             menues.add(menBookmarks);
-            menues.add(menGis);
             menues.add(menExtras);
             menues.add(menWindows);
             menues.add(menHelp);
@@ -870,14 +848,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             viewMap.addView("overview", vOverview); // NOI18N
             viewMenuMap.put("overview", mniOverview); // NOI18N
             legendTab[1] = vOverview;
-
-            themelayerWidget = new ThemeLayerWidget();
-            vThemeLayer = new View(org.openide.util.NbBundle.getMessage(
-                        CismapPlugin.class,
-                        "CismapPlugin.CismapPlugin(PluginContext).vThemeLayer.title"), // NOI18N
-                    Static2DTools.borderIcon(icoMap, 0, 3, 0, 1),
-                    themelayerWidget);
-            viewMap.addView("themelayer", vThemeLayer); // NOI18N
 
             vLayerInfo = new View(org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
@@ -1119,7 +1089,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         ((Observable)mapC.getMemRedo()).addObserver(CismapPlugin.this);
         mapC.unlock();
         overviewComponent.getOverviewMap().unlock();
-        themelayerWidget.setMappingModel((ActiveLayerModel)mapC.getMappingModel());
         layerInfo.initDividerLocation();
         try {
             initPluginToolbarComponents();
@@ -1162,14 +1131,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 loadLayout(cismapDirectory + fs + pluginLayoutName, true);
             }
         }
-
-        initAttributeTable();
-        final SelectionListener sl = (SelectionListener)mapC.getInputEventListener().get(MappingComponent.SELECT);
-
-        if (sl != null) {
-            sl.setFeaturesFromServicesSelectable(true);
-        }
-        instance = this;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -1177,219 +1138,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     @Override
     public final ConnectionContext getConnectionContext() {
         return connectionContext;
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    private void initAttributeTable() {
-        AttributeTableFactory.getInstance().setMappingComponent(mapC);
-        AttributeTableFactory.getInstance().setAttributeTableListener(new AttributeTableListener() {
-
-                @Override
-                public void showAttributeTable(final AttributeTable table,
-                        final String id,
-                        final String name,
-                        final String tooltip) {
-                    View view = attributeTableMap.get(id);
-
-                    table.setExportEnabled(true);
-
-                    if (view != null) {
-                        view.restore();
-                        view.requestFocusInWindow();
-                        final Object parentWindow = view.getWindowParent();
-
-                        if (parentWindow instanceof TabWindow) {
-                            final TabWindow tab = (TabWindow)parentWindow;
-                            final int tabIndex = tab.getChildWindowIndex(view);
-
-                            if (tabIndex != -1) {
-                                tab.setSelectedTab(tabIndex);
-                            }
-                        }
-                    } else {
-                        view = new View(name, null, table);
-                        addAttributeTableWindowListener(view, table);
-                        viewMap.addView(id, view);
-                        attributeTableMap.put(id, view);
-                        final TabWindow tw = (TabWindow)viewMap.getView("map").getWindowParent();
-                        tw.addTab(view, tw.getChildWindowCount());
-                        view.restore();
-                        SelectionManager.getInstance().addConsideredAttributeTable(table);
-                    }
-                }
-
-                @Override
-                public void changeName(final String id, final String name) {
-                    final View view = attributeTableMap.get(id);
-
-                    if (view != null) {
-                        view.getViewProperties().setTitle(name);
-                    }
-                }
-
-                @Override
-                public void processingModeChanged(final AbstractFeatureService service, final boolean active) {
-                    SelectionManager.getInstance().switchProcessingMode(service);
-                }
-
-                @Override
-                public void closeAttributeTable(final AbstractFeatureService service) {
-                    final View attributeTableView = attributeTableMap.remove(AttributeTableFactory.createId(service));
-
-                    if (attributeTableView != null) {
-                        attributeTableView.close();
-                    }
-                }
-
-                @Override
-                public AttributeTable getAttributeTable(final String id) {
-                    final View view = attributeTableMap.get(id);
-
-                    if (view != null) {
-                        final Component c = view.getComponent();
-
-                        if (c instanceof AttributeTable) {
-                            return (AttributeTable)c;
-                        }
-                    }
-
-                    return null;
-                }
-
-                @Override
-                public void switchProcessingMode(final AbstractFeatureService service, final String id) {
-                    if (!CismapPlugin.this.switchProcessingMode(service, false)) {
-//                        setTabWindow();
-                        final int index = -1;
-
-//                        if ((tabWindow != null) && (tabWindow.getSelectedWindow() != null)) {
-//                            index = tabWindow.getChildWindowIndex(tabWindow.getSelectedWindow());
-//                        }
-
-                        AttributeTableFactory.getInstance().showAttributeTable(service);
-
-//                        if ((index != -1) && (index < tabWindow.getChildWindowCount())) {
-//                            tabWindow.setSelectedTab(index);
-//                        }
-
-                        final WaitingDialogThread<Void> wdt = new WaitingDialogThread<Void>(
-                                CismapPlugin.this,
-                                true,
-                                "Starte Edit mode",
-//                                NbBundle.getMessage(
-//                                    CismapPlugin.class,
-//                                    "WatergisApp.EditModeMenuItem.actionPerformed().wait"),
-                                null,
-                                200) {
-
-                                @Override
-                                protected Void doInBackground() throws Exception {
-                                    final View view = attributeTableMap.get(id);
-
-                                    if (view != null) {
-                                        final Component c = view.getComponent();
-
-                                        if (c instanceof AttributeTable) {
-                                            final AttributeTable attrTable = (AttributeTable)c;
-
-                                            while (attrTable.isLoading()) {
-                                                Thread.sleep(100);
-                                            }
-                                        }
-                                    }
-
-                                    return null;
-                                }
-
-                                @Override
-                                protected void done() {
-                                    CismapPlugin.this.switchProcessingMode(service, false);
-                                }
-                            };
-
-                        wdt.start();
-                    }
-                }
-            });
-    }
-
-    /**
-     * Adds the window listener to the given view.
-     *
-     * @param  view   the view to add the listener
-     * @param  table  the AttributeTable that is used inside the view
-     */
-    private void addAttributeTableWindowListener(final View view, final AttributeTable table) {
-        view.addListener(new DockingWindowAdapter() {
-
-                @Override
-                public void windowClosing(final DockingWindow window) throws OperationAbortedException {
-                    final boolean disposeCompleted = table.dispose();
-
-                    if (!disposeCompleted) {
-                        throw new OperationAbortedException();
-                    }
-                }
-
-                @Override
-                public void windowClosed(final DockingWindow window) {
-                    disposeTable();
-                }
-
-                private void disposeTable() {
-                    view.removeListener(this);
-                    if (view.getParent() != null) {
-                        view.getParent().remove(view);
-                    }
-                    viewMap.removeView("Attributtabelle " + table.getFeatureService().getName());
-                    attributeTableMap.remove(AttributeTableFactory.createId(table.getFeatureService()));
-
-                    SelectionManager.getInstance().removeConsideredAttributeTable(table);
-
-                    // The view is not removed from the root window and this will cause that the layout cannot be saved
-                    // when the application will be closed. So rootWindow.removeView(view) must be invoked. But without
-                    // the invocation of view.close(), the invocation of rootWindow.removeView(view) will do nothing To
-                    // avoid an infinite loop, view.removeListener(this) must be invoked before view.close();
-                    view.close();
-                    rootWindow.removeView(view);
-                }
-            });
-    }
-
-    /**
-     * switches the processing mode of the given service.
-     *
-     * @param   service    DOCUMENT ME!
-     * @param   forceSave  if true, the changed data will be saved without confirmation
-     *
-     * @return  true, if the processing mode was switched
-     */
-    public boolean switchProcessingMode(final AbstractFeatureService service, final boolean forceSave) {
-        final View view = attributeTableMap.get(AttributeTableFactory.createId(service));
-
-        if (view != null) {
-            final Component c = view.getComponent();
-
-            if (c instanceof AttributeTable) {
-                final AttributeTable attrTable = (AttributeTable)c;
-
-                attrTable.changeProcessingMode(forceSave);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static final CismapPlugin getInstance() {
-        return instance;
     }
 
     /**
@@ -1572,11 +1320,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         capabilitiesSection.add(vCaps);
         capabilitiesSection.add(vServerInfo);
 
-        final List<DockingWindow> layerSection = new ArrayList<DockingWindow>(4);
+        final List<DockingWindow> layerSection = new ArrayList<DockingWindow>(3);
         layerSection.add(vLayers);
         layerSection.add(vFeatureControl);
         layerSection.add(vFeatureInfo);
-        layerSection.add(vThemeLayer);
 
         final List<DockingWindow> layerInfoSection = new ArrayList<DockingWindow>(Arrays.asList(legendTab));
 
@@ -1656,7 +1403,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         vLegend.restoreFocus();
         vCaps.restoreFocus();
         vLayers.restoreFocus();
-        vThemeLayer.restoreFocus();
         vMap.restoreFocus();
 
         if (windows2skip != null) {
@@ -1716,8 +1462,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniAddBookmark = new javax.swing.JMenuItem();
         mniBookmarkManager = new javax.swing.JMenuItem();
         mniBookmarkSidebar = new javax.swing.JMenuItem();
-        openFeatureInfoAction1 = new de.cismet.cismap.navigatorplugin.actions.OpenFeatureInfoAction();
-        openThemeWidgetAction1 = new de.cismet.cismap.navigatorplugin.actions.OpenThemeWidgetAction();
         panAll = new javax.swing.JPanel();
         panToolbar = new javax.swing.JPanel();
         panMain = new javax.swing.JPanel();
@@ -1822,10 +1566,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniGotoPoint = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JSeparator();
         mniScale = new javax.swing.JMenuItem();
-        menGis = new javax.swing.JMenu();
-        mniFeatureInfoBox = new javax.swing.JMenuItem();
-        rmniFeatureInfoBox = new javax.swing.JRadioButtonMenuItem();
-        mniThemeLayer = new javax.swing.JMenuItem();
         menWindows = new javax.swing.JMenu();
         mniLayer = new javax.swing.JMenuItem();
         mniCapabilities = new javax.swing.JMenuItem();
@@ -2882,23 +2622,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         menExtras.add(mniScale);
 
         mnuBar.add(menExtras);
-
-        menGis.setText(org.openide.util.NbBundle.getMessage(
-                CismapPlugin.class,
-                "CismapPlugin.menGis.text",
-                new Object[] {})); // NOI18N
-
-        mniFeatureInfoBox.setAction(openFeatureInfoAction1);
-        menGis.add(mniFeatureInfoBox);
-
-        rmniFeatureInfoBox.setAction(openFeatureInfoAction1);
-        cmdGroupPrimaryInteractionMode.add(rmniFeatureInfoBox);
-        menGis.add(rmniFeatureInfoBox);
-
-        mniThemeLayer.setAction(openThemeWidgetAction1);
-        menGis.add(mniThemeLayer);
-
-        mnuBar.add(menGis);
 
         menWindows.setMnemonic('F');
         menWindows.setText(org.openide.util.NbBundle.getMessage(CismapPlugin.class, "CismapPlugin.menWindows.text")); // NOI18N
@@ -4765,17 +4488,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         } catch (Exception x) {
             log.info("RasterGeoReferencingToolbarComponentProvider properties available", x); // NOI18N
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   id  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public View getView(final String id) {
-        return viewMap.getView(id);
     }
 
     /**
