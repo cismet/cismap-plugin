@@ -17,13 +17,18 @@ import java.awt.event.ActionEvent;
 import de.cismet.cismap.navigatorplugin.ImageSelection;
 
 import de.cismet.tools.gui.StaticSwingTools;
+import de.cismet.tools.gui.menu.CidsUiAction;
+
+import static javax.swing.Action.LARGE_ICON_KEY;
+import static javax.swing.Action.SMALL_ICON;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ExportMapToClipboardAction extends AbstractExportMapAction {
+@org.openide.util.lookup.ServiceProvider(service = CidsUiAction.class)
+public class ExportMapToClipboardAction extends AbstractExportMapAction implements CidsUiAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,6 +57,8 @@ public class ExportMapToClipboardAction extends AbstractExportMapAction {
         putValue(
             SHORT_DESCRIPTION,
             NbBundle.getMessage(ExportMapToClipboardAction.class, "ExportMapToClipboardAction.tooltip"));
+        putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToClipboardAction");
     }
 
     //~ Methods ----------------------------------------------------------------

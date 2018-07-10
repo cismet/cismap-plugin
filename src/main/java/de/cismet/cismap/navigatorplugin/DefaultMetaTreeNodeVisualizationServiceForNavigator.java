@@ -11,6 +11,7 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.NavigatorX;
 import Sirius.navigator.plugin.PluginRegistry;
 import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
 import Sirius.navigator.ui.ComponentRegistry;
@@ -20,7 +21,11 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import java.util.Collection;
 import java.util.Vector;
 
+import javax.swing.JFrame;
+
 import de.cismet.cids.utils.interfaces.DefaultMetaTreeNodeVisualizationService;
+
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
 /**
  * DOCUMENT ME!
@@ -42,13 +47,23 @@ public class DefaultMetaTreeNodeVisualizationServiceForNavigator implements Defa
 
     @Override
     public void addVisualization(final Collection<DefaultMetaTreeNode> c) throws Exception {
-        getPlugin().showInMap(c, false);
+        if (getPlugin() == null) {
+            final JFrame frame = ComponentRegistry.getRegistry().getMainWindow();
+
+            if (frame instanceof NavigatorX) {
+                final NavigatorX navigator = (NavigatorX)frame;
+
+                navigator.showObjectInGui(c, false);
+            }
+        } else {
+            getPlugin().showInMap(c, false);
+        }
     }
 
     @Override
     public void removeVisualization(final DefaultMetaTreeNode dmtn) throws Exception {
         final CidsFeature cf = new CidsFeature((MetaObjectNode)dmtn.getNode());
-        getPlugin().getMappingComponent().getFeatureCollection().removeFeature(cf);
+        CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(cf);
     }
 
     @Override

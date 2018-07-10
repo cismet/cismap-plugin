@@ -32,13 +32,17 @@ import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.downloadmanager.Download;
 import de.cismet.tools.gui.downloadmanager.DownloadManager;
 import de.cismet.tools.gui.downloadmanager.MultipleDownload;
+import de.cismet.tools.gui.menu.CidsUiAction;
+
+import static javax.swing.Action.SMALL_ICON;
 
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ExportMapToFileAction extends AbstractExportMapAction {
+@org.openide.util.lookup.ServiceProvider(service = CidsUiAction.class)
+public class ExportMapToFileAction extends AbstractExportMapAction implements CidsUiAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,6 +68,13 @@ public class ExportMapToFileAction extends AbstractExportMapAction {
         putValue(
             SHORT_DESCRIPTION,
             NbBundle.getMessage(ExportMapToFileAction.class, "ExportMapToFileAction.tooltip"));
+        putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
+        putValue(
+            SMALL_ICON,
+            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/legend.png")));
+//            new javax.swing.ImageIcon(getClass().getResource("/de/cismet/cismap/navigatorplugin/res/icons16/icon-exportfile.png")));
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToFileAction");
     }
 
     //~ Methods ----------------------------------------------------------------

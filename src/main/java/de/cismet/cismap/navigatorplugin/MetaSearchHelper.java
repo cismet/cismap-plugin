@@ -75,6 +75,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     private final MetaSearch metaSearch;
     private GeoSearch customGeoSearch;
     private final ConnectionContext connectionContext;
+    private boolean configured = false;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cmdPluginSearch;
@@ -82,6 +83,28 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     // End of variables declaration//GEN-END:variables
 
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates new form MetaSearchComponentFactory. The new Navigator uses the MetaSearchHelper as Singleton and this
+     * constructor is used to initialise the singleton.
+     */
+    private MetaSearchHelper() {
+        this.interactionMode = MappingComponent.CREATE_SEARCH_POLYGON;
+        this.mappingComponent = CismapBroker.getInstance().getMappingComponent();
+        this.searchName = null;
+        metaSearch = MetaSearch.instance();
+
+        CismapBroker.getInstance().addMapSearchListener(this);
+
+        final MetaSearchCreateSearchGeometryListener listener = new MetaSearchCreateSearchGeometryListener(
+                mappingComponent,
+                metaSearch);
+        mappingComponent.addInputListener(interactionMode, listener);
+        mappingComponent.addPropertyChangeListener(listener);
+        CismapBroker.getInstance().setMetaSearch(metaSearch);
+        connectionContext = ConnectionContext.createDeprecated();
+        initComponents();
+    }
 
     /**
      * Creates new form MetaSearchComponentFactory.
@@ -158,6 +181,15 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
             final String searchName,
             final ConnectionContext connectionContext) {
         return new MetaSearchHelper(plugin, interactionMode, mappingComponent, searchName, connectionContext);
+    }
+
+    /**
+     * The new Navigator uses the MetaSearchHelper as Singleton.
+     *
+     * @return  the instance of the class MetaSearchHelper
+     */
+    public static MetaSearchHelper getInstance() {
+        return LazyInitializer.INSTANCE;
     }
 
     /**
@@ -302,6 +334,7 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
         metaSearch.configure(parent);
         ((GeoSearchButton)cmdPluginSearch).initSearchTopicMenues(metaSearch);
         ((GeoSearchMenu)metaSearchMenu).initSearchTopicMenues(metaSearch);
+        configured = true;
     }
 
     @Override
@@ -317,5 +350,36 @@ public class MetaSearchHelper extends javax.swing.JPanel implements MapSearchLis
     @Override
     public ConnectionContext getConnectionContext() {
         return connectionContext;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  the configured
+     */
+    public boolean isConfigured() {
+        return configured;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static final class LazyInitializer {
+
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final transient MetaSearchHelper INSTANCE = new MetaSearchHelper();
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new LazyInitializer object.
+         */
+        private LazyInitializer() {
+        }
     }
 }
