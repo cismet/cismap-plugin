@@ -17,12 +17,17 @@ import de.cismet.cismap.commons.BoundingBox;
 
 import de.cismet.cismap.navigatorplugin.GeoLinkUrl;
 
+import de.cismet.tools.gui.menu.CidsUiAction;
+
+import static javax.swing.Action.SMALL_ICON;
+
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class ExportGeoPointToClipboardAction extends AbstractExportMapAction {
+@org.openide.util.lookup.ServiceProvider(service = CidsUiAction.class)
+public class ExportGeoPointToClipboardAction extends AbstractExportMapAction implements CidsUiAction {
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,6 +55,8 @@ public class ExportGeoPointToClipboardAction extends AbstractExportMapAction {
             NbBundle.getMessage(
                 ExportGeoPointToClipboardAction.class,
                 "ExportGeoPointToClipboardAction.tooltip"));
+        putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
+        putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportGeoPointToClipboardAction");
     }
 
     //~ Methods ----------------------------------------------------------------

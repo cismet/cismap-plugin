@@ -14,6 +14,8 @@ import Sirius.navigator.ui.RightStickyToolbarItem;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
+import java.awt.Component;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -36,6 +38,8 @@ import de.cismet.commons.gui.protocol.ProtocolHandler;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
+import de.cismet.tools.gui.menu.CidsUiComponent;
+
 /**
  * DOCUMENT ME!
  *
@@ -45,7 +49,8 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 @ServiceProvider(service = CidsClientToolbarItem.class)
 public class FulltextSearchToolbarItem extends javax.swing.JPanel implements CidsClientToolbarItem,
     RightStickyToolbarItem,
-    ConnectionContextStore {
+    ConnectionContextStore,
+    CidsUiComponent {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -335,5 +340,19 @@ public class FulltextSearchToolbarItem extends javax.swing.JPanel implements Cid
         final JFrame frame = new JFrame();
         frame.setContentPane(new FulltextSearchToolbarItem());
         frame.setVisible(true);
+    }
+
+    @Override
+    public String getValue(final String key) {
+        if (key.equals(CidsUiComponent.CIDS_ACTION_KEY)) {
+            return "FulltextSearchToolbarItem";
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
     }
 }

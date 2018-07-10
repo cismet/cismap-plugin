@@ -86,6 +86,21 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
     /**
      * DOCUMENT ME!
      *
+     * @param  interactionMode   DOCUMENT ME!
+     * @param  mappingComponent  DOCUMENT ME!
+     * @param  searchName        DOCUMENT ME!
+     */
+    protected void init(final String interactionMode,
+            final MappingComponent mappingComponent,
+            final String searchName) {
+        this.interactionMode = interactionMode;
+        this.mappingComponent = mappingComponent;
+        this.searchName = searchName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     @Override
