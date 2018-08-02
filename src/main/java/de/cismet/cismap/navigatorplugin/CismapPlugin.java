@@ -670,6 +670,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             ((JHistoryButton)cmdForward).setHistoryModel(mapC);
             ((JHistoryButton)cmdBack).setHistoryModel(mapC);
 
+            CismapBroker.getInstance()
+                    .addActiveLayerListener(RasterGeoReferencingBackend.getInstance().getActiveLayerListenerHandler());
+
             CismapBroker.getInstance().addMapDnDListener(this);
             CismapBroker.getInstance().addStatusListener(this);
             mapC.getFeatureCollection().addFeatureCollectionListener(featureControl);
