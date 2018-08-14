@@ -23,11 +23,18 @@ import org.apache.log4j.Logger;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 import de.cismet.cismap.navigatorplugin.CismapPlugin;
 
+import de.cismet.tools.Static2DTools;
+
 import de.cismet.tools.gui.menu.CidsUiAction;
+
+import static javax.swing.Action.LARGE_ICON_KEY;
+import static javax.swing.Action.SMALL_ICON;
 
 /**
  * DOCUMENT ME!
@@ -68,6 +75,11 @@ public class OpenThemeWidgetAction extends AbstractAction implements CidsUiActio
         final String mnemonic = org.openide.util.NbBundle.getMessage(
                 OpenThemeWidgetAction.class,
                 "OpenThemeWidgetAction.mnemonic");
+        final Icon icoMap = new ImageIcon(getClass().getResource(
+                    "/de/cismet/cismap/commons/raster/wms/res/layers.png"));
+        final Icon icon = Static2DTools.borderIcon(icoMap, 0, 3, 0, 1);
+        putValue(SMALL_ICON, icon);
+        putValue(LARGE_ICON_KEY, icon);
         putValue(MNEMONIC_KEY, KeyStroke.getKeyStroke(mnemonic).getKeyCode());
         putValue(CidsUiAction.CIDS_ACTION_KEY, "OpenThemeWidgetAction");
     }

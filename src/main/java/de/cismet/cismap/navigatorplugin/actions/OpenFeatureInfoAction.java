@@ -23,6 +23,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 
@@ -30,6 +32,8 @@ import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanel;
 import de.cismet.cismap.commons.gui.featureinfopanel.FeatureInfoPanelListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
+
+import de.cismet.tools.Static2DTools;
 
 import de.cismet.tools.gui.StaticSwingTools;
 import de.cismet.tools.gui.menu.CidsUiAction;
@@ -83,6 +87,11 @@ public class OpenFeatureInfoAction extends AbstractAction implements CidsUiActio
         final String mnemonic = org.openide.util.NbBundle.getMessage(
                 OpenFeatureInfoAction.class,
                 "OpenFeatureInfoAction.mnemonic");
+        final Icon icoMap = new ImageIcon(getClass().getResource(
+                    "/de/cismet/cismap/commons/raster/wms/res/layers.png"));
+        final Icon icon = Static2DTools.borderIcon(icoMap, 0, 3, 0, 1);
+        putValue(SMALL_ICON, icon);
+        putValue(LARGE_ICON_KEY, icon);
         putValue(MNEMONIC_KEY, KeyStroke.getKeyStroke(mnemonic).getKeyCode());
         putValue(CidsUiAction.CIDS_ACTION_KEY, "OpenFeatureInfo");
     }
