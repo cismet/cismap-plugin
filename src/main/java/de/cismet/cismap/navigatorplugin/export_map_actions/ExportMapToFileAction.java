@@ -180,8 +180,7 @@ public class ExportMapToFileAction extends AbstractExportMapAction implements Ci
      */
     private boolean stringEndsWithArray(final String s, final String[] arr) {
         for (final String arrElement : arr) {
-            final boolean endsWith = s.endsWith(arrElement);
-            if (endsWith) {
+            if (s.endsWith("." + arrElement)) {
                 return true;
             }
         }
