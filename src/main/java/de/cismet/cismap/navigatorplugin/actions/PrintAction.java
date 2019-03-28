@@ -45,6 +45,9 @@ public class PrintAction extends AbstractAction implements CidsUiAction {
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/frameprint.png")));
         putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource("/images/frameprint.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "PrintAction");
+        putValue(
+            ACCELERATOR_KEY,
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
     }
 
     //~ Methods ----------------------------------------------------------------

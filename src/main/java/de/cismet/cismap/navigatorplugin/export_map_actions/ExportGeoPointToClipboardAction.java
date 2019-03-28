@@ -57,6 +57,12 @@ public class ExportGeoPointToClipboardAction extends AbstractExportMapAction imp
                 "ExportGeoPointToClipboardAction.tooltip"));
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportGeoPointToClipboardAction");
+        putValue(
+            ACCELERATOR_KEY,
+            javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_C,
+                java.awt.event.InputEvent.ALT_MASK
+                        | java.awt.event.InputEvent.CTRL_MASK));
     }
 
     //~ Methods ----------------------------------------------------------------

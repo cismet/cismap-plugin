@@ -49,6 +49,7 @@ public class HomeAction extends AbstractAction implements CidsUiAction {
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/home16.gif")));
         putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource("/images/home.gif")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "HomeAction");
+        putValue(ACCELERATOR_KEY, javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_HOME, 0));
     }
 
     //~ Methods ----------------------------------------------------------------
