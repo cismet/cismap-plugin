@@ -59,6 +59,9 @@ public class ExportMapToClipboardAction extends AbstractExportMapAction implemen
             NbBundle.getMessage(ExportMapToClipboardAction.class, "ExportMapToClipboardAction.tooltip"));
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/clipboard16.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "ExportMapToClipboardAction");
+        putValue(
+            ACCELERATOR_KEY,
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
     }
 
     //~ Methods ----------------------------------------------------------------

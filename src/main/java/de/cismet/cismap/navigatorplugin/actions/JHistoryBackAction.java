@@ -47,6 +47,9 @@ public class JHistoryBackAction extends AbstractAction implements CidsUiAction, 
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/back16.png")));
         putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource("/images/back.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "JHistoryBackAction");
+        putValue(
+            ACCELERATOR_KEY,
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.CTRL_MASK));
 
         if (CismapBroker.getInstance().getMappingComponent() != null) {
             CismapBroker.getInstance().getMappingComponent().addHistoryModelListener(this);

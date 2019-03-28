@@ -46,6 +46,7 @@ import de.cismet.cismap.commons.features.SelectFeature;
 import de.cismet.cismap.commons.gui.MappingComponent;
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 import de.cismet.cismap.commons.gui.piccolo.eventlistener.SelectionListener;
+import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.tools.gui.CidsBeanDropJPopupMenuButton;
 
@@ -112,6 +113,7 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
      * Creates a new GeoSelectionButton object.
      */
     public GeoSelectionButton() {
+        this(MappingComponent.SELECT, CismapBroker.getInstance().getMappingComponent(), null);
     }
 
     /**
