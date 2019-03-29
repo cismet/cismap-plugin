@@ -47,6 +47,9 @@ public class JHistoryForwardAction extends AbstractAction implements CidsUiActio
         putValue(SMALL_ICON, new javax.swing.ImageIcon(getClass().getResource("/images/forward16.png")));
         putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource("/images/forward.png")));
         putValue(CidsUiAction.CIDS_ACTION_KEY, "JHistoryForwardAction");
+        putValue(
+            ACCELERATOR_KEY,
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.CTRL_MASK));
 
         if (CismapBroker.getInstance().getMappingComponent() != null) {
             CismapBroker.getInstance().getMappingComponent().addHistoryModelListener(this);
