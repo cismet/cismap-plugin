@@ -50,6 +50,15 @@ public class AddGeomDnDButton extends JButton implements DropTargetListener, Cid
 
     private final transient DropTarget dropTarget = new DropTarget(this, this);
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AddGeomDnDButton object.
+     */
+    public AddGeomDnDButton() {
+        setAction(new AddGeometriesToMapWizardAction());
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     @Override
