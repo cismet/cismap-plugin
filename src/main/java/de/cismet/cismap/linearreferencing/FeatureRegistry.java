@@ -309,6 +309,11 @@ public class FeatureRegistry implements LinearReferencingConstants, LinearRefere
     private int decrementCounter(final CidsBean cidsBean) {
         final int counter = getCounter(cidsBean) - 1;
         counterMap.put(cidsBean, counter);
+
+        if (counter == 0) {
+            counterMap.remove(cidsBean);
+        }
+
         logCounterStatus("after decrement " + cidsBean);
         fireFeatureCountChanged(cidsBean);
         return counter;

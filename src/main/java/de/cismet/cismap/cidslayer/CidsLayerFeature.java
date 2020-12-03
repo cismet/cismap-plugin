@@ -13,6 +13,7 @@ package de.cismet.cismap.cidslayer;
 
 import Sirius.navigator.connection.SessionManager;
 import Sirius.navigator.exception.ConnectionException;
+import Sirius.navigator.tools.MetaObjectCache;
 
 import Sirius.server.localserver.attribute.MemberAttributeInfo;
 import Sirius.server.localserver.attribute.ObjectAttribute;
@@ -22,18 +23,19 @@ import Sirius.server.newuser.User;
 import Sirius.server.newuser.permission.PermissionHolder;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.nodes.PImage;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
-
 import java.awt.Color;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import java.io.Serializable;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,8 +47,6 @@ import javax.xml.namespace.QName;
 
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.DisposableCidsBeanStore;
-
-import de.cismet.cids.editors.DefaultBindableReferenceCombo;
 
 import de.cismet.cids.navigator.utils.ClassCacheMultiple;
 
@@ -61,6 +61,7 @@ import de.cismet.cids.utils.ClassloadingHelper;
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.WorldToScreenTransform;
 import de.cismet.cismap.commons.features.DefaultFeatureServiceFeature;
+import de.cismet.cismap.commons.features.Feature;
 import de.cismet.cismap.commons.features.FeatureServiceFeature;
 import de.cismet.cismap.commons.features.ModifiableFeature;
 import de.cismet.cismap.commons.features.PermissionProvider;
@@ -150,8 +151,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     private boolean modified;
     private boolean doNotChangeBackup = false;
     private boolean undoOnServer = false;
+    private boolean useIdInHash = true;
 
     private final ConnectionContext connectionContext = ConnectionContext.createDummy();
+    private Geometry oldGeom = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -169,6 +172,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if (feature.metaObject != null) {
             metaObject = feature.metaObject;
         }
+        useIdInHash = feature.useIdInHash;
     }
 
     /**
@@ -192,6 +196,9 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         this.metaClass = metaClass;
         this.layerInfo = layerInfo;
         this.addProperties(properties);
+        if ((Integer)properties.get(layerInfo.getIdField()) < 0) {
+            useIdInHash = false;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -358,7 +365,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(this);
                 }
             }
-
             if (editable) {
                 backupProperties = (HashMap)super.getProperties().clone();
                 if (hasStations()) {
@@ -433,7 +439,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addFeature(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().holdFeature(this);
                     SelectionManager.getInstance().addSelectedFeatures(Collections.nCopies(1, this));
-                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unselect(this);
+//                    CismapBroker.getInstance().getMappingComponent().getFeatureCollection().unselect(this);
                     CismapBroker.getInstance().getMappingComponent().getFeatureCollection().addToSelection(this);
                     backgroundColor = new Color(255, 91, 0);
                 }
@@ -594,7 +600,22 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      */
     public Object getPropertyObject(final String propertyName) {
         if (layerInfo.isCatalogue(propertyName) && (getCatalogueCombo(propertyName) != null)) {
-            return getCatalogueCombo(propertyName).getSelectedItem();
+            Object result;
+            int attempts = 0;
+            do {
+                ++attempts;
+                result = getCatalogueCombo(propertyName).getSelectedItem();
+
+                if (result instanceof CidsLayerFeature) {
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException ex) {
+                        LOG.warn("InterruptedException while waiting", ex);
+                    }
+                }
+            } while (!(result instanceof CidsLayerFeature) && (attempts < 20));
+
+            return result;
         } else {
             return getProperty(propertyName);
         }
@@ -722,6 +743,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         bean.setProperty(colName.substring(0, colName.indexOf(".")), newGeoObject);
                     }
                     Geometry geom = getGeometry();
+                    if (!(geom instanceof Serializable)) {
+                        final GeometryFactory gf = new GeometryFactory(geom.getFactory().getPrecisionModel(),
+                                geom.getFactory().getSRID());
+                        geom = gf.createGeometry(geom);
+                    }
                     if (geom != null) {
                         geom = CrsTransformer.transformToDefaultCrs(geom);
                         geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
@@ -749,6 +775,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         if (store != null) {
                             bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
                                 store.getCidsBean());
+
+                            if (undoOnServer && (getProperty(key) != null)) {
+                                bean.setProperty(colMap.get(key), getProperty(key));
+                            }
                         } else {
                             bean.setProperty(colMap.get(key).substring(0, colMap.get(key).indexOf(".")),
                                 null);
@@ -1107,10 +1137,12 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final String query = "select " + mc.getID() + ", " + mc.getPrimaryKey() + " from " + mc.getTableName(); // NOI18N
 
         try {
-            final MetaObject[] mos = SessionManager.getConnection()
-                        .getMetaObjectByQuery(SessionManager.getSession().getUser(),
-                            query,
-                            getConnectionContext());
+//            final MetaObject[] mos = SessionManager.getConnection()
+//                        .getMetaObjectByQuery(SessionManager.getSession().getUser(),
+//                            query,
+//                            getConnectionContext());
+            final MetaObject[] mos = MetaObjectCache.getInstance()
+                        .getMetaObjectsByQuery(query, mc.getDomain(), false, getConnectionContext());
 
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject object : mos) {
@@ -1191,6 +1223,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         if (undoOnServer) {
             try {
                 saveChangesWithoutReload();
+                undoOnServer = false;
             } catch (Exception e) {
                 LOG.error("Cannot undo changes on server", e);
             }
@@ -1199,8 +1232,6 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
     @Override
     public void setGeometry(final Geometry geom) {
-        final Geometry oldGeom = getGeometry();
-
         if (((oldGeom == null) != (geom == null))
                     || ((oldGeom != null) && (geom != null)
                         && (!oldGeom.getEnvelope().equalsExact(geom.getEnvelope()) || !oldGeom.equalsExact(geom)))) {
@@ -1210,13 +1241,19 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             if (layerInfo != null) {
                 super.addProperty(layerInfo.getGeoField(), geom);
             }
+            // set the oldGeom value to prevent a StackOverflow, when the geometry will be set during the
+            // propertyChange event
+            final Geometry oldGeomTmp = oldGeom;
+            oldGeom = ((geom == null) ? null : (Geometry)geom.clone());
 
             if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
-                firePropertyChange(layerInfo.getGeoField(), oldGeom, geom);
+                firePropertyChange(layerInfo.getGeoField(), oldGeomTmp, geom);
             }
             if (isEditable()) {
                 modified = true;
             }
+        } else {
+            oldGeom = ((geom == null) ? null : (Geometry)geom.clone());
         }
     }
 
@@ -1328,7 +1365,10 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = (83 * hash) + this.getId();
+        // new objects has a id < 0 and cannot be found in maps, when they retrieve their real id
+        if (useIdInHash && (this.getId() >= 0)) {
+            hash = (83 * hash) + this.getId();
+        }
         hash = (83 * hash)
                     + (((this.metaClass != null) && (metaClass.getTableName() != null))
                         ? this.metaClass.getTableName().hashCode() : 0);
@@ -1361,7 +1401,25 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             // The geometry will not changed with the setGeometry() method, but also within the geometry object itself.
             return true;
         } else {
-            return modified;
+            if (!modified) {
+                return false;
+            } else if ((backupProperties != null) && (getProperties() != null)) {
+                final HashMap props = getProperties();
+
+                for (final Object key : props.keySet()) {
+                    final Object current = props.get(key);
+                    final Object backup = backupProperties.get(key);
+
+                    if (((current == null) && (backup != null))
+                                || ((current != null) && (backup == null))
+                                || (((current != null) && (backup != null)) && !current.equals(backup))) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                return modified;
+            }
         }
     }
 
@@ -1396,7 +1454,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
         double displacementX;
         double displacementY;
-        private SLDStyledFeature.UOM uom = UOM.metre;
+        private SLDStyledFeature.UOM uom = SLDStyledFeature.UOM.metre;
         private double anchorPointX;
         private double anchorPointY;
         private WorldToScreenTransform wtst;
@@ -1454,7 +1512,7 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
 
         @Override
         public void setScale(final double scale) {
-            if (uom != UOM.pixel) {
+            if (uom != SLDStyledFeature.UOM.pixel) {
                 super.setScale(scale);
             } else {
                 // if(scale > 1.0f) {
@@ -1490,13 +1548,13 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
      *
      * @version  $Revision$, $Date$
      */
-    protected class CidSLayerDeegreeFeature extends DeegreeFeature {
+    protected class CidSLayerDeegreeFeature extends DefaultFeatureServiceFeature.DeegreeFeature {
 
         //~ Methods ------------------------------------------------------------
 
         @Override
         public org.deegree.feature.types.FeatureType getType() {
-            return new DeegreeFeatureType() {
+            return new DefaultFeatureServiceFeature.DeegreeFeatureType() {
 
                     @Override
                     public QName getName() {

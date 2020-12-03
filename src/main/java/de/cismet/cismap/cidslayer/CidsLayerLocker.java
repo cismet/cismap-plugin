@@ -77,7 +77,6 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
     public Object lock(final Feature feature, final boolean multiLockForSameUserAllowed)
             throws LockAlreadyExistsException, Exception {
         if (feature instanceof CidsLayerFeature) {
-            final CidsLayerFeature cidsLayerFeature = (CidsLayerFeature)feature;
             final List<Feature> l = Collections.nCopies(1, feature);
 
             return lock(l, multiLockForSameUserAllowed);
@@ -94,10 +93,8 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
                 return new FakeLock();
             }
             final MetaObject mo = ((CidsLayerFeature)features.get(0)).getBean().getMetaObject();
-            final MetaClass lockGroupMc = getLockGroupMetaClassForBean(((CidsLayerFeature)features.get(0)).getBean()
-                            .getMetaObject().getDomain());
-            final MetaClass lockMc = getLockMetaClassForBean(((CidsLayerFeature)features.get(0)).getBean()
-                            .getMetaObject().getDomain());
+            final MetaClass lockGroupMc = getLockGroupMetaClassForBean(mo.getDomain());
+            final MetaClass lockMc = getLockMetaClassForBean(mo.getDomain());
             final String userString = NbBundle.getMessage(
                     CidsBeanLocker.class,
                     "CidsLayerLocker.lock(CidsBean).userString",

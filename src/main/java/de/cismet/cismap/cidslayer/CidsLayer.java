@@ -40,7 +40,10 @@ import de.cismet.cismap.commons.featureservice.LayerProperties;
 import de.cismet.cismap.commons.featureservice.factory.FeatureFactory;
 import de.cismet.cismap.commons.gui.attributetable.AttributeTableRuleSet;
 import de.cismet.cismap.commons.gui.attributetable.DefaultAttributeTableRuleSet;
+import de.cismet.cismap.commons.gui.attributetable.FeatureCreator;
+import de.cismet.cismap.commons.gui.attributetable.creator.PrimitiveGeometryCreator;
 import de.cismet.cismap.commons.gui.piccolo.FeatureAnnotationSymbol;
+import de.cismet.cismap.commons.gui.piccolo.eventlistener.CreateGeometryListenerInterface;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.connectioncontext.ConnectionContext;
@@ -508,6 +511,45 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
     @Override
     public String getGeometryType() {
+        if ((geometryType == null) || geometryType.equals(AbstractFeatureService.UNKNOWN)) {
+            // if the geometry type cannot be determined from the database, it should be determined from the creator
+
+            if ((getLayerProperties() != null) && (getLayerProperties().getAttributeTableRuleSet() != null)) {
+                final AttributeTableRuleSet set = getLayerProperties().getAttributeTableRuleSet();
+                final FeatureCreator creator = set.getFeatureCreator();
+
+                if (creator instanceof PrimitiveGeometryCreator) {
+                    if (((PrimitiveGeometryCreator)creator).isMulti()) {
+                        if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.LINESTRING)) {
+                            return "MultiLineString";
+                        } else if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.POINT)) {
+                            return "MultiPoint";
+                        } else if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.POLYGON)) {
+                            return "MultiPolygon";
+                        }
+                    } else {
+                        if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.LINESTRING)) {
+                            return "LineString";
+                        } else if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.POINT)) {
+                            return "Point";
+                        } else if (((PrimitiveGeometryCreator)creator).getMode().equals(
+                                        CreateGeometryListenerInterface.POLYGON)) {
+                            return "Polygon";
+                        }
+                    }
+                } else if ((creator instanceof LineAndStationCreator) || (creator instanceof StationLineCreator)) {
+                    return "LineString";
+                } else if ((creator instanceof PointAndStationCreator) || (creator instanceof StationCreator)) {
+                    return "Point";
+                }
+            }
+        }
+
         return geometryType;
     }
 

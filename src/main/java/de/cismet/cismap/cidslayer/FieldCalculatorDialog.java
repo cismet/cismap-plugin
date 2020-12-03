@@ -168,7 +168,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
             });
         SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction(".right", "right()"));
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("*"));
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Math.round", "Round"));
+        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Math.round", "round"));
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction(".area", "area") {
 
                 {
@@ -182,7 +182,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                 }
             });
         SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("/"));
-        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseInt", "Integer"));
+        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseInt", "integer"));
+        SQL_QUERY_BUTTONS.add(new DefaultQueryButtonAction("null", "null"));
 //        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("parseDouble", "Double"));
 //        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("Boolean", "Boolean"));
 //        SQL_QUERY_BUTTONS.add(new MethodQueryButtonAction("String", "String"));
@@ -765,10 +766,10 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                             if (layerInfo.isCatalogue(attributeInfo.getName())) {
                                 final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
 
-                                if (cf.getCatalogueCombo(attribute.getName()) != null) {
-                                    final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
-
-                                    waitForModel(model);
+                                if (cf.getCatalogueCombo(attributeInfo.getName()) != null) {
+                                    waitForModel(cf.getCatalogueCombo(attributeInfo.getName()));
+                                    final ComboBoxModel model = cf.getCatalogueCombo(attributeInfo.getName())
+                                                .getModel();
 
                                     for (int i = 0; i < model.getSize(); ++i) {
                                         if (model.getElementAt(i) != null) {
@@ -777,7 +778,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                     }
                                 } else {
                                     final int referencedForeignClassId = layerInfo.getCatalogueClass(
-                                            attribute.getName());
+                                            attributeInfo.getName());
 
                                     final MetaClass foreignClass = getMetaClass(
                                             referencedForeignClassId,
@@ -786,9 +787,10 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                         new DefaultCidsLayerBindableReferenceCombo(
                                             foreignClass,
                                             true);
-                                    final ComboBoxModel model = catalogueEditor.getModel();
 
-                                    waitForModel(model);
+                                    waitForModel(catalogueEditor);
+
+                                    final ComboBoxModel model = catalogueEditor.getModel();
 
                                     for (int i = 0; i < model.getSize(); ++i) {
                                         if (model.getElementAt(i) != null) {
@@ -880,9 +882,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                 catElements = new ArrayList<Object>();
 
                                 if (cf.getCatalogueCombo(attribute.getName()) != null) {
+                                    waitForModel(cf.getCatalogueCombo(attribute.getName()));
                                     final ComboBoxModel model = cf.getCatalogueCombo(attribute.getName()).getModel();
-
-                                    waitForModel(model);
 
                                     for (int i = 0; i < model.getSize(); ++i) {
                                         catElements.add(model.getElementAt(i));
@@ -898,10 +899,11 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                         new DefaultCidsLayerBindableReferenceCombo(
                                             foreignClass,
                                             true);
-                                    final ComboBoxModel model = catalogueEditor.getModel();
                                     catElements = new ArrayList<Object>();
 
-                                    waitForModel(model);
+                                    waitForModel(catalogueEditor);
+
+                                    final ComboBoxModel model = catalogueEditor.getModel();
 
                                     for (int i = 0; i < model.getSize(); ++i) {
                                         catElements.add(model.getElementAt(i));
@@ -909,6 +911,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                 }
                             }
                         }
+                        boolean invalidElementMessageShown = false;
                         for (final FeatureServiceFeature feature : featureList) {
                             final String dataDefinition = toVariableString(feature);
                             String code = taQuery.getText();
@@ -926,12 +929,28 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                                 if (result instanceof Double) {
                                     result = formatter.format(result);
                                 }
+                                boolean catElementFound = false;
                                 for (final Object element : catElements) {
                                     if (((element != null) && (result != null)
                                                     && element.toString().equals(result.toString()))
                                                 || ((element == null) && (result == null))) {
                                         temporaryObjectMap.put(feature, element);
+                                        catElementFound = true;
                                     }
+                                }
+
+                                if (!catElementFound && !invalidElementMessageShown) {
+                                    invalidElementMessageShown = true;
+                                    JOptionPane.showMessageDialog(
+                                        FieldCalculatorDialog.this,
+                                        NbBundle.getMessage(
+                                            FieldCalculatorDialog.class,
+                                            "FieldCalculatorDialog.btnSearchCancelActionPerformed().notFound.message",
+                                            result),
+                                        NbBundle.getMessage(
+                                            FieldCalculatorDialog.class,
+                                            "FieldCalculatorDialog.btnSearchCancelActionPerformed().notFound.title"),
+                                        JOptionPane.WARNING_MESSAGE);
                                 }
                             } else {
                                 temporaryObjectMap.put(
@@ -1012,14 +1031,14 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
     /**
      * DOCUMENT ME!
      *
-     * @param  model  DOCUMENT ME!
+     * @param  combo  model DOCUMENT ME!
      */
-    private void waitForModel(final ComboBoxModel model) {
+    private void waitForModel(final DefaultCidsLayerBindableReferenceCombo combo) {
         final String s = NbBundle.getMessage(
                 DefaultCidsLayerBindableReferenceCombo.class,
                 "DefaultCidsLayerBindableReferenceCombo.loading");
 
-        while ((model.getSize() == 1) && model.getElementAt(0).equals(s)) {
+        while ((combo.getModel().getSize() == 1) && combo.getModel().getElementAt(0).equals(s)) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
