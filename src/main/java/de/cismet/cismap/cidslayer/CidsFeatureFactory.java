@@ -424,12 +424,14 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                                             getConnectionContext());
                         final String crs = CismapBroker.getInstance().getDefaultCrs();
 
-                        for (final ArrayList row : resultArray) {
-                            if (row.get(0) != null) {
-                                envelope = converter.convertForward((String)row.get(0), crs);
+                        if (resultArray != null) {
+                            for (final ArrayList row : resultArray) {
+                                if (row.get(0) != null) {
+                                    envelope = converter.convertForward((String)row.get(0), crs);
 
-                                if (envelope instanceof Point) {
-                                    envelope = envelope.buffer(1);
+                                    if (envelope instanceof Point) {
+                                        envelope = envelope.buffer(1);
+                                    }
                                 }
                             }
                         }
@@ -520,7 +522,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
 
         serverSearch.setQuery(query);
         if ((limit == 0) && (maxFeaturesPerPage != null)) {
-            serverSearch.setLimit(maxFeaturesPerPage);
+//            serverSearch.setLimit(maxFeaturesPerPage);
         } else {
             serverSearch.setLimit(limit);
         }
