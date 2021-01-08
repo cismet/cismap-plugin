@@ -29,6 +29,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import de.cismet.cismap.commons.gui.capabilitywidget.StringFilter;
+import de.cismet.cismap.commons.gui.capabilitywidget.TreeFolder;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
@@ -270,71 +271,5 @@ public class CidsLayerTreeModel implements TreeModel, StringFilter, ConnectionCo
     @Override
     public final ConnectionContext getConnectionContext() {
         return connectionContext;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    private class TreeFolder extends ArrayList<Object> {
-
-        //~ Instance fields ----------------------------------------------------
-
-        private String name;
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new TreeFolder object.
-         *
-         * @param  name  DOCUMENT ME!
-         */
-        public TreeFolder(final String name) {
-            this.name = name;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            if (obj instanceof TreeFolder) {
-                return ((TreeFolder)obj).name.equals(name);
-            }
-
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = (37 * hash) + ((this.name != null) ? this.name.hashCode() : 0);
-            return hash;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @return  the name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param  name  the name to set
-         */
-        public void setName(final String name) {
-            this.name = name;
-        }
     }
 }

@@ -175,6 +175,14 @@ public class TableLinearReferencedLineEditor implements DisposableCidsBeanStore,
 
             try {
                 linearReferencedHelper.setGeometryToLineBean(lineGeom, cidsBean);
+                if (Math.abs(to - toStation.getFeature().getCurrentPosition()) > 0.1) {
+                    linearReferencedHelper.setLinearValueToStationBean(toStation.getFeature().getCurrentPosition(),
+                        toStation.getCidsBean());
+                }
+                if (Math.abs(from - fromStation.getFeature().getCurrentPosition()) > 0.1) {
+                    linearReferencedHelper.setLinearValueToStationBean(fromStation.getFeature().getCurrentPosition(),
+                        fromStation.getCidsBean());
+                }
             } catch (Exception e) {
                 LOG.error("Cannot create line geometry", e);
             }

@@ -60,7 +60,7 @@ public class DefaultAttributeTableSearchDialog implements AttributeTableSearchPa
 
         final JDialog dialog = new JDialog(StaticSwingTools.getParentFrame(table), false);
         initDialog(dialog, search, service);
-        dialog.setSize(430, 500);
+        dialog.setSize(450, 550);
         StaticSwingTools.showDialog(dialog);
     }
 

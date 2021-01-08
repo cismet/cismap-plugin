@@ -252,6 +252,10 @@ public class StationLineCreator extends AbstractFeatureCreator {
     public boolean isCreationAllowed(final MappingComponent mc) {
         final PFeature line = CreateLinearReferencedLineListener.getSelectedLinePFeature(mc, routeClass);
 
-        return (line == null) || ((check != null) && check.isRouteValid(line));
+        if (check == null) {
+            return true;
+        } else {
+            return (line == null) || ((check != null) && check.isRouteValid(line));
+        }
     }
 }
