@@ -37,6 +37,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -658,9 +660,9 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) { //GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
+    private void popMenSearchPopupMenuWillBecomeVisible(final javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_popMenSearchPopupMenuWillBecomeVisible
         searchMenuSelectedAction.actionPerformed(new ActionEvent(popMenSearch, ActionEvent.ACTION_PERFORMED, null));
-    }                                                                                                 //GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
+    }//GEN-LAST:event_popMenSearchPopupMenuWillBecomeVisible
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
@@ -764,7 +766,6 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
      * @param  metaSearch  DOCUMENT ME!
      */
     public void initSearchTopicMenues(final MetaSearch metaSearch) {
-        initComponents();
         setPopupMenu(popMenSearch);
         if ((metaSearch.getSearchTopics() != null) && !metaSearch.getSearchTopics().isEmpty()) {
             popMenSearch.add(new JSeparator());

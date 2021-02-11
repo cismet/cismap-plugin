@@ -35,6 +35,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -141,6 +142,7 @@ public class GeoSelectionButton extends CidsBeanDropJPopupMenuButton implements 
             final MappingComponent mappingComponent,
             final String selectName,
             final String toolTipText) {
+        setModel(new JToggleButton.ToggleButtonModel());
         init(interactionMode, mappingComponent, selectName, toolTipText);
     }
 
