@@ -5,7 +5,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>6.0</version>
+        <version>7.0</version>
     </parent>
 
     <groupId>de.cismet.cismap</groupId>
@@ -43,7 +43,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -52,14 +52,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.5.7</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.5.7</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>6.2.7</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>6.2.7</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>6.6.9</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>6.6.9</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.5</version>
+                <version>7.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.5</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.5.1</version>
+                <version>7.0</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>6.5.1</version>
+                <version>7.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -126,7 +126,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>6.1</version>
+                <version>7.0</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -134,7 +134,7 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-scale-generator</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <scope>runtime</scope>
                 <type>jar</type>
             </dependency>
@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>de.cismet.custom</groupId>
                 <artifactId>beansbinding</artifactId>
-                <version>6.0</version>
+                <version>7.0</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
