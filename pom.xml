@@ -174,7 +174,7 @@
         DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER -->
         <dependency>
             <groupId>de.cismet.custom</groupId>
-            <artifactId>cismet-deegree</artifactId>
+            <artifactId>cismet-deegree2.3</artifactId>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
