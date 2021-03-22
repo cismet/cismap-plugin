@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cismap.tools.gui;
 
+import com.vividsolutions.jts.geom.MultiPolygon;
+
 import org.apache.log4j.Logger;
 
 import java.awt.dnd.DropTargetDragEvent;
@@ -150,7 +152,12 @@ public class CidsBeanDropJPopupMenuButton extends JPopupMenuButton implements Ci
                     protected SelectFeature doInBackground() throws Exception {
                         Thread.currentThread().setName("CidsBeanDropJPopupMenuButton beansDropped()");
                         final SelectFeature feature = CidsBeansSelectFeature.createFromBeans(beans, interactionMode);
-                        feature.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                        if ((feature != null) && (feature.getGeometry() != null)
+                                    && (feature.getGeometry() instanceof MultiPolygon)) {
+                            feature.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
+                        } else {
+                            feature.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                        }
                         return feature;
                     }
 

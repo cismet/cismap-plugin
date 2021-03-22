@@ -309,7 +309,12 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                                     }
                                 }
                                 final SearchFeature sf = CidsBeansSearchFeature.createFromBeans(beans, interactionMode);
-                                sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
+                                if ((sf != null) && (sf.getGeometry() != null)
+                                            && (sf.getGeometry() instanceof MultiPolygon)) {
+                                    sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
+                                } else {
+                                    sf.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                                }
                                 return sf;
                             }
 
