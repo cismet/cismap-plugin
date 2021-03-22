@@ -20,6 +20,7 @@ import Sirius.server.middleware.types.MetaObject;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPolygon;
 
 import org.openide.util.NbBundle;
 
@@ -308,7 +309,12 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
                                     }
                                 }
                                 final SearchFeature sf = CidsBeansSearchFeature.createFromBeans(beans, interactionMode);
-                                sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
+                                if ((sf != null) && (sf.getGeometry() != null)
+                                            && (sf.getGeometry() instanceof MultiPolygon)) {
+                                    sf.setGeometryType(AbstractNewFeature.geomTypes.MULTIPOLYGON);
+                                } else {
+                                    sf.setGeometryType(AbstractNewFeature.geomTypes.POLYGON);
+                                }
                                 return sf;
                             }
 
@@ -767,6 +773,17 @@ public class GeoSearchButton extends CidsBeanDropJPopupMenuButton implements Pro
      */
     public void initSearchTopicMenues(final MetaSearch metaSearch) {
         setPopupMenu(popMenSearch);
+        if (popMenSearch.getComponent(popMenSearch.getComponentCount() - 1) instanceof StayOpenCheckBoxMenuItem) {
+            // There are already search topic entries, which should be removed
+            for (int i = popMenSearch.getComponentCount() - 1; i > 0; --i) {
+                if (popMenSearch.getComponent(i) instanceof StayOpenCheckBoxMenuItem) {
+                    popMenSearch.remove(i);
+                } else if (popMenSearch.getComponent(i) instanceof JSeparator) {
+                    popMenSearch.remove(i);
+                    break;
+                }
+            }
+        }
         if ((metaSearch.getSearchTopics() != null) && !metaSearch.getSearchTopics().isEmpty()) {
             popMenSearch.add(new JSeparator());
             for (final SearchTopic searchTopic : metaSearch.getSearchTopics()) {
