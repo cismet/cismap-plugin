@@ -18,6 +18,7 @@ import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 
 import java.util.HashSet;
 
@@ -182,6 +183,16 @@ public class CidsLayerReferencedComboEditor extends AbstractCellEditor implement
 
             configuredCombos.add(combo);
         }
+
+        EventQueue.invokeLater(new Thread("RequestFocus") {
+
+                @Override
+                public void run() {
+                    // When the tab key was used to enter a cell editor, the focus must be requested to allow the user
+                    // to instantly edit
+                    combo.requestFocusInWindow();
+                }
+            });
 
         return combo;
     }

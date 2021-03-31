@@ -23,6 +23,7 @@ import org.openide.util.NbBundle;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +126,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
             if ((mos != null) && (mos.length > 0)) {
                 for (final MetaObject metaObject : mos) {
                     if ((metaObject.getBean().getProperty("user_string") == null)
-                                && metaObject.getBean().getProperty("user_string").equals(userString)) {
+                                || metaObject.getBean().getProperty("user_string").equals(userString)) {
                         if (!multiLockForSameUserAllowed) {
                             final LockAlreadyExistsException ex = new LockFromSameUserAlreadyExistsException(
                                     "The lock does already exists",
@@ -145,13 +146,17 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
 
             // create lock
             CidsBean lockGroupBean = lockGroupMc.getEmptyInstance(getConnectionContext()).getBean();
+            final List<CidsBean> list = new ArrayList<CidsBean>(features.size());
+            final Integer classId = mo.getMetaClass().getID();
 
             for (final Feature f : features) {
                 final CidsBean lockBean = lockMc.getEmptyInstance(getConnectionContext()).getBean();
-                lockBean.setProperty("class_id", mo.getMetaClass().getID());
+                lockBean.setProperty("class_id", classId);
                 lockBean.setProperty("object_id", ((CidsLayerFeature)f).getId());
-                lockGroupBean.addCollectionElement("objects", lockBean);
+                list.add(lockBean);
             }
+            lockGroupBean.addCollectionElements("objects", list);
+
             try {
                 final InetAddress addr = InetAddress.getLocalHost();
                 lockGroupBean.setProperty("additional_info", addr.getHostName());
