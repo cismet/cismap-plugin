@@ -9,6 +9,8 @@ package de.cismet.cismap.cids.geometryeditor;
 
 import Sirius.navigator.ui.ComponentRegistry;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
     private Object selectedItem = null;
     private Feature currentObjectFeature;
     private List<Feature> newFeaturesInMap;
+    private Class[] allowedGeometryTypes = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -205,7 +208,9 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
 
             for (final Feature f : allFeatures) {
                 if ((f instanceof PureNewFeature) || (f instanceof SearchFeature)) {
-                    allNewFeatures.add(f);
+                    if (isGeometryTypeAllowed(f.getGeometry())) {
+                        allNewFeatures.add(f);
+                    }
                 }
             }
         } else {
@@ -215,6 +220,36 @@ class CismapGeometryComboModel extends AbstractListModel implements ComboBoxMode
             log.debug("getAllNewFeatures " + allNewFeatures, new CurrentStackTrace()); // NOI18N
         }
         return allNewFeatures;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  types  DOCUMENT ME!
+     */
+    public void setAllowedGeometryTypes(final Class[] types) {
+        this.allowedGeometryTypes = types;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   geom  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isGeometryTypeAllowed(final Geometry geom) {
+        if ((allowedGeometryTypes == null) || (geom == null)) {
+            return true;
+        } else {
+            for (final Class geometryClass : allowedGeometryTypes) {
+                if (geometryClass.getName().equals(geom.getClass().getName())) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**
