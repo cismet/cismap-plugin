@@ -119,6 +119,16 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
     /**
      * DOCUMENT ME!
+     *
+     * @param  allowedTypes  DOCUMENT ME!
+     */
+    public void setAllowedGeometryTypes(final Class[] allowedTypes) {
+        comboModel.setAllowedGeometryTypes(allowedTypes);
+        comboModel.refresh();
+    }
+
+    /**
+     * DOCUMENT ME!
      */
     @Override
     public void dispose() {
