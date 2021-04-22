@@ -1780,10 +1780,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
         tlbMain.add(cmdPrint);
 
-        cmdClipboard.setMaximumSize(new java.awt.Dimension(34, 34));
-        cmdClipboard.setMinimumSize(new java.awt.Dimension(34, 34));
         cmdClipboard.setName("cmdClipboard"); // NOI18N
-        cmdClipboard.setPreferredSize(new java.awt.Dimension(34, 34));
         tlbMain.add(cmdClipboard);
 
         cmdDownloads.setAction(new DownloadManagerAction(this));
@@ -2663,7 +2660,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniCapabilities.setMnemonic('C');
         mniCapabilities.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
-                "CismapPlugin.mniCapabilities.text"));                                           // NOI18N
+                "CismapPlugin.CismapPlugin(PluginContext).vCapabilities.title"));                // NOI18N
         mniCapabilities.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniCapabilities.tooltip"));                                        // NOI18N
@@ -2726,7 +2723,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniLayerInfo.setMnemonic('L');
         mniLayerInfo.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
-                "CismapPlugin.mniLayerInfo.text"));                                                           // NOI18N
+                "CismapPlugin.CismapPlugin(PluginContext).vLayerInfo.title"));                                // NOI18N
         mniLayerInfo.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniLayerInfo.tooltip"));                                                        // NOI18N

@@ -634,7 +634,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="67"/>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.mniCapabilities.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.CismapPlugin(PluginContext).vCapabilities.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.mniCapabilities.tooltip" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -694,7 +694,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="76"/>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.mniLayerInfo.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.CismapPlugin(PluginContext).vLayerInfo.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="de/cismet/cismap/navigatorplugin/Bundle.properties" key="CismapPlugin.mniLayerInfo.tooltip" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
