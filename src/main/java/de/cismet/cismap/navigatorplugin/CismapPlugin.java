@@ -2702,7 +2702,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mniServerInfo.setMnemonic('S');
         mniServerInfo.setText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
-                "CismapPlugin.mniServerInfo.text"));                                                           // NOI18N
+                "CismapPlugin.CismapPlugin(PluginContext).vServerInfo.title"));                                // NOI18N
         mniServerInfo.setToolTipText(org.openide.util.NbBundle.getMessage(
                 CismapPlugin.class,
                 "CismapPlugin.mniServerInfo.tooltip"));                                                        // NOI18N
