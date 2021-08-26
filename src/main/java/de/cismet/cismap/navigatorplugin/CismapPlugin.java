@@ -7,7 +7,15 @@
 ****************************************************/
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.ProxyCredentials;
+import Sirius.navigator.connection.Connection;
+import Sirius.navigator.connection.ConnectionFactory;
+import Sirius.navigator.connection.ConnectionInfo;
+import Sirius.navigator.connection.ConnectionSession;
+import Sirius.navigator.connection.RESTfulConnection;
 import Sirius.navigator.connection.SessionManager;
+import Sirius.navigator.connection.proxy.ConnectionProxy;
+import Sirius.navigator.connection.proxy.DefaultConnectionProxyHandler;
 import Sirius.navigator.plugin.context.PluginContext;
 import Sirius.navigator.plugin.interfaces.FloatingPluginUI;
 import Sirius.navigator.plugin.interfaces.PluginMethod;
@@ -70,11 +78,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -92,7 +96,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import java.net.URI;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -121,7 +124,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -202,6 +204,9 @@ import de.cismet.ext.CExtManager;
 import de.cismet.lookupoptions.gui.OptionsClient;
 import de.cismet.lookupoptions.gui.OptionsDialog;
 
+import de.cismet.netutil.Proxy;
+import de.cismet.netutil.ProxyHandler;
+
 import de.cismet.tools.CismetThreadPool;
 import de.cismet.tools.CurrentStackTrace;
 import de.cismet.tools.JnlpSystemPropertyHelper;
@@ -241,6 +246,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CismapPlugin.class);
     public static final String DEFAULT_LOCAL_LAYOUT = "/defaultCismap.layout";
     private static final String DEFAULT_LOCAL_LAYOUT_LANGUAGE = "/defaultCismap_" + System.getProperty("user.language")
                 + ".layout";
@@ -275,7 +281,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     + java.util.Collection.class.getName(),
             "a java.util.Collection of Sirius.navigator.types.treenode.DefaultMetaTreeNode objects");                    // NOI18N
     BoundingBox buffer;
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
     private MappingComponent mapC;
     private LayerWidget activeLayers;
     private CapabilityWidget capabilities;
@@ -460,15 +465,25 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * Creates a new CismapPlugin object.
      */
     public CismapPlugin() {
-        this(null);
+        this(null, null);
     }
 
     /**
      * Creates a new CismapPlugin object.
      *
+     * @param  config  DOCUMENT ME!
+     */
+    public CismapPlugin(final String config) {
+        this(config, null);
+    }
+
+    /**
+     * Creates a new CismapPlugin object.
+     *
+     * @param  config   DOCUMENT ME!
      * @param  context  DOCUMENT ME!
      */
-    public CismapPlugin(final PluginContext context) {
+    public CismapPlugin(final String config, final PluginContext context) {
         this.extensionWindows = new HashMap<>(1);
 
         if (StaticDebuggingTools.checkHomeForFile("cismetCheckForEDThreadVialoation")) { // NOI18N
@@ -494,7 +509,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 cismapDirectory += ext;
             }
         } catch (final Exception e) {
-            log.warn("Error while adding DirectoryExtension"); // NOI18N
+            LOG.warn("Error while adding DirectoryExtension"); // NOI18N
         }
 
         CismapBroker.getInstance().setCismapFolderPath(cismapDirectory);
@@ -537,10 +552,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             }
 
+            initConnection(ConfigProperties.getInstance().load(config), getConnectionContext());
+            ProxyCredentials.initFromConfAttr("proxy.credentials", getConnectionContext());
+
             try {
                 javax.swing.UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
             } catch (final Exception e) {
-                log.warn("Error while creating Look&Feel!", e); // NOI18N
+                LOG.warn("Error while creating Look&Feel!", e); // NOI18N
             }
 
             showObjectsWaitDialog = new ShowObjectsWaitDialog(this, false);
@@ -596,7 +614,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             try {
                 initComponents();
             } catch (final Exception e) {
-                log.fatal("Error in initComponents.", e); // NOI18N
+                LOG.fatal("Error in initComponents.", e); // NOI18N
             }
 
             mapC.setInteractionButtonGroup(cmdGroupPrimaryInteractionMode);
@@ -742,7 +760,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 fallBackConfig = context.getEnvironment().getParameter(prefix + "default"); // NOI18N
             } catch (final Exception e) {
-                log.info("cismap started standalone", e);                                   // NOI18N
+                LOG.info("cismap started standalone", e);                                   // NOI18N
             }
 
             // Default
@@ -754,7 +772,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 fallBackConfig = "defaultCismapProperties.xml"; // NOI18N
             }
 
-            log.info("ServerConfigFile=" + cismapconfig); // NOI18N
+            LOG.info("ServerConfigFile=" + cismapconfig); // NOI18N
             configurationManager.setDefaultFileName(cismapconfig);
             configurationManager.setFallBackFileName(fallBackConfig);
 
@@ -897,15 +915,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 // View
                 final AbstractWFSForm form = wfsFormFactory.getForms().get(key);
                 form.setMappingComponent(mapC);
-                if (log.isDebugEnabled()) {
-                    log.debug("WFSForms: key,form" + key + "," + form); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("WFSForms: key,form" + key + "," + form); // NOI18N
                 }
 
                 final View formView = new View(form.getTitle(),
                         Static2DTools.borderIcon(form.getIcon(), 0, 3, 0, 1),
                         form);
-                if (log.isDebugEnabled()) {
-                    log.debug("WFSForms: formView" + formView); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("WFSForms: formView" + formView); // NOI18N
                 }
                 viewMap.addView(form.getId(), formView);
                 wfsFormViews.add(formView);
@@ -918,8 +936,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                         @Override
                         public void actionPerformed(final ActionEvent e) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("showOrHideView:" + formView); // NOI18N
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("showOrHideView:" + formView); // NOI18N
                             }
                             showOrHideView(formView);
                         }
@@ -990,7 +1008,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 "CismapPlugin.CismapPlugin(PluginContext).loadPreferences")); // NOI18N
             }
         } catch (Exception ex) {
-            log.fatal("Error in Constructor of CismapPlugin", ex);                            // NOI18N
+            LOG.fatal("Error in Constructor of CismapPlugin", ex);                            // NOI18N
             System.err.println("Error in Constructor of CismapPlugin");                       // NOI18N
             ex.printStackTrace();
         }
@@ -1017,7 +1035,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         }
                     }
                 } catch (Exception e) {
-                    log.warn("No progress report available", e);                                      // NOI18N
+                    LOG.warn("No progress report available", e);                                      // NOI18N
                 }
 
                 mniClose.setVisible(false);
@@ -1058,7 +1076,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         }
 
-        log.info("add InfoNode main component to the panMain Panel"); // NOI18N
+        LOG.info("add InfoNode main component to the panMain Panel"); // NOI18N
         panMain.add(rootWindow, BorderLayout.CENTER);
 
         vMap.doLayout();
@@ -1085,8 +1103,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         if (!StaticDebuggingTools.checkHomeForFile("cismetTurnOffInternalWebserver")) { // NOI18N
             initHttpServer();
         }
-        if (log.isDebugEnabled()) {
-            log.debug("CismapPlugin als Observer anmelden");                            // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("CismapPlugin als Observer anmelden");                            // NOI18N
         }
         ((Observable)mapC.getMemUndo()).addObserver(CismapPlugin.this);
         ((Observable)mapC.getMemRedo()).addObserver(CismapPlugin.this);
@@ -1096,7 +1114,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         try {
             initPluginToolbarComponents();
         } catch (final Exception e) {
-            log.error("Exception while initializing Toolbar!", e);                      // NOI18N
+            LOG.error("Exception while initializing Toolbar!", e);                      // NOI18N
         }
 
         // The layout should be loaded after the main windaw was opened. Otherwise, the connection
@@ -1138,6 +1156,46 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  configProperties   DOCUMENT ME!
+     * @param  connectionContext  DOCUMENT ME!
+     */
+    private static void initConnection(final ConfigProperties configProperties,
+            final ConnectionContext connectionContext) {
+        try {
+            final Proxy proxy = ProxyHandler.getInstance().init(configProperties.getProxyProperties());
+
+            final Connection connection = ConnectionFactory.getFactory()
+                        .createConnection(RESTfulConnection.class.getCanonicalName(),
+                            configProperties.getCallserverUrl(),
+                            proxy,
+                            configProperties.isCompressionEnabled(),
+                            connectionContext);
+
+            final ConnectionInfo connectionInfo = new ConnectionInfo();
+            connectionInfo.setCallserverURL(configProperties.getCallserverUrl());
+            connectionInfo.setUserDomain(configProperties.getDomain());
+            connectionInfo.setUsername(configProperties.getUsername());
+            connectionInfo.setPassword(configProperties.getPassword());
+
+            final ConnectionSession connectionSession = ConnectionFactory.getFactory()
+                        .createSession(
+                            connection,
+                            connectionInfo,
+                            true,
+                            connectionContext);
+            final ConnectionProxy connectionProxy = ConnectionFactory.getFactory()
+                        .createProxy(DefaultConnectionProxyHandler.class.getCanonicalName(),
+                            connectionSession,
+                            connectionContext);
+            SessionManager.init(connectionProxy);
+        } catch (final Exception ex) {
+            LOG.warn("could not init connection", ex);
+        }
+    }
+
     @Override
     public final ConnectionContext getConnectionContext() {
         return connectionContext;
@@ -1165,15 +1223,15 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             for (final BasicGuiComponentProvider gcp : gcpList) {
                 if (gcp.getType() == BasicGuiComponentProvider.GuiType.GUICOMPONENT) {
                     gcp.setLinkObject(this);
-                    if (log.isDebugEnabled()) {
-                        log.debug(gcp.getName() + " (try to add)");                                     // NOI18N
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(gcp.getName() + " (try to add)");                                     // NOI18N
                     }
                     Icon icon = null;
                     try {
                         icon = Static2DTools.borderIcon(gcp.getIcon(), 0, 3, 0, 1);
                     } catch (final Exception e) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("cannot create extension view border icon: " + gcp.getName(), e); // NOI18N
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("cannot create extension view border icon: " + gcp.getName(), e); // NOI18N
                         }
                     }
                     final View extensionView = new View(gcp.getName(), icon, gcp.getComponent());
@@ -1196,8 +1254,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     viewMenuMap.put(gcp.getId(), newItem);
                     extensionWindows.put(gcp, extensionView);
 
-                    if (log.isDebugEnabled()) {
-                        log.debug(gcp.getName() + " added"); // NOI18N
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(gcp.getName() + " added"); // NOI18N
                     }
 
                     if (gcp instanceof CustomButtonProvider) {
@@ -1222,8 +1280,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         if (toolbarCompProviders != null) {
             for (final ToolbarComponentsProvider toolbarCompProvider : toolbarCompProviders) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName()); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Registering Toolbar Components for Plugin: " + toolbarCompProvider.getPluginName()); // NOI18N
                 }
 
                 if (toolbarCompProvider instanceof ConnectionContextStore) {
@@ -1362,11 +1420,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         break;
                     }
                     default: {
-                        log.warn("unrecognised view section: " + section); // NOI18N
+                        LOG.warn("unrecognised view section: " + section); // NOI18N
                     }
                 }
-            } else if (log.isDebugEnabled()) {
-                log.debug(
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
                     "ignoring extension window in layout, because the position hint is not a ViewSection" // NOI18N
                             + entry.getKey().getName());
             }
@@ -1434,18 +1492,18 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         try {
             de.cismet.tools.BrowserLauncher.openURL(url);
         } catch (final Exception e) {
-            log.warn("Error while opening: " + url + ". Try again", e); // NOI18N
+            LOG.warn("Error while opening: " + url + ". Try again", e); // NOI18N
 
             // Nochmal zur Sicherheit mit dem BrowserLauncher probieren
             try {
                 de.cismet.tools.BrowserLauncher.openURL(url);
             } catch (final Exception e2) {
-                log.warn("The second time failed, too. Error while trying to open: " + url + " last attempt", e2); // NOI18N
+                LOG.warn("The second time failed, too. Error while trying to open: " + url + " last attempt", e2); // NOI18N
 
                 try {
                     de.cismet.tools.BrowserLauncher.openURL("file://" + url); // NOI18N
                 } catch (Exception e3) {
-                    log.error("3rd time fail:file://" + url, e3);             // NOI18N
+                    LOG.error("3rd time fail:file://" + url, e3);             // NOI18N
                 }
             }
         }
@@ -3047,24 +3105,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {
-        log.info("REDO"); // NOI18N
+        LOG.info("REDO"); // NOI18N
 
         final CustomAction a = mapC.getMemRedo().getLastAction();
-        if (log.isDebugEnabled()) {
-            log.debug("... execute action: " + a.info()); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("... execute action: " + a.info()); // NOI18N
         }
 
         try {
             a.doAction();
         } catch (Exception e) {
-            log.error("Error while executing an action", e); // NOI18N
+            LOG.error("Error while executing an action", e); // NOI18N
         }
 
         final CustomAction inverse = a.getInverse();
         mapC.getMemUndo().addAction(inverse);
-        if (log.isDebugEnabled()) {
-            log.debug("... new action on UNDO stack: " + inverse); // NOI18N
-            log.debug("... completed");                            // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("... new action on UNDO stack: " + inverse); // NOI18N
+            LOG.debug("... completed");                            // NOI18N
         }
     }
 
@@ -3074,24 +3132,24 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniUndoPerformed(final java.awt.event.ActionEvent evt) {
-        log.info("UNDO"); // NOI18N
+        LOG.info("UNDO"); // NOI18N
 
         final CustomAction a = mapC.getMemUndo().getLastAction();
-        if (log.isDebugEnabled()) {
-            log.debug("... execute action: " + a.info()); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("... execute action: " + a.info()); // NOI18N
         }
 
         try {
             a.doAction();
         } catch (Exception e) {
-            log.error("Error while executing action", e); // NOI18N
+            LOG.error("Error while executing action", e); // NOI18N
         }
 
         final CustomAction inverse = a.getInverse();
         mapC.getMemRedo().addAction(inverse);
-        if (log.isDebugEnabled()) {
-            log.debug("... new action on REDO stack: " + inverse); // NOI18N
-            log.debug("... completed");                            // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("... new action on REDO stack: " + inverse); // NOI18N
+            LOG.debug("... completed");                            // NOI18N
         }
     }
 
@@ -3140,8 +3198,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniGotoPointActionPerformed(final java.awt.event.ActionEvent evt) {
-        if (log.isDebugEnabled()) {
-            log.debug("mniGotoPointActionPerformed"); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("mniGotoPointActionPerformed"); // NOI18N
         }
         final GotoPointDialog gotoPointDialog = GotoPointDialog.getInstance();
         StaticSwingTools.showDialog(mapC, gotoPointDialog, true);
@@ -3162,7 +3220,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final Integer i = new Integer(s);
             mapC.gotoBoundingBoxWithHistory(mapC.getBoundingBoxFromScale(i));
         } catch (Exception skip) {
-            log.error("Error in mniScaleActionPerformed", skip); // NOI18N
+            LOG.error("Error in mniScaleActionPerformed", skip); // NOI18N
         }
     }
 
@@ -3342,8 +3400,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             });
 
         final int state = fc.showSaveDialog(this);
-        if (log.isDebugEnabled()) {
-            log.debug("state:" + state); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("state:" + state); // NOI18N
         }
 
         if (state == JFileChooser.APPROVE_OPTION) {
@@ -3416,14 +3474,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         fc.setMultiSelectionEnabled(false);
 
         final int state = fc.showSaveDialog(this);
-        if (log.isDebugEnabled()) {
-            log.debug("state:" + state); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("state:" + state); // NOI18N
         }
 
         if (state == JFileChooser.APPROVE_OPTION) {
             final File file = fc.getSelectedFile();
-            if (log.isDebugEnabled()) {
-                log.debug("file:" + file); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("file:" + file); // NOI18N
             }
 
             String name = file.getAbsolutePath();
@@ -3789,7 +3847,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void formWindowClosed(final java.awt.event.WindowEvent evt) {
-        log.info("CLOSE"); // NOI18N
+        LOG.info("CLOSE"); // NOI18N
     }
 
     /**
@@ -3949,7 +4007,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void run() {
                     JPopupMenu.setDefaultLightWeightPopupEnabled(false);
                     ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-                    final CismapPlugin cp = new CismapPlugin();
+                    final CismapPlugin cp = (args.length == 1) ? new CismapPlugin(args[0]) : new CismapPlugin();
                     cp.setVisible(true);
                 }
             });
@@ -3976,7 +4034,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                     @Override
                     public void run() {
-                        log.warn("Error in validateTree()", e); // NOI18N
+                        LOG.warn("Error in validateTree()", e); // NOI18N
                         synchronized (getTreeLock()) {
                             validateTree();
                         }
@@ -4005,8 +4063,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     .getBooleanValue();
                 cmdNewLinearReferencing.setVisible(isLineRefActivated);
             } catch (final Exception ex) {
-                if (log.isDebugEnabled()) {
-                    log.debug("error reading LinearReferencedMarks from cismapPluginUIPreferences", ex); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("error reading LinearReferencedMarks from cismapPluginUIPreferences", ex); // NOI18N
                 }
             }
         }
@@ -4052,8 +4110,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     @Override
     public void setActive(final boolean param) {
-        if (log.isDebugEnabled()) {
-            log.debug("setActive:" + param); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("setActive:" + param); // NOI18N
         }
 
         if (!param) {
@@ -4238,8 +4296,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     @Override
     public void dispose() {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("dispose().CIAO"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("dispose().CIAO"); // NOI18N
             }
             saveLayout(cismapDirectory + fs + standaloneLayoutName);
             configurationManager.writeConfiguration();
@@ -4249,7 +4307,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             super.dispose();
             System.exit(0);
         } catch (Throwable t) {
-            log.fatal("Error during disposing frame.", t); // NOI18N
+            LOG.fatal("Error during disposing frame.", t); // NOI18N
         }
     }
 
@@ -4325,17 +4383,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             try {
                 httpInterfacePort = new Integer(httpInterfacePortElement.getText());
             } catch (Throwable t) {
-                log.warn("httpInterface was not configured. Set default value: " + httpInterfacePort, t); // NOI18N
+                LOG.warn("httpInterface was not configured. Set default value: " + httpInterfacePort, t); // NOI18N
             }
 
             helpUrl = help_url_element.getText();
-            if (log.isDebugEnabled()) {
-                log.debug("helpUrl:" + helpUrl); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("helpUrl:" + helpUrl); // NOI18N
             }
 
             newsUrl = news_url_element.getText();
         } catch (Throwable t) {
-            log.error("Error while loading the help urls (" + prefs.getChildren() + "), disabling menu items", t); // NOI18N
+            LOG.error("Error while loading the help urls (" + prefs.getChildren() + "), disabling menu items", t); // NOI18N
         }
 
         // enable or disable help urls
@@ -4367,7 +4425,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             }
         } catch (final Exception x) {
-            log.info("No skipWindow Info available or error while reading the configuration", x); // NOI18N
+            LOG.info("No skipWindow Info available or error while reading the configuration", x); // NOI18N
         }
 
         try {
@@ -4421,7 +4479,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 configurationManager.configureFromClasspath(path, null);
                                 setButtonSelectionAccordingToMappingComponent();
                             } catch (Throwable ex) {
-                                log.fatal("No ServerProfile", ex); // NOI18N
+                                LOG.fatal("No ServerProfile", ex); // NOI18N
                             }
                         }
                     });
@@ -4440,7 +4498,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 try {
                     serverProfileMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource(icon)));
                 } catch (Exception iconE) {
-                    log.warn("Could not create Icon for ServerProfile.", iconE); // NOI18N
+                    LOG.warn("Could not create Icon for ServerProfile.", iconE); // NOI18N
                 }
 
                 serverProfileItems.add(serverProfileMenuItem);
@@ -4472,7 +4530,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 menFile.add(c);
             }
         } catch (Exception x) {
-            log.info("No server profile available, or error while cerating analysis.", x); // NOI18N
+            LOG.info("No server profile available, or error while cerating analysis.", x); // NOI18N
         }
 
         try {
@@ -4486,7 +4544,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             }
         } catch (Exception x) {
-            log.info("RasterGeoReferencingToolbarComponentProvider properties available", x); // NOI18N
+            LOG.info("RasterGeoReferencingToolbarComponentProvider properties available", x); // NOI18N
         }
     }
 
@@ -4527,7 +4585,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     }
                 });
         } catch (Throwable t) {
-            log.error("Error while loading the sie of the window.", t); // NOI18N
+            LOG.error("Error while loading the sie of the window.", t); // NOI18N
         }
     }
 
@@ -4539,8 +4597,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     public void loadLayout(final String file, final boolean isInit) {
         setupDefaultLayout();
-        if (log.isDebugEnabled()) {
-            log.debug("Load Layout.. from " + file); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Load Layout.. from " + file); // NOI18N
         }
 
         File layoutFile = null;
@@ -4549,8 +4607,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         final String defaultLayout = this.getInternationalizedDefaultLayout();
         if (isInit && (file.equals(DEFAULT_LOCAL_LAYOUT) || file.equals(defaultLayout))
                     && (this.getClass().getResource(defaultLayout) != null)) {
-            if (log.isDebugEnabled()) {
-                log.debug("loading default layout from local layout file '" + defaultLayout + "'");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("loading default layout from local layout file '" + defaultLayout + "'");
             }
 
             layoutFileInputStream = this.getClass().getResourceAsStream(defaultLayout);
@@ -4568,7 +4626,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                 loadLayout(layoutFileInputStream, isInit);
             } catch (FileNotFoundException e) {
-                log.error("Layout File '" + file + "' not found", e);
+                LOG.error("Layout File '" + file + "' not found", e);
                 JOptionPane.showMessageDialog(
                     StaticSwingTools.getParentFrame(mapC),
                     org.openide.util.NbBundle.getMessage(
@@ -4580,7 +4638,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     JOptionPane.INFORMATION_MESSAGE);
             }
         } else if (isInit) {
-            log.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
+            LOG.error("File '" + file + "' does not exist --> default layout (init)"); // NOI18N
             if (isInit && (defaultLayout != null)) {
                 // reset to saved local layout file in custom res.jar
                 this.loadLayout(defaultLayout, isInit);
@@ -4608,7 +4666,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     });
             }
         } else {
-            log.error("File '" + file + "' does not exist)");                // NOI18N
+            LOG.error("File '" + file + "' does not exist)");                // NOI18N
             JOptionPane.showMessageDialog(
                 StaticSwingTools.getParentFrame(mapC),
                 org.openide.util.NbBundle.getMessage(
@@ -4629,8 +4687,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     protected String getInternationalizedDefaultLayout() {
         URL defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY);
         if (defaultLayoutUrl == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE_COUNTRY
                             + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE + "'");
             }
         } else {
@@ -4639,8 +4697,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT_LANGUAGE);
         if (defaultLayoutUrl == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("default layout file '" + DEFAULT_LOCAL_LAYOUT_LANGUAGE
                             + "' not found, trying to find '" + DEFAULT_LOCAL_LAYOUT + "'");
             }
         } else {
@@ -4649,7 +4707,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         defaultLayoutUrl = this.getClass().getResource(DEFAULT_LOCAL_LAYOUT);
         if (defaultLayoutUrl == null) {
-            log.warn("default layout file '" + DEFAULT_LOCAL_LAYOUT
+            LOG.warn("default layout file '" + DEFAULT_LOCAL_LAYOUT
                         + "' not found, giving up!");
         } else {
             return DEFAULT_LOCAL_LAYOUT;
@@ -4666,8 +4724,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     public void loadLayout(final InputStream layoutInput, final boolean isInit) {
         if (layoutInput != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Layout File exists"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Layout File exists"); // NOI18N
             }
 
             try {
@@ -4677,11 +4735,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 rootWindow.getWindowBar(Direction.LEFT).setEnabled(true);
                 rootWindow.getWindowBar(Direction.DOWN).setEnabled(true);
                 rootWindow.getWindowBar(Direction.RIGHT).setEnabled(true);
-                if (log.isDebugEnabled()) {
-                    log.debug("Loading Layout successfull");                          // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Loading Layout successfull");                          // NOI18N
                 }
             } catch (IOException ex) {
-                log.error("Layout File IO Exception --> loading default Layout", ex); // NOI18N
+                LOG.error("Layout File IO Exception --> loading default Layout", ex); // NOI18N
 
                 if (isInit) {
                     JOptionPane.showMessageDialog(
@@ -4715,20 +4773,20 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  file  DOCUMENT ME!
      */
     public void saveLayout(final String file) {
-        if (log.isDebugEnabled()) {
-            log.debug("Saving Layout.. to " + file, new CurrentStackTrace()); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Saving Layout.. to " + file, new CurrentStackTrace()); // NOI18N
         }
 
         final File layoutFile = new File(file);
 
         try {
             if (!layoutFile.exists()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Saving Layout.. File does not exit"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Saving Layout.. File does not exit"); // NOI18N
                 }
                 layoutFile.createNewFile();
-            } else if (log.isDebugEnabled()) {
-                log.debug("Saving Layout.. File does exit");         // NOI18N
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Saving Layout.. File does exit");         // NOI18N
             }
 
             final FileOutputStream layoutOutput = new FileOutputStream(layoutFile);
@@ -4736,8 +4794,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             rootWindow.write(out);
             out.flush();
             out.close();
-            if (log.isDebugEnabled()) {
-                log.debug("Saving Layout.. to " + file + " successfull");      // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Saving Layout.. to " + file + " successfull");      // NOI18N
             }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(
@@ -4749,7 +4807,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     CismapPlugin.class,
                     "CismapPlugin.saveLayout(String).JOptionPane.title"),      // NOI18N
                 JOptionPane.INFORMATION_MESSAGE);
-            log.error("A failure occured during writing the layout file", ex); // NOI18N
+            LOG.error("A failure occured during writing the layout file", ex); // NOI18N
         }
     }
 
@@ -4760,8 +4818,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     @Override
     public void dropOnMap(final MapDnDEvent mde) {
-        if (log.isDebugEnabled()) {
-            log.debug("drop on map"); // NOI18N
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("drop on map"); // NOI18N
         }
 
         if (mde.getDte() instanceof DropTargetDropEvent) {
@@ -4780,7 +4838,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         showObjectsMethod.invoke(c);
                     }
                 } catch (Throwable t) {
-                    log.fatal("Error on drop", t); // NOI18N
+                    LOG.fatal("Error on drop", t); // NOI18N
                 }
             } else if (DnDUtils.isFilesOrUriList(dtde)) {
                 dtde.acceptDrop(DnDConstants.ACTION_COPY);
@@ -4815,7 +4873,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         }
                     }
                 } catch (final Exception ex) {
-                    log.error("Failure during drag & drop opertation", ex); // NOI18N
+                    LOG.error("Failure during drag & drop opertation", ex); // NOI18N
                 }
             } else {
                 JOptionPane.showMessageDialog(
@@ -4823,7 +4881,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     org.openide.util.NbBundle.getMessage(
                         CismapPlugin.class,
                         "CismapPlugin.dropOnMap(MapDnDEvent).JOptionPane.message")); // NOI18N
-                log.error("Unable to process the datatype." + dtde.getTransferable().getTransferDataFlavors()[0]); // NOI18N
+                LOG.error("Unable to process the datatype." + dtde.getTransferable().getTransferDataFlavors()[0]); // NOI18N
             }
         }
     }
@@ -5057,7 +5115,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      */
     @Override
     public void historyActionPerformed() {
-        log.fatal("historyActionPerformed"); // NOI18N
+        LOG.fatal("historyActionPerformed"); // NOI18N
     }
 
     /**
@@ -5172,8 +5230,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         public void run() {
                             try {
                                 Thread.sleep(1500);                             // Bugfix Try Deadlock
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Http Interface initialisieren"); // NOI18N
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Http Interface initialisieren"); // NOI18N
                                 }
 
                                 final Server server = new Server();
@@ -5208,7 +5266,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                 final int dispatch) throws IOException, ServletException {
                                             try {
                                                 if (request.getLocalAddr().equals(request.getRemoteAddr())) {
-                                                    log.info("HttpInterface connected"); // NOI18N
+                                                    LOG.info("HttpInterface connected"); // NOI18N
 
                                                     if (target.equalsIgnoreCase("/gotoBoundingBox")) { // NOI18N
 
@@ -5225,7 +5283,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                                     new Double(y2));
                                                             mapC.gotoBoundingBoxWithHistory(bb);
                                                         } catch (Exception e) {
-                                                            log.warn("gotoBoundingBox failed", e); // NOI18N
+                                                            LOG.warn("gotoBoundingBox failed", e); // NOI18N
                                                         }
                                                     }
 
@@ -5248,7 +5306,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                                     new Double(scaleDenominator).doubleValue(),
                                                                     bb));
                                                         } catch (Exception e) {
-                                                            log.warn("gotoBoundingBox failed", e); // NOI18N
+                                                            LOG.warn("gotoBoundingBox failed", e); // NOI18N
                                                         }
                                                     }
 
@@ -5265,17 +5323,17 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                                     new Double(y1));
                                                             mapC.gotoBoundingBoxWithHistory(bb);
                                                         } catch (Exception e) {
-                                                            log.warn("centerOnPoint failed", e); // NOI18N
+                                                            LOG.warn("centerOnPoint failed", e); // NOI18N
                                                         }
                                                     } else {
-                                                        log.warn("Unknown target: " + target);   // NOI18N
+                                                        LOG.warn("Unknown target: " + target);   // NOI18N
                                                     }
                                                 } else {
-                                                    log.warn(
+                                                    LOG.warn(
                                                         "Someone tries to access the http interface from an other computer. Access denied."); // NOI18N
                                                 }
                                             } catch (Throwable t) {
-                                                log.error("Error while handle http requests", t); // NOI18N
+                                                LOG.error("Error while handle http requests", t); // NOI18N
                                             }
                                         }
                                     };
@@ -5287,16 +5345,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 server.start();
                                 server.join();
                             } catch (Throwable t) {
-                                log.error("Error in the HttpInterface of cismap", t); // NOI18N
+                                LOG.error("Error in the HttpInterface of cismap", t); // NOI18N
                             }
                         }
                     });
             http.start();
-            if (log.isDebugEnabled()) {
-                log.debug("Initialise HTTP interface");                               // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Initialise HTTP interface");                               // NOI18N
             }
         } catch (Throwable t) {
-            log.fatal("Nothing at all", t);                                           // NOI18N
+            LOG.fatal("Nothing at all", t);                                           // NOI18N
         }
     }
 
@@ -5317,8 +5375,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     public void update(final Observable o, final Object arg) {
         if (o.equals(mapC.getMemUndo())) {
             if (arg.equals(MementoInterface.ACTIVATE) && !cmdUndo.isEnabled()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("activate UNDO button"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("activate UNDO button"); // NOI18N
                 }
                 EventQueue.invokeLater(new Runnable() {
 
@@ -5328,8 +5386,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         }
                     });
             } else if (arg.equals(MementoInterface.DEACTIVATE) && cmdUndo.isEnabled()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("deactivate UNDO button"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("deactivate UNDO button"); // NOI18N
                 }
                 EventQueue.invokeLater(new Runnable() {
 
@@ -5341,8 +5399,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             }
         } else if (o.equals(mapC.getMemRedo())) {
             if (arg.equals(MementoInterface.ACTIVATE) && !cmdRedo.isEnabled()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("activate REDO button"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("activate REDO button"); // NOI18N
                 }
                 EventQueue.invokeLater(new Runnable() {
 
@@ -5352,8 +5410,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         }
                     });
             } else if (arg.equals(MementoInterface.DEACTIVATE) && cmdRedo.isEnabled()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("deactivate REDO button"); // NOI18N
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("deactivate REDO button"); // NOI18N
                 }
                 EventQueue.invokeLater(new Runnable() {
 
@@ -5392,13 +5450,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
          */
         @Override
         public void run() {
-            if (log.isDebugEnabled()) {
-                log.debug("CIAO");                           // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("CIAO");                           // NOI18N
             }
             configurationManager.writeConfiguration();
             CismapBroker.getInstance().writePropertyFile();
-            if (log.isDebugEnabled()) {
-                log.debug("Shutdownhook --> saving layout"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Shutdownhook --> saving layout"); // NOI18N
             }
             saveLayout(cismapDirectory + fs + standaloneLayoutName);
         }
@@ -5479,13 +5537,13 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                             featureCollectionEventBlocker = true;
                             mapC.getFeatureCollection().unselectAll();
                             featureCollectionEventBlocker = false;
-                            if (log.isDebugEnabled()) {
-                                log.debug("featuresInMap:" + featuresInMap); // NOI18N
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("featuresInMap:" + featuresInMap); // NOI18N
                             }
                         }
                     }
                 } catch (final Exception t) {
-                    log.error("Error in WizardMode:", t);                    // NOI18N
+                    LOG.error("Error in WizardMode:", t);                    // NOI18N
                 }
             }
         }
@@ -5572,19 +5630,19 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final List<Feature> v = new ArrayList<Feature>();
             cidsFeature.setEditable(editable);
             v.add(cidsFeature);
-            if (log.isDebugEnabled()) {
-                log.debug("mapC.getFeatureCollection().getAllFeatures():" // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("mapC.getFeatureCollection().getAllFeatures():" // NOI18N
                             + mapC.getFeatureCollection().getAllFeatures());
             }
-            if (log.isDebugEnabled()) {
-                log.debug("cidsFeature:" + cidsFeature);            // NOI18N
-                log.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):"
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("cidsFeature:" + cidsFeature);            // NOI18N
+                LOG.debug("mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature):"
                             + mapC.getFeatureCollection().getAllFeatures().contains(cidsFeature)); // NOI18N
             }
             mapC.getFeatureLayer().setVisible(true);
             mapC.getFeatureCollection().removeFeature(cidsFeature);
-            if (log.isDebugEnabled()) {
-                log.debug("mapC.getFeatureCollection().getAllFeatures():" // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("mapC.getFeatureCollection().getAllFeatures():" // NOI18N
                             + mapC.getFeatureCollection().getAllFeatures());
             }
 
@@ -5641,7 +5699,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
          */
         public synchronized void invoke(final Collection<DefaultMetaTreeNode> nodes, final boolean editable)
                 throws Exception {
-            log.info("invoke shows objects in the map"); // NOI18N
+            LOG.info("invoke shows objects in the map"); // NOI18N
 
             final Runnable showWaitRunnable = new Runnable() {
 
@@ -5703,8 +5761,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             allFeaturesToAdd = Arrays.asList(feature);
                                         }
 
-                                        if (log.isDebugEnabled()) {
-                                            log.debug("allFeaturesToAdd:" + allFeaturesToAdd); // NOI18N
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug("allFeaturesToAdd:" + allFeaturesToAdd); // NOI18N
                                         }
 
                                         if (!(featuresInMap.containsValue(feature))) {
@@ -5717,8 +5775,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                                 // master and all subfeatures -> node
                                                 featuresInMapReverse.put(f, node);
                                             }
-                                            if (log.isDebugEnabled()) {
-                                                log.debug("featuresInMap.put(node,cidsFeature):" + node + "," // NOI18Ns
+                                            if (LOG.isDebugEnabled()) {
+                                                LOG.debug("featuresInMap.put(node,cidsFeature):" + node + "," // NOI18Ns
                                                             + feature);
                                             }
                                         }
@@ -5747,11 +5805,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                             mapC.zoomToFeatureCollection(mapC.isFixedMapScale());
                                         }
                                     } catch (final InterruptedException e) {
-                                        if (log.isDebugEnabled()) {
-                                            log.debug(e, e);
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug(e, e);
                                         }
                                     } catch (final Exception e) {
-                                        log.error("Error while displaying objects:", e); // NOI18N
+                                        LOG.error("Error while displaying objects:", e); // NOI18N
                                     }
                                 }
                             };
@@ -5796,8 +5854,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
          */
         @Override
         public Object getProperty(final String propertyName) {
-            if (log.isDebugEnabled()) {
-                log.debug("GetProperty was invoked from CismapPlugin"); // NOI18N
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("GetProperty was invoked from CismapPlugin"); // NOI18N
             }
 
             if (propertyName.equalsIgnoreCase("coordinate")) { // NOI18N

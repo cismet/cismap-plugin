@@ -149,10 +149,10 @@
             <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
         </goals>
         <properties>
-            <working.dir>${de.cismet.cids.navigator.workingDir}</working.dir>
+            <working.dir>${de.cismet.cids.navigator.workingDir.wunda}</working.dir>
             <exec.workingdir>${working.dir}</exec.workingdir>
             <exec.classpathScope>runtime</exec.classpathScope>
-            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8899,suspend=n  -Xms256m -Xmx1024m -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8899,suspend=n  -Xms256m -Xmx1024m -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin ${working.dir}/config/wundadk.cfg</exec.args>
             <exec.executable>java</exec.executable>
         </properties>
         <activatedProfiles>
@@ -169,11 +169,11 @@
             <goal>process-classes</goal>
             <goal>org.codehaus.mojo:exec-maven-plugin:exec</goal>
         </goals>
-        <properties>
-            <working.dir>${de.cismet.cids.navigator.workingDir}</working.dir>
+        <properties>            
+            <working.dir>${de.cismet.cids.navigator.workingDir.wunda}</working.dir>
             <exec.workingdir>${working.dir}</exec.workingdir>
             <exec.classpathScope>runtime</exec.classpathScope>
-            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin</exec.args>
+            <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath ${de.cismet.cids.classpath} de.cismet.cismap.navigatorplugin.CismapPlugin ${working.dir}/config/wundadk.cfg</exec.args>
             <exec.executable>java</exec.executable>
             <jpda.listen>true</jpda.listen>
         </properties>
