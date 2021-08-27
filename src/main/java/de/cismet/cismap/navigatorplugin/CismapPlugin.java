@@ -463,18 +463,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
     /**
      * Creates a new CismapPlugin object.
-     */
-    public CismapPlugin() {
-        this(null, null);
-    }
-
-    /**
-     * Creates a new CismapPlugin object.
      *
-     * @param  config  DOCUMENT ME!
+     * @param  context  DOCUMENT ME!
      */
-    public CismapPlugin(final String config) {
-        this(config, null);
+    public CismapPlugin(final PluginContext context) {
+        this(null, context);
     }
 
     /**
@@ -552,8 +545,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             }
 
-            initConnection(ConfigProperties.getInstance().load(config), getConnectionContext());
-            ProxyCredentials.initFromConfAttr("proxy.credentials", getConnectionContext());
+            if (config != null) {
+                initConnection(ConfigProperties.getInstance().load(config), getConnectionContext());
+                ProxyCredentials.initFromConfAttr("proxy.credentials", getConnectionContext());
+            }
 
             try {
                 javax.swing.UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
@@ -4007,7 +4002,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 public void run() {
                     JPopupMenu.setDefaultLightWeightPopupEnabled(false);
                     ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-                    final CismapPlugin cp = (args.length == 1) ? new CismapPlugin(args[0]) : new CismapPlugin();
+                    final CismapPlugin cp = (args.length == 1) ? new CismapPlugin(args[0], null)
+                                                               : new CismapPlugin(null);
                     cp.setVisible(true);
                 }
             });
