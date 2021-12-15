@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>7.0.6</version>
+                <version>7.0.9</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>7.0.6</version>
+                <version>7.0.9</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
