@@ -66,6 +66,30 @@ public class DefaultAttributeTableFieldCalculation implements AttributeTableFiel
     }
 
     @Override
+    public boolean openPanel(final AttributeTable table,
+            final AbstractFeatureService service,
+            final FeatureServiceAttribute attribute,
+            final List<FeatureServiceFeature> featureList,
+            final List<FeatureServiceFeature> allFeaturesFromService) {
+        final FieldCalculatorDialog dialog = new FieldCalculatorDialog(
+                table,
+                true,
+                service,
+                attribute,
+                featureList,
+                getConnectionContext());
+
+        if (allFeaturesFromService != null) {
+            dialog.setAllFeaturesFromService(allFeaturesFromService);
+        }
+
+        dialog.setSize(540, 500);
+        StaticSwingTools.showDialog(dialog);
+
+        return dialog.isCalculationStarted();
+    }
+
+    @Override
     public ConnectionContext getConnectionContext() {
         return connectionContext;
     }

@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -215,6 +216,8 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
     private List<FeatureServiceFeature> featureList;
     private AttributeTable table;
     private boolean calculationStarted = false;
+    private HashMap<String, TreeSet> foreignTablesMap = new HashMap<>();
+    private List<FeatureServiceFeature> allFeaturesFromService = null;
 
     private final ConnectionContext connectionContext;
 
@@ -336,6 +339,15 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  allFeaturesFromService  the allFeaturesFromService to set
+     */
+    public void setAllFeaturesFromService(final List<FeatureServiceFeature> allFeaturesFromService) {
+        this.allFeaturesFromService = allFeaturesFromService;
+    }
 
     @Override
     public final ConnectionContext getConnectionContext() {
@@ -476,6 +488,10 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
      */
     private List<FeatureServiceFeature> getAllFeaturesFromService() {
         List<FeatureServiceFeature> allFeatures;
+
+        if (allFeaturesFromService != null) {
+            return allFeaturesFromService;
+        }
 
         try {
             final Geometry g = ZoomToLayerWorker.getServiceBounds(service);
@@ -752,7 +768,7 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                 @Override
                 public void run() {
                     final List allFeatures;
-                    final TreeSet set = new TreeSet();
+                    TreeSet set = new TreeSet();
                     boolean setAlreadyFilled = false;
 
                     if (service instanceof CidsLayer) {
@@ -766,38 +782,49 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                             if (layerInfo.isCatalogue(attributeInfo.getName())) {
                                 final CidsLayerFeature cf = (CidsLayerFeature)firstFeature;
 
-                                if (cf.getCatalogueCombo(attributeInfo.getName()) != null) {
-                                    waitForModel(cf.getCatalogueCombo(attributeInfo.getName()));
-                                    final ComboBoxModel model = cf.getCatalogueCombo(attributeInfo.getName())
-                                                .getModel();
+                                final TreeSet cachedData = foreignTablesMap.get(attributeInfo.getName());
 
-                                    for (int i = 0; i < model.getSize(); ++i) {
-                                        if (model.getElementAt(i) != null) {
-                                            set.add(model.getElementAt(i).toString());
-                                        }
-                                    }
+                                if (cachedData != null) {
+                                    set = cachedData;
                                 } else {
-                                    final int referencedForeignClassId = layerInfo.getCatalogueClass(
-                                            attributeInfo.getName());
+                                    if (cf.getCatalogueCombo(attributeInfo.getName()) != null) {
+                                        waitForModel(cf.getCatalogueCombo(attributeInfo.getName()));
+                                        final ComboBoxModel model = cf.getCatalogueCombo(attributeInfo.getName())
+                                                    .getModel();
 
-                                    final MetaClass foreignClass = getMetaClass(
-                                            referencedForeignClassId,
-                                            cf.getBean().getMetaObject().getMetaClass());
-                                    final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
-                                        new DefaultCidsLayerBindableReferenceCombo(
-                                            foreignClass,
-                                            true);
-
-                                    waitForModel(catalogueEditor);
-
-                                    final ComboBoxModel model = catalogueEditor.getModel();
-
-                                    for (int i = 0; i < model.getSize(); ++i) {
-                                        if (model.getElementAt(i) != null) {
-                                            set.add(model.getElementAt(i).toString());
+                                        for (int i = 0; i < model.getSize(); ++i) {
+                                            if (model.getElementAt(i) != null) {
+                                                set.add(model.getElementAt(i).toString());
+                                            }
                                         }
+
+                                        foreignTablesMap.put(attributeInfo.getName(), set);
+                                    } else {
+                                        final int referencedForeignClassId = layerInfo.getCatalogueClass(
+                                                attributeInfo.getName());
+
+                                        final MetaClass foreignClass = getMetaClass(
+                                                referencedForeignClassId,
+                                                cf.getBean().getMetaObject().getMetaClass());
+                                        final DefaultCidsLayerBindableReferenceCombo catalogueEditor =
+                                            new DefaultCidsLayerBindableReferenceCombo(
+                                                foreignClass,
+                                                true);
+
+                                        waitForModel(catalogueEditor);
+
+                                        final ComboBoxModel model = catalogueEditor.getModel();
+
+                                        for (int i = 0; i < model.getSize(); ++i) {
+                                            if (model.getElementAt(i) != null) {
+                                                set.add(model.getElementAt(i).toString());
+                                            }
+                                        }
+
+                                        foreignTablesMap.put(attributeInfo.getName(), set);
                                     }
                                 }
+
                                 setAlreadyFilled = true;
                             }
                         } catch (Exception e) {
@@ -818,12 +845,14 @@ public class FieldCalculatorDialog extends javax.swing.JDialog implements Connec
                         }
                     }
 
+                    final TreeSet finalSet = set;
+
                     SwingUtilities.invokeLater(new Runnable() {
 
                             @Override
                             public void run() {
                                 final List<Object> old = values;
-                                values = new ArrayList<Object>(set);
+                                values = new ArrayList<Object>(finalSet);
                                 lblBusyValueIcon.setEnabled(false);
                                 lblBusyValueIcon.setBusy(false);
                                 jGetValuesBn.setEnabled(true);
