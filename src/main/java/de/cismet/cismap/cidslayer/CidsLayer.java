@@ -469,6 +469,11 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         return metaClass;
     }
 
+    @Override
+    public String getId() {
+        return getClass().getName() + tableName;
+    }
+
 //
 //    @Override
 //    public String decoratePropertyValue(String columnName, String value) {
