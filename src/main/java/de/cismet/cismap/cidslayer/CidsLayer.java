@@ -173,7 +173,10 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             String camalizedName = DefaultLayerProperties.camelize(getMetaClass().getName());
             camalizedName = String.valueOf(camalizedName.charAt(0)).toLowerCase() + camalizedName.substring(1);
             final String downloadForbiddenName = camalizedName + "DownloadForbidden";
-            final boolean attrForbidden = SessionManager.getProxy().hasConfigAttr(SessionManager.getSession().getUser(), downloadForbiddenName, getConnectionContext());
+            final boolean attrForbidden = SessionManager.getProxy()
+                        .hasConfigAttr(SessionManager.getSession().getUser(),
+                            downloadForbiddenName,
+                            getConnectionContext());
             if (attrForbidden) {
                 final String downloadAllowedName = camalizedName + "DownloadAllowed";
                 downloadAllowed = SessionManager.getProxy()
