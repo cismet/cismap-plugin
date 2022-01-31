@@ -4351,9 +4351,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         boolean visible;
         try {
             visible = SessionManager.getConnection()
-                        .getConfigAttr(SessionManager.getSession().getUser(),
+                        .hasConfigAttr(SessionManager.getSession().getUser(),
                                 "extendedSelectionCapabilities",
-                                getConnectionContext()) != null;
+                                getConnectionContext());
         } catch (final Exception ex) {
             visible = false;
         }

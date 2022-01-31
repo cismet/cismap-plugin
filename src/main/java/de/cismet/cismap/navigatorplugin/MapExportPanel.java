@@ -118,8 +118,7 @@ public class MapExportPanel extends javax.swing.JPanel implements Configurable,
         boolean result;
         try {
             result = SessionManager.getConnection()
-                        .getConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getConnectionContext())
-                        != null;
+                        .hasConfigAttr(SessionManager.getSession().getUser(), ACTION_TAG, getConnectionContext());
         } catch (ConnectionException ex) {
             LOG.error("Can not check ActionTag!", ex);
             result = false;
