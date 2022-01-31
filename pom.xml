@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>7.2-SNAPSHOT</version>
+    <version>7.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.6</version>
+                <version>7.8</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.6</version>
+                <version>7.8</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>7.6</version>
+                <version>7.8</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>7.6</version>
+                <version>7.8</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
