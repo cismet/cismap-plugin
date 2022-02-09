@@ -986,7 +986,7 @@ public class TableStationEditor extends javax.swing.JPanel implements Disposable
      *
      * @param  value  DOCUMENT ME!
      */
-    private void setPointValue(final double value) {
+    public void setPointValue(final double value) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("change bean value to " + value);
         }
