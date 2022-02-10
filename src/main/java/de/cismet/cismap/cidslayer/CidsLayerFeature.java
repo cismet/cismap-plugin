@@ -639,6 +639,15 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
         final Object oldValue = getProperty(propertyName);
         super.setProperty(propertyName, propertyValue);
 
+        if ((stations != null) && layerInfo.isStation(propertyName) && (stations.get(propertyName) != null)
+                    && (propertyValue instanceof Double)) {
+            final TableStationEditor se = (TableStationEditor)stations.get(propertyName);
+
+            if (se != null) {
+                se.setPointValue((Double)propertyValue);
+            }
+        }
+
         if ((layerInfo != null) && (layerInfo.getGeoField() != null)) {
             firePropertyChange(propertyName, oldValue, propertyValue);
         }
