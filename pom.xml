@@ -43,7 +43,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>7.2</version>
+                <version>7.2.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -52,14 +52,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>7.2</version>
+                <version>7.2.7</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>7.2</version>
+                <version>7.2.7</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>7.2</version>
+                <version>7.2.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>7.2</version>
+                <version>7.2.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>7.0.10</version>
+                <version>7.0.13</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>7.0.10</version>
+                <version>7.0.13</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.8</version>
+                <version>7.8.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>7.8</version>
+                <version>7.8.3</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -284,6 +284,16 @@
             <artifactId>deegree-core-base</artifactId>
             <scope>compile</scope>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>postgresql</groupId>
+                    <artifactId>postgresql</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.postgis</groupId>
+                    <artifactId>postgis-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
