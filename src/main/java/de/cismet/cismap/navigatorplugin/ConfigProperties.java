@@ -124,6 +124,10 @@ public class ConfigProperties extends Properties {
     public String getPassword() {
         return getProperty("password");
     }
+    
+    public String getClientName() {
+        return getProperty("clientName");        
+    }
 
     /**
      * DOCUMENT ME!
