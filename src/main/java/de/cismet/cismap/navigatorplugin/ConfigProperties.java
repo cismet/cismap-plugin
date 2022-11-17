@@ -12,6 +12,7 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.tools.StaticNavigatorTools;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,7 +61,7 @@ public class ConfigProperties extends Properties {
      * @throws  Exception  DOCUMENT ME!
      */
     public ConfigProperties load(final String cfgFile) throws Exception {
-        load(getInputStreamFrom(cfgFile));
+        load(StaticNavigatorTools.getInputStreamFromFileOrUrl(cfgFile));
 
         final String proxyConfig = getProxyConfig();
 
@@ -68,7 +69,7 @@ public class ConfigProperties extends Properties {
             try {
                 final String cfgFileName = Paths.get(new URI(cfgFile).getPath()).getFileName().toString();
                 final String cfgDirname = cfgFile.substring(0, cfgFile.lastIndexOf(cfgFileName));
-                proxyProperties.load(getInputStreamFrom(cfgDirname + proxyConfig));
+                proxyProperties.load(StaticNavigatorTools.getInputStreamFromFileOrUrl(cfgDirname + proxyConfig));
             } catch (final Exception ex) {
                 LOG.warn(String.format("error while loading proxy properties from %s", proxyConfig), ex);
             }
@@ -149,25 +150,6 @@ public class ConfigProperties extends Properties {
      */
     public String getProxyConfig() {
         return getProperty("proxy.config");
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   from  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private static InputStream getInputStreamFrom(final String from) throws Exception {
-        if ((from.indexOf("http://") == 0) || (from.indexOf("https://") == 0)
-                    || (from.indexOf("file:/") == 0)) {
-            final URL url = new URL(from);
-            return url.openStream();
-        } else {
-            return new BufferedInputStream(new FileInputStream(from));
-        }
     }
 
     /**
