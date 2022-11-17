@@ -12,6 +12,7 @@
  */
 package de.cismet.cismap.navigatorplugin;
 
+import Sirius.navigator.tools.StaticNavigatorTools;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,7 +61,7 @@ public class ConfigProperties extends Properties {
      * @throws  Exception  DOCUMENT ME!
      */
     public ConfigProperties load(final String cfgFile) throws Exception {
-        load(getInputStreamFrom(cfgFile));
+        load(StaticNavigatorTools.getInputStreamFromFileOrUrl(cfgFile));
 
         final String proxyConfig = getProxyConfig();
 
@@ -68,7 +69,7 @@ public class ConfigProperties extends Properties {
             try {
                 final String cfgFileName = Paths.get(new URI(cfgFile).getPath()).getFileName().toString();
                 final String cfgDirname = cfgFile.substring(0, cfgFile.lastIndexOf(cfgFileName));
-                proxyProperties.load(getInputStreamFrom(cfgDirname + proxyConfig));
+                proxyProperties.load(StaticNavigatorTools.getInputStreamFromFileOrUrl(cfgDirname + proxyConfig));
             } catch (final Exception ex) {
                 LOG.warn(String.format("error while loading proxy properties from %s", proxyConfig), ex);
             }
