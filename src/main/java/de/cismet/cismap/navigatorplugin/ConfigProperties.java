@@ -154,25 +154,6 @@ public class ConfigProperties extends Properties {
     /**
      * DOCUMENT ME!
      *
-     * @param   from  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private static InputStream getInputStreamFrom(final String from) throws Exception {
-        if ((from.indexOf("http://") == 0) || (from.indexOf("https://") == 0)
-                    || (from.indexOf("file:/") == 0)) {
-            final URL url = new URL(from);
-            return url.openStream();
-        } else {
-            return new BufferedInputStream(new FileInputStream(from));
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      */
     public static ConfigProperties getInstance() {
