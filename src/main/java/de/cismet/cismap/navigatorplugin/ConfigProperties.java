@@ -13,6 +13,7 @@
 package de.cismet.cismap.navigatorplugin;
 
 import Sirius.navigator.tools.StaticNavigatorTools;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -125,9 +126,14 @@ public class ConfigProperties extends Properties {
     public String getPassword() {
         return getProperty("password");
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     public String getClientName() {
-        return getProperty("clientName");        
+        return getProperty("clientName");
     }
 
     /**
