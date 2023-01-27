@@ -59,16 +59,15 @@ import net.infonode.util.Direction;
 
 import org.apache.commons.collections.MultiHashMap;
 
-import org.jdom.Element;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.Request;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.AbstractHandler;
-import org.mortbay.jetty.handler.HandlerCollection;
-import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.jdom.Element;
 
 import org.openide.util.Lookup;
 
@@ -5231,21 +5230,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("Http Interface initialisieren"); // NOI18N
                                 }
-
-                                final Server server = new Server();
-                                final Connector connector = new SelectChannelConnector();
-                                connector.setPort(9098);
+                                final int PORT = 9098;
+                                final Server server = new Server(PORT);
+                                final ServerConnector connector = new ServerConnector(server);
+                                // the port must be set in the connector. It is not sufficient to set it in the Server
+                                // constructor
+                                connector.setPort(PORT);
                                 server.setConnectors(new Connector[] { connector });
 
                                 final Handler param = new AbstractHandler() {
 
                                         @Override
                                         public void handle(final String target,
+                                                final Request rqst,
                                                 final HttpServletRequest request,
-                                                final HttpServletResponse response,
-                                                final int dispatch) throws IOException, ServletException {
-                                            final Request base_request = (request instanceof Request)
-                                                ? (Request)request : HttpConnection.getCurrentConnection().getRequest();
+                                                final HttpServletResponse response) throws IOException,
+                                            ServletException {
+                                            final Request base_request = rqst;
                                             base_request.setHandled(true);
                                             response.setContentType("text/html");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // NOI18N
                                             response.setStatus(HttpServletResponse.SC_ACCEPTED);
@@ -5259,9 +5260,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                         @Override
                                         public void handle(final String target,
+                                                final Request rqst,
                                                 final HttpServletRequest request,
-                                                final HttpServletResponse response,
-                                                final int dispatch) throws IOException, ServletException {
+                                                final HttpServletResponse response) throws IOException,
+                                            ServletException {
                                             try {
                                                 if (request.getLocalAddr().equals(request.getRemoteAddr())) {
                                                     LOG.info("HttpInterface connected"); // NOI18N
