@@ -12,6 +12,8 @@
  */
 package de.cismet.cismap.cidslayer;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cismap.commons.gui.piccolo.PFeature;
 
 /**
@@ -32,4 +34,15 @@ public interface StationCreationCheck {
      * @return  DOCUMENT ME!
      */
     boolean isRouteValid(PFeature feature);
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   feature  DOCUMENT ME!
+     * @param   start    DOCUMENT ME!
+     * @param   end      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    boolean isStationValid(CidsBean feature, double start, double end);
 }

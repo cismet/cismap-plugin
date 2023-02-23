@@ -123,7 +123,8 @@ public class StationCreator extends AbstractFeatureCreator {
                                 public void pointFinished(final CidsBean route,
                                         Geometry pointGeom,
                                         final double point) {
-                                    if (route == null) {
+                                    if ((route == null)
+                                                || ((check != null) && !check.isStationValid(route, point, point))) {
                                         // the creation was canceled
                                         return;
                                     }

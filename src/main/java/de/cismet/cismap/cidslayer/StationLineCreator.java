@@ -162,12 +162,11 @@ public class StationLineCreator extends AbstractFeatureCreator {
                                         final Geometry endGeom,
                                         final double start,
                                         final double end) {
-                                    if (route == null) {
+                                    if ((route == null)
+                                                || ((check != null) && !check.isStationValid(route, start, end))) {
                                         // cancel the creation mode
-// mc.setInteractionMode(oldInteractionMode);
                                         return;
                                     }
-//                                    mc.setInteractionMode(oldInteractionMode);
                                     lineGeom = CrsTransformer.transformToDefaultCrs(lineGeom);
                                     lineGeom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                                     final CidsBean line = helper.createLineBeanFromRouteBean(route);

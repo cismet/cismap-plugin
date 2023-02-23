@@ -739,11 +739,11 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
             } else if ((layerInfo.getGeoField() != null) && layerInfo.getGeoField().equals(key)
                         && (colMap.get(key) != null)) {
                 final String colName = colMap.get(key);
-                if (
-                    bean.getMetaObject().getAttributeByFieldName(
-                                colMap.get(key).substring(0, colMap.get(key).indexOf("."))).getMai()
-                            .getForeignKeyClassId()
-                            == layerInfo.getReferencedCidsClass(key)) {
+                if ((colMap.get(key).contains("."))
+                            && (bean.getMetaObject().getAttributeByFieldName(
+                                    colMap.get(key).substring(0, colMap.get(key).indexOf("."))).getMai()
+                                .getForeignKeyClassId()
+                                == layerInfo.getReferencedCidsClass(key))) {
                     // there must be a direct reference to the geom table
                     if (layerInfo.isReferenceToCidsClass(key) && (bean.getProperty(key) == null)) {
                         // create a new object. Mostly, a new instance of geom is created
