@@ -536,8 +536,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             return null;
         }
 
-        final boolean compressed = true;
-
+        final boolean compressed = false;
         serverSearch.setCompressed(compressed);
 
         final Collection resultCollection = SessionManager.getProxy()
