@@ -416,7 +416,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                         final CidsLayerInitStatement serverSearch = new CidsLayerInitStatement(
                                 metaClass,
                                 SessionManager.getSession().getUser(),
-                                query);
+                                adjustQuery(query));
                         final ArrayList<ArrayList> resultArray = (ArrayList<ArrayList>)SessionManager
                                     .getProxy()
                                     .customServerSearch(SessionManager.getSession().getUser(),
@@ -520,7 +520,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             serverSearch.setY2(boundingBoxIncurrentCrs.getY2());
         }
 
-        serverSearch.setQuery(query);
+        serverSearch.setQuery(adjustQuery(query));
         if ((limit == 0) && (maxFeaturesPerPage != null)) {
 //            serverSearch.setLimit(maxFeaturesPerPage);
         } else {
@@ -704,7 +704,7 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 serverSearch.setY2(boundingBox2.getY2());
             }
             serverSearch.setCountOnly(true);
-            serverSearch.setQuery(query);
+            serverSearch.setQuery(adjustQuery(query));
 
             final Collection resultCollection = SessionManager.getProxy()
                         .customServerSearch(SessionManager.getSession().getUser(),
@@ -721,6 +721,63 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
         }
 
         return 0;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   query  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String adjustQuery(final String query) {
+        final boolean inQuote = false;
+        final boolean inDoubleQuote = false;
+        final StringBuilder sb = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
+
+        if (query == null) {
+            return null;
+        }
+
+        try {
+            for (int i = 0; i < query.length(); ++i) {
+                final char c = query.charAt(i);
+
+                if (c == '\'') {
+                    result.append(c);
+                    result.append(sb);
+                    result.append(c);
+                    sb.delete(0, sb.length());
+                } else if (c == '"') {
+                    result.append(c);
+                    result.append(sb);
+                    result.append(c);
+                    sb.delete(0, sb.length());
+                } else if ((c == ',') && !inQuote && !inDoubleQuote) {
+                    sb.append('.');
+                } else if (Character.isAlphabetic(c) || Character.isDigit(c)) {
+                    sb.append(c);
+                } else if (Character.isSpaceChar(c)) {
+                    result.append(sb);
+                    result.append(c);
+                    sb.delete(0, sb.length());
+                } else {
+                    result.append(sb);
+                    result.append(c);
+                    sb.delete(0, sb.length());
+                }
+            }
+
+            if (sb.length() > 0) {
+                result.append(sb);
+            }
+
+            return result.toString();
+        } catch (Throwable t) {
+            logger.error("Cannot parse query: " + query, t);
+            return query;
+        }
     }
 
     /**
