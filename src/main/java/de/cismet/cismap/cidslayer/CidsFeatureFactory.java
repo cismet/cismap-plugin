@@ -731,8 +731,8 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
      * @return  DOCUMENT ME!
      */
     public String adjustQuery(final String query) {
-        final boolean inQuote = false;
-        final boolean inDoubleQuote = false;
+        boolean inQuote = false;
+        boolean inDoubleQuote = false;
         final StringBuilder sb = new StringBuilder();
         final StringBuilder result = new StringBuilder();
 
@@ -745,38 +745,53 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                 final char c = query.charAt(i);
 
                 if (c == '\'') {
+                    result.append(replaceColonWhenRequired(sb.toString()));
                     result.append(c);
-                    result.append(sb);
-                    result.append(c);
+                    inQuote = !inQuote;
                     sb.delete(0, sb.length());
                 } else if (c == '"') {
-                    result.append(c);
-                    result.append(sb);
+                    result.append(replaceColonWhenRequired(sb.toString()));
                     result.append(c);
                     sb.delete(0, sb.length());
+                    inDoubleQuote = !inDoubleQuote;
                 } else if ((c == ',') && !inQuote && !inDoubleQuote) {
-                    sb.append('.');
+                    sb.append(',');
                 } else if (Character.isAlphabetic(c) || Character.isDigit(c)) {
                     sb.append(c);
                 } else if (Character.isSpaceChar(c)) {
-                    result.append(sb);
+                    result.append(replaceColonWhenRequired(sb.toString()));
                     result.append(c);
                     sb.delete(0, sb.length());
                 } else {
-                    result.append(sb);
+                    result.append(replaceColonWhenRequired(sb.toString()));
                     result.append(c);
                     sb.delete(0, sb.length());
                 }
             }
 
             if (sb.length() > 0) {
-                result.append(sb);
+                result.append(replaceColonWhenRequired(sb.toString()));
             }
 
             return result.toString();
         } catch (Throwable t) {
             logger.error("Cannot parse query: " + query, t);
             return query;
+        }
+    }
+    
+    private String replaceColonWhenRequired(String value) {
+        if (value.contains(",") && value.indexOf(",") == value.lastIndexOf(",")) {
+            //the value contains exactly one colon
+            try {
+                Double.parseDouble(value.replace(',', '.'));
+                
+                return value.replace(',', '.');
+            } catch (NumberFormatException e) {
+                return value;
+            }
+        } else {
+            return value;
         }
     }
 

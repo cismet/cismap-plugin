@@ -453,7 +453,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
             if (colNames[i].equals(name)) {
                 if ((info.getSqlColumnNames()[i].indexOf(".") != -1)
                             && (info.getSqlColumnNames()[i].indexOf(".") < info.getSqlColumnNames()[i].length())) {
-                    final String colName = info.getSqlColumnNames()[i];
+                    final String colName = info.getSqlColumnNames()[i].toLowerCase();
                     return colName.substring(0, colName.lastIndexOf(".") + 1) + "\""
                                 + colName.substring(colName.lastIndexOf(".") + 1) + "\"";
                 } else {
