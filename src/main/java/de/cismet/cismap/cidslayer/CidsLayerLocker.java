@@ -56,11 +56,8 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
     public static final String CS_LOCKS_TN = "lock";
     public static final String CS_LOCK_GROUP_TN = "lock_group";
 
-    private static final Logger LOG = Logger.getLogger(CidsBeanLocker.class);
-//    private static final String LOCK_QUERY = "SELECT DISTINCT %1$s, %2$s "
-//                + " FROM %3$s WHERE class_id = %4$s and (object_id = %5$s or object_id is null);";
-//    private static final String LOCK_MC_QUERY = "SELECT DISTINCT %1$s, %2$s "
-//                + " FROM %3$s WHERE class_id = %4$s limit 1;";
+    private static final Logger LOG = Logger.getLogger(CidsLayerLocker.class);
+
     private static final String LOCK_QUERY = "SELECT DISTINCT %1$s, g.%2$s "
                 + " FROM %3$s g join lock_lock_group lg on (g.objects = lg.lock_group_reference) join "
                 + " lock l on (lg.lock = l.id) WHERE l.class_id = %4$s and l.object_id = any(ARRAY[%5$s]) limit 1;";
@@ -97,7 +94,7 @@ public class CidsLayerLocker implements FeatureLockingInterface, ConnectionConte
             final MetaClass lockGroupMc = getLockGroupMetaClassForBean(mo.getDomain());
             final MetaClass lockMc = getLockMetaClassForBean(mo.getDomain());
             final String userString = NbBundle.getMessage(
-                    CidsBeanLocker.class,
+                    CidsLayerLocker.class,
                     "CidsLayerLocker.lock(CidsBean).userString",
                     SessionManager.getSession().getUser().getName());
 
