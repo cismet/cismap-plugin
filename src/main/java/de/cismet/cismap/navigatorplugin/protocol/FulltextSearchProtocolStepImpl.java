@@ -182,7 +182,7 @@ public class FulltextSearchProtocolStepImpl extends AbstractProtocolStep impleme
                         final MetaClass metaClass = META_CLASS_CACHE_SERVICE.getMetaClass(searchClass.getCidsDomain(),
                                 searchClass.getCidsClass(),
                                 getConnectionContext());
-                        validClassesFromStrings.add(metaClass.getKey().toString());
+                        validClassesFromStrings.add(metaClass.getTableName() + "@" + metaClass.getDomain());
                     }
                 }
             } else {

@@ -191,7 +191,7 @@ public class MetaSearch implements Configurable, MetaSearchFacade, ConnectionCon
                         searchClass.getCidsClass(),
                         getConnectionContext());
                 if (metaClass != null) {
-                    result.add(metaClass.getKey().toString());
+                    result.add(metaClass.getTableName() + "@" + metaClass.getDomain());
                 } else {
                     LOG.warn("Could not convert searchClass '" + searchClass.toString()
                                 + "' to a MetaClass. This searchClass will not be included in the search.");
