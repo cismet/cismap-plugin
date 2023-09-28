@@ -779,13 +779,21 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
             return query;
         }
     }
-    
-    private String replaceColonWhenRequired(String value) {
-        if (value.contains(",") && value.indexOf(",") == value.lastIndexOf(",")) {
-            //the value contains exactly one colon
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   value  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String replaceColonWhenRequired(final String value) {
+        if (value.contains(",") && (value.indexOf(",") == value.lastIndexOf(","))
+                    && (value.indexOf(",") != (value.length() - 1))) {
+            // the value contains exactly one colon
             try {
                 Double.parseDouble(value.replace(',', '.'));
-                
+
                 return value.replace(',', '.');
             } catch (NumberFormatException e) {
                 return value;
