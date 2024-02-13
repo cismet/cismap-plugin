@@ -657,7 +657,6 @@ public class CidsFeatureFactory extends AbstractFeatureFactory<CidsLayerFeature,
                     getLayerInfo(),
                     layerProperties,
                     getStyle(layerName));
-            lastFeature.setSimplifiedGeometryAllowed(saveAsLastCreated);
 
             features.add(lastFeature);
             lastFeature = null;

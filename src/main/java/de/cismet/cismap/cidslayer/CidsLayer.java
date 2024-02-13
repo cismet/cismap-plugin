@@ -34,6 +34,7 @@ import de.cismet.cids.server.cidslayer.CidsLayerInfo;
 
 import de.cismet.cismap.commons.CrsTransformer;
 import de.cismet.cismap.commons.XBoundingBox;
+import de.cismet.cismap.commons.features.FeatureSimplifier;
 import de.cismet.cismap.commons.featureservice.AbstractFeatureService;
 import de.cismet.cismap.commons.featureservice.DefaultLayerProperties;
 import de.cismet.cismap.commons.featureservice.LayerProperties;
@@ -110,7 +111,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         maxFeaturesPerPage = cl.maxFeaturesPerPage;
         maxArea = cl.maxArea;
         maxScale = cl.maxScale;
-        setAttributeTableRuleSet();
+        setRuleSetAndSimplifier();
         // sldDefinition = cl.sldDefinition;
     }
 
@@ -141,7 +142,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
 
         tableName = clazz.getTableName();
         metaClass = clazz;
-        setAttributeTableRuleSet();
+        setRuleSetAndSimplifier();
         evaluateClassAttributes();
     }
 
@@ -254,15 +255,29 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
     /**
      * DOCUMENT ME!
      */
-    private void setAttributeTableRuleSet() {
+    private void setRuleSetAndSimplifier() {
         final String ruleSetName = DefaultLayerProperties.camelize(metaClass.getName()) + "RuleSet";
 
         try {
             final Class ruleSetClass = Class.forName("de.cismet.cismap.custom.attributerule." + ruleSetName);
             final Object o = ruleSetClass.newInstance();
+
             if (o instanceof DefaultAttributeTableRuleSet) {
                 ((DefaultLayerProperties)getLayerProperties()).setAttributeTableRuleSet((DefaultAttributeTableRuleSet)
                     o);
+            }
+        } catch (Exception e) {
+            // nothing to do
+        }
+
+        final String simplifierName = DefaultLayerProperties.camelize(metaClass.getName()) + "FeatureSimplifier";
+
+        try {
+            final Class simplifierClass = Class.forName("de.cismet.cismap.custom.simplifier." + simplifierName);
+            final Object o = simplifierClass.newInstance();
+
+            if (o instanceof FeatureSimplifier) {
+                ((DefaultLayerProperties)getLayerProperties()).setFeatureSimplifier((FeatureSimplifier)o);
             }
         } catch (Exception e) {
             // nothing to do
@@ -344,7 +359,7 @@ public class CidsLayer extends AbstractFeatureService<CidsLayerFeature, String> 
         if (metaClass == null) {
             return;
         }
-        setAttributeTableRuleSet();
+        setRuleSetAndSimplifier();
 
         final String queryText = element.getChildText("currentQuery");
         if (queryText != null) {
