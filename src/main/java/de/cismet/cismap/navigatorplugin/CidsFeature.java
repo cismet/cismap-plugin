@@ -106,6 +106,8 @@ public class CidsFeature implements XStyledFeature,
     private SubFeatureAwareFeatureRenderer parentFeatureRenderer = null;
     private FeatureAwareRasterService featureAwareRasterService = null;
     private String supportingRasterServiceRasterLayerName = null;
+    private String supportingRasterServiceRasterLayerPrefix = null;
+    private String supportingRasterServiceRasterLayerPostfix = null;
     private String supportingRasterServiceIdAttributeName = null;
     private String supportingRasterServiceLayerStyleName = "default"; // NOI18N
     private Image pointSymbol = null;
@@ -531,6 +533,14 @@ public class CidsFeature implements XStyledFeature,
                     "FEATURESUPPORTINGRASTERSERVICE_RASTERLAYER",
                     mo,
                     mc);                                                                                       // NOI18N
+            supportingRasterServiceRasterLayerPrefix = (String)getAttribValue(
+                    "FEATURESUPPORTINGRASTERSERVICE_RASTERLAYERPREFIX",
+                    mo,
+                    mc);                                                                                       // NOI18N
+            supportingRasterServiceRasterLayerPostfix = (String)getAttribValue(
+                    "FEATURESUPPORTINGRASTERSERVICE_RASTERLAYERPOSTFIX",
+                    mo,
+                    mc);                                                                                       // NOI18N
             supportingRasterServiceIdAttributeName = (String)getAttribValue(
                     "FEATURESUPPORTINGRASTERSERVICE_ID_ATTRIBUTE",
                     mo,
@@ -908,6 +918,14 @@ public class CidsFeature implements XStyledFeature,
 
     @Override
     public String getSpecialLayerName() {
+        if (supportingRasterServiceRasterLayerPrefix == null) {
+            supportingRasterServiceRasterLayerPrefix = "";
+        }
+
+        if (supportingRasterServiceRasterLayerPostfix == null) {
+            supportingRasterServiceRasterLayerPostfix = "";
+        }
+
         if ((supportingRasterServiceRasterLayerName != null)
                     && supportingRasterServiceRasterLayerName.startsWith("cidsAttribute::")) {                         // NOI18N
             try {
@@ -916,12 +934,19 @@ public class CidsFeature implements XStyledFeature,
                     LOG.debug("FeatureSupportingRasterService:attrField:" + attrField);                                // NOI18N
                 }
                 final String ret = getMetaObject().getBean().getProperty(attrField).toString();
-                return ret;
+
+                return ((ret == null)
+                        ? null
+                        : (supportingRasterServiceRasterLayerPrefix + ret + supportingRasterServiceRasterLayerPostfix));
             } catch (Exception e) {
-                LOG.error("AttrFieldProblem", e);                                                                      // NOI18N
+                LOG.error("AttrFieldProblem", e); // NOI18N
             }
         }
-        return supportingRasterServiceRasterLayerName;
+
+        return ((supportingRasterServiceRasterLayerName == null)
+                ? null
+                : (supportingRasterServiceRasterLayerPrefix + supportingRasterServiceRasterLayerName
+                            + supportingRasterServiceRasterLayerPostfix));
     }
 
     @Override
