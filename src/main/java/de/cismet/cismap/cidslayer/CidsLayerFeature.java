@@ -762,6 +762,18 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                         geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
                     }
                     bean.setProperty(colMap.get(key), geom);
+                } else {
+                    Geometry geom = getGeometry();
+                    if (!(geom instanceof Serializable)) {
+                        final GeometryFactory gf = new GeometryFactory(geom.getFactory().getPrecisionModel(),
+                                geom.getFactory().getSRID());
+                        geom = gf.createGeometry(geom);
+                    }
+                    if (geom != null) {
+                        geom = CrsTransformer.transformToDefaultCrs(geom);
+                        geom.setSRID(CismapBroker.getInstance().getDefaultCrsAlias());
+                    }
+                    bean.setProperty(colMap.get(key), geom);
                 }
             } else if (layerInfo.isCatalogue(key)) {
                 if (getCatalogueCombo(key) != null) {
