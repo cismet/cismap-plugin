@@ -67,7 +67,9 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 
 import org.openide.util.Lookup;
 
@@ -781,9 +783,9 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             configurationManager.setFolder(".cismap" + dirExtension); // NOI18N
             configurationManager.addConfigurable(this);
 
+            configurationManager.addConfigurable(mapC);
             configurationManager.addConfigurable(capabilities);
             configurationManager.addConfigurable(wfsFormFactory);
-            configurationManager.addConfigurable(mapC);
             configurationManager.addConfigurable(activeLayers);
             configurationManager.addConfigurable(featureControl);
             configurationManager.addConfigurable(overviewComponent);
@@ -3361,6 +3363,38 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 mapC.getRasterServiceLayer().removeAllChildren();
                 configurationManager.configure(name + ".xml"); // NOI18N
             }
+
+            EventQueue.invokeLater(new Thread("refresh local project") {
+
+                    @Override
+                    public void run() {
+                        refreshConfigurationFileIfRequired(name);
+                    }
+                });
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  path  DOCUMENT ME!
+     */
+    private void refreshConfigurationFileIfRequired(final String path) {
+        try {
+            final SAXBuilder builder = new SAXBuilder(false);
+            final Document doc = builder.build(new File(path));
+            final Document currentDoc = configurationManager.getConfigurationDocument();
+
+            if ((doc != null) && (currentDoc != null) && !configurationManager.isEqual(doc, currentDoc)) {
+                if (path.endsWith(".xml")) {
+                    configurationManager.writeConfiguration(path);
+                } else {
+                    configurationManager.writeConfiguration(path + ".xml");
+                }
+            }
+        } catch (final Exception e) {
+            final String message = "Error while comparing loaded configuration with the current configuration"; // NOI18N
+            LOG.warn(message, e);
         }
     }
 
@@ -4427,8 +4461,8 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
         try {
             // Analysieren des FileMenues
-            final List<Component> before = new ArrayList<Component>();
-            final List<Component> after = new ArrayList<Component>();
+            final List<Component> before = new ArrayList<>();
+            final List<Component> after = new ArrayList<>();
             after.add(sepServerProfilesEnd);
 
             final Component[] comps = menFile.getMenuComponents();
@@ -4448,7 +4482,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             }
 
-            final List<JMenuItem> serverProfileItems = new ArrayList<JMenuItem>();
+            final List<JMenuItem> serverProfileItems = new ArrayList<>();
 
             final Element serverprofiles = e.getChild("serverProfiles");                   // NOI18N
             final Iterator<Element> it = serverprofiles.getChildren("profile").iterator(); // NOI18N
@@ -5041,8 +5075,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             menHistory.add(mniHome);
             menHistory.add(sepBeforePos);
 
-            int counter = 0;
-
             int start = 0;
 
             if ((backPos.size() - 10) > 0) {
@@ -5074,7 +5106,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             currentItem.setEnabled(false);
             currentItem.setIcon(current);
             menHistory.add(currentItem);
-            counter = 0;
+            int counter = 0;
 
             for (int index = forwPos.size() - 1; index >= 0; --index) {
                 final Object elem = forwPos.get(index);
