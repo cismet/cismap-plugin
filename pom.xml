@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>8.2</version>
+    <version>8.2.1</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-        <tag>v8.2</tag>
+        <tag>v8.2.1</tag>
     </scm>
 
     <ciManagement>
@@ -52,14 +52,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.2</version>
+                <version>8.0.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.2</version>
+                <version>8.0.3</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>8.0</version>
+                <version>8.1.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>8.0</version>
+                <version>8.1.1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>8.2</version>
+                <version>8.2.4</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>8.2</version>
+                <version>8.2.4</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,7 +97,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>8.6</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.0</version>
+                <version>8.1.4</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.0</version>
+                <version>8.1.4</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
