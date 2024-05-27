@@ -168,12 +168,12 @@ public class ConfigurationActionProvider implements CidsUiActionProvider {
                 if (name.endsWith(".xml")) {                                            // NOI18N
                     ((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel())
                             .removeAllLayers();
-                    CismapBroker.getInstance().getMappingComponent().getRasterServiceLayer().removeAllChildren();
+                    CismapBroker.getInstance().getMappingComponent().getMapServiceLayer().removeAllChildren();
                     navigator.getCismapConfigurationManager().configure(name);
                 } else {
                     ((ActiveLayerModel)CismapBroker.getInstance().getMappingComponent().getMappingModel())
                             .removeAllLayers();
-                    CismapBroker.getInstance().getMappingComponent().getRasterServiceLayer().removeAllChildren();
+                    CismapBroker.getInstance().getMappingComponent().getMapServiceLayer().removeAllChildren();
                     navigator.getCismapConfigurationManager().configure(name + ".xml"); // NOI18N
                 }
             }
