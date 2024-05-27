@@ -406,6 +406,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
     private javax.swing.JMenu menWindows;
     private javax.swing.JMenuItem mniAddBookmark;
     private javax.swing.JMenuItem mniAngleMeasurement;
+    private javax.swing.JMenuItem mniAppendConfig;
     private javax.swing.JMenuItem mniBack;
     private javax.swing.JMenuItem mniBookmarkManager;
     private javax.swing.JMenuItem mniBookmarkSidebar;
@@ -1585,6 +1586,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         mnuBar = new javax.swing.JMenuBar();
         menFile = new javax.swing.JMenu();
         mniLoadConfig = new javax.swing.JMenuItem();
+        mniAppendConfig = new javax.swing.JMenuItem();
         mniSaveConfig = new javax.swing.JMenuItem();
         mniLoadConfigFromServer = new javax.swing.JMenuItem();
         sepServerProfilesStart = new javax.swing.JSeparator();
@@ -2249,6 +2251,25 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                 }
             });
         menFile.add(mniLoadConfig);
+
+        mniAppendConfig.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_A,
+                java.awt.event.InputEvent.CTRL_MASK));
+        mniAppendConfig.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/config.png"))); // NOI18N
+        mniAppendConfig.setText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAppendConfig.text"));                                                    // NOI18N
+        mniAppendConfig.setToolTipText(org.openide.util.NbBundle.getMessage(
+                CismapPlugin.class,
+                "CismapPlugin.mniAppendConfig.toolTipText"));                                             // NOI18N
+        mniAppendConfig.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(final java.awt.event.ActionEvent evt) {
+                    mniAppendConfigActionPerformed(evt);
+                }
+            });
+        menFile.add(mniAppendConfig);
 
         mniSaveConfig.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_K,
@@ -3102,6 +3123,80 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
+    private void mniAppendConfigActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAppendConfigActionPerformed
+        loadConfiguration(true);
+    }                                                                                   //GEN-LAST:event_mniAppendConfigActionPerformed
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  merge  DOCUMENT ME!
+     */
+    private void loadConfiguration(final boolean merge) {
+        JFileChooser fc;
+
+        try {
+            fc = new JFileChooser(cismapDirectory);
+        } catch (Exception bug) {
+            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
+            fc = new JFileChooser(cismapDirectory, new RestrictedFileSystemView());
+        }
+
+        fc.setFileFilter(new FileFilter() {
+
+                @Override
+                public boolean accept(final File f) {
+                    return f.isDirectory()
+                                || f.getName().toLowerCase().endsWith(".xml"); // NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return org.openide.util.NbBundle.getMessage(
+                            CismapPlugin.class,
+                            "CismapPlugin.mniLoadConfigActionPerformed.FileFiltergetDescription.return"); // NOI18N
+                }
+            });
+
+        final int state = fc.showOpenDialog(this);
+
+        if (state == JFileChooser.APPROVE_OPTION) {
+            final File file = fc.getSelectedFile();
+            final String name = file.getAbsolutePath();
+
+            if (!merge) {
+                activeLayers.removeAllLayers();
+            }
+
+            if (name.endsWith(".xml")) {                              // NOI18N
+                if (!merge) {
+                    mapC.getMapServiceLayer().removeAllChildren();
+                }
+                configurationManager.configure(name, merge);
+            } else {
+                if (!merge) {
+                    mapC.getMapServiceLayer().removeAllChildren();
+                }
+                configurationManager.configure(name + ".xml", merge); // NOI18N
+            }
+
+            if (!merge) {
+                EventQueue.invokeLater(new Thread("refresh local project") {
+
+                        @Override
+                        public void run() {
+                            refreshConfigurationFileIfRequired(name);
+                        }
+                    });
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  evt  DOCUMENT ME!
+     */
     private void mniRedoPerformed(final java.awt.event.ActionEvent evt) {
         LOG.info("REDO"); // NOI18N
 
@@ -3323,55 +3418,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      * @param  evt  DOCUMENT ME!
      */
     private void mniLoadConfigActionPerformed(final java.awt.event.ActionEvent evt) {
-        JFileChooser fc;
-
-        try {
-            fc = new JFileChooser(cismapDirectory);
-        } catch (Exception bug) {
-            // Bug Workaround http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6544857
-            fc = new JFileChooser(cismapDirectory, new RestrictedFileSystemView());
-        }
-
-        fc.setFileFilter(new FileFilter() {
-
-                @Override
-                public boolean accept(final File f) {
-                    return f.isDirectory()
-                                || f.getName().toLowerCase().endsWith(".xml"); // NOI18N
-                }
-
-                @Override
-                public String getDescription() {
-                    return org.openide.util.NbBundle.getMessage(
-                            CismapPlugin.class,
-                            "CismapPlugin.mniLoadConfigActionPerformed.FileFiltergetDescription.return"); // NOI18N
-                }
-            });
-
-        final int state = fc.showOpenDialog(this);
-
-        if (state == JFileChooser.APPROVE_OPTION) {
-            final File file = fc.getSelectedFile();
-            final String name = file.getAbsolutePath();
-
-            if (name.endsWith(".xml")) {                       // NOI18N
-                activeLayers.removeAllLayers();
-                mapC.getRasterServiceLayer().removeAllChildren();
-                configurationManager.configure(name);
-            } else {
-                activeLayers.removeAllLayers();
-                mapC.getRasterServiceLayer().removeAllChildren();
-                configurationManager.configure(name + ".xml"); // NOI18N
-            }
-
-            EventQueue.invokeLater(new Thread("refresh local project") {
-
-                    @Override
-                    public void run() {
-                        refreshConfigurationFileIfRequired(name);
-                    }
-                });
-        }
+        loadConfiguration(false);
     }
 
     /**
