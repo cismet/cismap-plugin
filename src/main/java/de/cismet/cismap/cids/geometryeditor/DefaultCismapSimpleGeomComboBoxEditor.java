@@ -11,27 +11,16 @@
  */
 package de.cismet.cismap.cids.geometryeditor;
 
-import Sirius.navigator.types.treenode.DefaultMetaTreeNode;
-import Sirius.navigator.ui.ComponentRegistry;
-
 import Sirius.server.localserver.attribute.ObjectAttribute;
-import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaClassStore;
 import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.MetaObjectNode;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.apache.log4j.Logger;
 
 import org.jdesktop.beansbinding.Converter;
-import org.jdesktop.beansbinding.Validator;
 
-import javax.swing.JComboBox;
-
-import de.cismet.cids.client.tools.ConnectionContextUtils;
-
-import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.dynamics.Disposable;
 
 import de.cismet.cids.editors.Bindable;
@@ -43,7 +32,6 @@ import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.cismap.navigatorplugin.CidsFeature;
 
-import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextProvider;
 
 import de.cismet.tools.CurrentStackTrace;
@@ -54,35 +42,25 @@ import de.cismet.tools.CurrentStackTrace;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bindable,
+public class DefaultCismapSimpleGeomComboBoxEditor extends DefaultCismapGeometryComboBoxEditor implements Bindable,
     MetaClassStore,
     Disposable,
     ConnectionContextProvider {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String GEOM_FIELD = "geo_field";    // NOI18N
-    private static final String CISMAP_PLUGIN_ID = "cismap"; // NOI18N
-    private static final Logger LOG = Logger.getLogger(DefaultCismapGeometryComboBoxEditor.class);
+    private static final Logger LOG = Logger.getLogger(DefaultCismapSimpleGeomComboBoxEditor.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    protected MetaObjectNode metaObjectNode;
-    protected MetaClass metaClass;
-    protected Feature selectedFeature = null;
-    protected CidsFeature cidsFeature = null;
-    protected CismapGeometryComboModel comboModel = null;
-    protected MetaObject cidsMetaObject = null;
-    protected String localRenderFeatureString;
-
-    private CidsBean geometryBean;
+    private Geometry geometry;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new DefaultCismapGeometryComboBoxEditor object.
      */
-    public DefaultCismapGeometryComboBoxEditor() {
+    public DefaultCismapSimpleGeomComboBoxEditor() {
         this(true);
     }
 
@@ -91,93 +69,11 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      *
      * @param  editable  DOCUMENT ME!
      */
-    public DefaultCismapGeometryComboBoxEditor(final boolean editable) {
-        comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
-        setModel(comboModel);
-        setRenderer(new FeatureComboBoxRenderer());
-
-        if (editable) {
-            try {
-                final DefaultMetaTreeNode dmtn = (DefaultMetaTreeNode)ComponentRegistry.getRegistry()
-                            .getAttributeEditor()
-                            .getTreeNode();
-
-                if (dmtn != null) {
-                    metaObjectNode = (MetaObjectNode)dmtn.getNode();
-                }
-
-                CismapBroker.getInstance()
-                        .getMappingComponent()
-                        .getFeatureCollection()
-                        .addFeatureCollectionListener(comboModel);
-            } catch (final Exception e) {
-                LOG.error("Error during init of " + this.getClass(), e); // NOI18N
-            }
-        }
+    public DefaultCismapSimpleGeomComboBoxEditor(final boolean editable) {
+        super(editable);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  allowedTypes  DOCUMENT ME!
-     */
-    public void setAllowedGeometryTypes(final Class[] allowedTypes) {
-        comboModel.setAllowedGeometryTypes(allowedTypes);
-        comboModel.refresh();
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    @Override
-    public void dispose() {
-        try {
-            CismapBroker.getInstance()
-                    .getMappingComponent()
-                    .getFeatureCollection()
-                    .removeFeatureCollectionListener(comboModel);
-
-            if (selectedFeature != null) {
-                // ????
-                // TODO: ???? isn't a very helpful comment, so what is wrong here
-                CismapBroker.getInstance().getMappingComponent().getFeatureCollection().removeFeature(selectedFeature);
-            }
-        } catch (final Exception e) {
-            LOG.error("Error during removeNotify of " + this.getClass(), e); // NOI18N
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public String getBindingProperty() {
-        return "selectedItem"; // NOI18N
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public Object getNullSourceValue() {
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public Object getErrorSourceValue() {
-        return null;
-    }
 
     /**
      * DOCUMENT ME!
@@ -186,16 +82,16 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      */
     @Override
     public Converter getConverter() {
-        return new Converter<CidsBean, Feature>() {
+        return new Converter<Geometry, Feature>() {
 
                 @Override
-                public Feature convertForward(final CidsBean value) {
+                public Feature convertForward(final Geometry value) {
                     try {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("convertForward", new CurrentStackTrace()); // NOI18N
                         }
 
-                        geometryBean = value;
+                        geometry = value;
                         if (value != null) {
                             MetaObject cidsFeatureMetaObject = null;
 
@@ -213,21 +109,20 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
 
                             cidsFeature = new CidsFeature(cidsFeatureMetaObject, oAttr) {
 
-                                    private Geometry lastGeom = ((geometryBean != null)
-                                            ? (Geometry)((Geometry)geometryBean.getProperty(GEOM_FIELD)).clone()
-                                            : null);
+                                    private Geometry lastGeom = ((geometry != null) ? geometry : null);
 
                                     @Override
                                     public void setGeometry(final Geometry geom) {
                                         if (geom == null) {
-                                            LOG.warn("ATTENTION geom=null");              // NOI18N
+                                            LOG.warn("ATTENTION geom=null"); // NOI18N
                                         }
                                         final Geometry oldValue = lastGeom;
                                         super.setGeometry(geom);
                                         try {
                                             if (((oldValue == null) && (geom != null))
                                                         || ((oldValue != null) && !oldValue.equalsExact(geom))) {
-                                                geometryBean.setProperty(GEOM_FIELD, geom);
+                                                geometry = geom;
+
                                                 if (geom != null) {
                                                     lastGeom = (Geometry)geom.clone();
                                                 } else {
@@ -260,7 +155,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                             }
 
                             if (selectedFeature.getGeometry() == null) {
-                                selectedFeature.setGeometry((Geometry)value.getProperty(GEOM_FIELD));
+                                selectedFeature.setGeometry(value);
                             }
 
                             if (LOG.isDebugEnabled()) {
@@ -294,7 +189,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                 }
 
                 @Override
-                public CidsBean convertReverse(final Feature value) {
+                public Geometry convertReverse(final Feature value) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("convertReverse: " + value); // NOI18N
                     }
@@ -303,87 +198,23 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                         return null;
                     } else {
                         try {
-                            if (geometryBean == null) {
-                                geometryBean = metaClass.getEmptyInstance(getConnectionContext()).getBean();
-                            }
-                            final Geometry oldValue = (Geometry)geometryBean.getProperty(GEOM_FIELD);
+//                            if (geometryBean == null) {
+//                                geometryBean = metaClass.getEmptyInstance(getConnectionContext()).getBean();
+//                            }
+                            final Geometry oldValue = geometry;
                             final Geometry geom = value.getGeometry();
 
                             if (((oldValue == null) && (geom != null))
                                         || ((oldValue != null) && !oldValue.equalsExact(geom))) {
-                                geometryBean.setProperty(GEOM_FIELD, value.getGeometry());
+                                geometry = value.getGeometry();
                             }
                         } catch (final Exception ex) {
                             LOG.error("Error during set geo_field", ex); // NOI18N
                         }
-                        return geometryBean;
+                        return geometry;
                     }
                 }
             };
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public Validator getValidator() {
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public MetaClass getMetaClass() {
-        return metaClass;
-    }
-
-    /**
-     * Set the MetaClass of the geometry object.
-     *
-     * @param  metaClass  DOCUMENT ME!
-     */
-    @Override
-    public void setMetaClass(final MetaClass metaClass) {
-        this.metaClass = metaClass;
-    }
-
-    /**
-     * Set the MetaObject of the Cids Bean, that is represented by the geometry that is bound to this ComboBox. This
-     * method should be invoked before the invocation of bind and is only needed, if the object that is represented by
-     * the geometry of this ComboBox differs from the object that is represented by the selected tree node.
-     *
-     * <p>If the MetaObject is not set, the MetaObject object from the DefaultMetaTreeNode will be used.</p>
-     *
-     * @param  cidsMetaObject  cidsFeatureClass DOCUMENT ME!
-     */
-    public void setCidsMetaObject(final MetaObject cidsMetaObject) {
-        this.cidsMetaObject = cidsMetaObject;
-    }
-
-    /**
-     * Set the name of the field, that references the geometry. This method is only required, if a editor has more than
-     * one {@link DefaultCismapGeometryComboBoxEditor} object that references the same meta object.
-     *
-     * @param  localRenderFeatureString  fieldName attr
-     */
-    public void setLocalRenderFeatureString(final String localRenderFeatureString) {
-        // Without the field name, the equals method of the referenced feature will return true for
-        // the features of all geometry combo boxes of the same object.
-        this.localRenderFeatureString = localRenderFeatureString;
-    }
-
-    /**
-     * See also {@link #setLocalRenderFeatureString(java.lang.String) }.
-     *
-     * @return  the localRenderFeatureString
-     */
-    public String getLocalRenderFeatureString() {
-        return this.localRenderFeatureString;
     }
 
     /**
@@ -391,6 +222,7 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
      * new cids bean and after an invocation of the dispose()-method and the unbind-method of the corresponding
      * BindingGroup object.
      */
+    @Override
     public void initForNewBinding() {
         // normally, the dispose()-method was invoked before the CidsMetaObject changes
         // and in this case, the feature collection listener must be registered.
@@ -399,28 +231,16 @@ public class DefaultCismapGeometryComboBoxEditor extends JComboBox implements Bi
                 .getFeatureCollection()
                 .removeFeatureCollectionListener(comboModel);
 
-        geometryBean = null;
+        geometry = null;
         selectedFeature = null;
         cidsFeature = null;
 
-        comboModel = new CismapGeometryComboModel(DefaultCismapGeometryComboBoxEditor.this, selectedFeature);
+        comboModel = new CismapGeometryComboModel(DefaultCismapSimpleGeomComboBoxEditor.this, selectedFeature);
         setModel(comboModel);
 
         CismapBroker.getInstance()
                 .getMappingComponent()
                 .getFeatureCollection()
                 .addFeatureCollectionListener(comboModel);
-    }
-
-    /**
-     * @see  setCidsMetaObject(final MetaObject cidsMetaObject)
-     */
-    public MetaObject getCidsMetaObject() {
-        return this.cidsMetaObject;
-    }
-
-    @Override
-    public ConnectionContext getConnectionContext() {
-        return ConnectionContextUtils.getFirstParentClientConnectionContext(this);
     }
 }
