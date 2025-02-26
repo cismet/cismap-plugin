@@ -5,12 +5,12 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>8.0</version>
+        <version>9.0</version>
     </parent>
 
     <groupId>de.cismet.cismap</groupId>
     <artifactId>cismap-plugin</artifactId>
-    <version>8.2.1</version>
+    <version>9.0</version>
     <packaging>jar</packaging>
     
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/cismap-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/cismap-plugin.git</developerConnection>
         <url>https://github.com/cismet/cismap-plugin</url>
-        <tag>v8.2.1</tag>
+        <tag>v9.0</tag>
     </scm>
 
     <ciManagement>
@@ -43,7 +43,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -52,14 +52,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.3</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0.3</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -67,14 +67,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>8.1.1</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>8.1.1</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -82,14 +82,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>8.2.4</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>8.2.4</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +97,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.6</version>
+                <version>9.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +112,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.1.4</version>
+                <version>9.0</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>8.1.4</version>
+                <version>9.0</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -126,7 +126,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -134,7 +134,7 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-scale-generator</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <scope>runtime</scope>
                 <type>jar</type>
             </dependency>
@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>de.cismet.custom</groupId>
                 <artifactId>beansbinding</artifactId>
-                <version>8.0</version>
+                <version>9.0</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -216,10 +216,9 @@
             all log messages collected by slf4j to log4j!
         -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>runtime</scope>
-            <optional>true</optional>
         </dependency>
         <!-- END: runtime dependencies -->
         
@@ -250,8 +249,18 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
@@ -306,6 +315,12 @@
             <artifactId>deegree-core-commons</artifactId>
             <scope>compile</scope>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
