@@ -58,6 +58,11 @@ import net.infonode.gui.componentpainter.AlphaGradientComponentPainter;
 import net.infonode.util.Direction;
 
 import org.apache.commons.collections.MultiHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -532,7 +537,11 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
             if (!plugin) {
                 try {
-                    org.apache.log4j.PropertyConfigurator.configure(getClass().getResource("/cismap.log4j.properties")); // NOI18N
+                    try(final InputStream configStream = getClass().getResourceAsStream("/cismap.log4j.xml")) {
+                        final ConfigurationSource source = new ConfigurationSource(configStream);
+                        final LoggerContext ctx = (LoggerContext)LogManager.getContext(false);
+                        ctx.start(new XmlConfiguration(ctx, source)); // Apply new configuration
+                    }
 
                     if (StaticDebuggingTools.checkHomeForFile("cismetDebuggingInitEventDispatchThreadHangMonitor")) { // NOI18N
                         EventDispatchThreadHangMonitor.initMonitoring();
