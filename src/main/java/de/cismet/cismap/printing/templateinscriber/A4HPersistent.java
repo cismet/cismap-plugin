@@ -12,13 +12,22 @@
  */
 package de.cismet.cismap.printing.templateinscriber;
 
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
+import de.cismet.cismap.commons.gui.printing.FileNameChangedEvent;
+import de.cismet.cismap.commons.gui.printing.FilenamePrintingInscriber;
+import de.cismet.cismap.commons.gui.printing.FilenamePrintingInscriberListener;
 import de.cismet.cismap.commons.interaction.CismapBroker;
 
 import de.cismet.tools.CismetThreadPool;
@@ -29,18 +38,20 @@ import de.cismet.tools.CismetThreadPool;
  * @author   thorsten.hell@cismet.de
  * @version  $Revision$, $Date$
  */
-public class A4HPersistent extends AbstractPrintingInscriber {
+public class A4HPersistent extends AbstractPrintingInscriber implements FilenamePrintingInscriber {
 
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String FIRST_LINE = "FIRST_LINE";   // NOI18N
     public static final String SECOND_LINE = "SECOND_LINE"; // NOI18N
+    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(A4HPersistent.class);
 
     //~ Instance fields --------------------------------------------------------
 
     String cacheFile = ""; // NOI18N
     Properties cache = new Properties();
-    private final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
+    private List<FilenamePrintingInscriberListener> listeners = new ArrayList<>();
+    private String oldText = "";
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -58,6 +69,35 @@ public class A4HPersistent extends AbstractPrintingInscriber {
         cacheFile = CismapBroker.getInstance().getCismapFolderPath() + System.getProperty("file.separator")
                     + "inscriberCache"; // NOI18N
         readInscriberCache();
+        oldText = txtZeile1.getText();
+
+        txtZeile1.getDocument().addDocumentListener(new DocumentListener() {
+
+                @Override
+                public void insertUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                @Override
+                public void removeUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                @Override
+                public void changedUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                private void onChange(final DocumentEvent e) {
+                    final FileNameChangedEvent event = new FileNameChangedEvent(oldText, txtZeile1.getText());
+
+                    for (final FilenamePrintingInscriberListener listener : listeners) {
+                        listener.fileNameChanged(event);
+                    }
+
+                    oldText = txtZeile1.getText();
+                }
+            });
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -70,7 +110,7 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      */
     @Override
     public HashMap<String, String> getValues() {
-        final HashMap<String, String> hm = new HashMap<String, String>();
+        final HashMap<String, String> hm = new HashMap<>();
         hm.put("Ueberschrift", txtZeile1.getText());         // NOI18N
         hm.put("Unterschrift", txtZeile2.getText());         // NOI18N
         cache.setProperty(FIRST_LINE, txtZeile1.getText());  // NOI18N
@@ -143,8 +183,8 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtZeile1ActionPerformed
-    }                                                                             //GEN-LAST:event_txtZeile1ActionPerformed
+    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtZeile1ActionPerformed
+    }//GEN-LAST:event_txtZeile1ActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -152,8 +192,8 @@ public class A4HPersistent extends AbstractPrintingInscriber {
     private void readInscriberCache() {
         try {
             cache.load(new FileInputStream(cacheFile));
-            final String z1 = cache.getProperty(FIRST_LINE).toString();
-            final String z2 = cache.getProperty(SECOND_LINE).toString();
+            final String z1 = cache.getProperty(FIRST_LINE);
+            final String z2 = cache.getProperty(SECOND_LINE);
             txtZeile1.setText(z1);
             txtZeile2.setText(z2);
         } catch (Throwable t) {
@@ -195,5 +235,25 @@ public class A4HPersistent extends AbstractPrintingInscriber {
      */
     protected void setTextOfJLabel2(final String newText) {
         jLabel2.setText(newText);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  listener  DOCUMENT ME!
+     */
+    @Override
+    public void addFilenameChangeListener(final FilenamePrintingInscriberListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    @Override
+    public String getFileName() {
+        return txtZeile1.getText();
     }
 }
