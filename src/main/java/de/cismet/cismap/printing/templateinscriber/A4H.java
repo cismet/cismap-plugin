@@ -12,9 +12,17 @@
  */
 package de.cismet.cismap.printing.templateinscriber;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
+import de.cismet.cismap.commons.gui.printing.FileNameChangedEvent;
+import de.cismet.cismap.commons.gui.printing.FilenamePrintingInscriber;
+import de.cismet.cismap.commons.gui.printing.FilenamePrintingInscriberListener;
 
 /**
  * DOCUMENT ME!
@@ -22,7 +30,12 @@ import de.cismet.cismap.commons.gui.printing.AbstractPrintingInscriber;
  * @author   thorsten.hell@cismet.de
  * @version  $Revision$, $Date$
  */
-public class A4H extends AbstractPrintingInscriber {
+public class A4H extends AbstractPrintingInscriber implements FilenamePrintingInscriber {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private List<FilenamePrintingInscriberListener> listeners = new ArrayList<>();
+    private String oldText = "";
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -38,6 +51,35 @@ public class A4H extends AbstractPrintingInscriber {
      */
     public A4H() {
         initComponents();
+        oldText = txtZeile1.getText();
+
+        txtZeile1.getDocument().addDocumentListener(new DocumentListener() {
+
+                @Override
+                public void insertUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                @Override
+                public void removeUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                @Override
+                public void changedUpdate(final DocumentEvent e) {
+                    onChange(e);
+                }
+
+                private void onChange(final DocumentEvent e) {
+                    final FileNameChangedEvent event = new FileNameChangedEvent(oldText, txtZeile1.getText());
+
+                    for (final FilenamePrintingInscriberListener listener : listeners) {
+                        listener.fileNameChanged(event);
+                    }
+
+                    oldText = txtZeile1.getText();
+                }
+            });
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -122,4 +164,14 @@ public class A4H extends AbstractPrintingInscriber {
      */
     private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtZeile1ActionPerformed
     }                                                                             //GEN-LAST:event_txtZeile1ActionPerformed
+
+    @Override
+    public void addFilenameChangeListener(final FilenamePrintingInscriberListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public String getFileName() {
+        return txtZeile1.getText();
+    }
 }
