@@ -127,6 +127,12 @@ public class CidsLayerFeature extends DefaultFeatureServiceFeature implements Mo
                                             .getProperty("geo_field");
 
                                 setGeometry(g);
+                            } else {
+                                final LinearReferencingHelper helper = FeatureRegistry.getInstance()
+                                            .getLinearReferencingSolver();
+                                final Geometry g = (Geometry)helper.getPointGeometryFromStationBean(stat.getCidsBean());
+
+                                setGeometry(g);
                             }
                         }
                     }
