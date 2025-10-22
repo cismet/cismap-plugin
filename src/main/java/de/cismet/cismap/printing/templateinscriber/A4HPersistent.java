@@ -12,7 +12,6 @@
  */
 package de.cismet.cismap.printing.templateinscriber;
 
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -183,8 +182,8 @@ public class A4HPersistent extends AbstractPrintingInscriber implements Filename
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtZeile1ActionPerformed
-    }//GEN-LAST:event_txtZeile1ActionPerformed
+    private void txtZeile1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_txtZeile1ActionPerformed
+    }                                                                             //GEN-LAST:event_txtZeile1ActionPerformed
 
     /**
      * DOCUMENT ME!
