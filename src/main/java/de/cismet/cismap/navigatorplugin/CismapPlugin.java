@@ -515,7 +515,6 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
         CismapBroker.getInstance().setCismapFolderPath(cismapDirectory);
 
         this.setIconImage(logo.getImage());
-        System.setSecurityManager(null);
 
         this.context = context;
         plugin = (context != null);
