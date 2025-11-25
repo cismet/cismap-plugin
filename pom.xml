@@ -5,7 +5,7 @@
     <parent>
         <groupId>de.cismet.cids</groupId>
         <artifactId>cids-parent</artifactId>
-        <version>9.0</version>
+        <version>10.0</version>
     </parent>
 
     <groupId>de.cismet.cismap</groupId>
@@ -15,6 +15,7 @@
     
     <properties>
         <names.cismap-plugin>cismap Plugin</names.cismap-plugin>
+        <prettier.skip>true</prettier.skip>
     </properties>
     
     <name>${names.cismap-plugin} [${project.version}]</name>
@@ -43,7 +44,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>9.1</version>
+                <version>10.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -52,14 +53,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.6</version>
+                <version>10.0-prerelease</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>9.0.6</version>
+                <version>10.0-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -67,14 +68,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>9.1.2</version>
+                <version>10.0-prerelease</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>9.1.2</version>
+                <version>10.0-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -82,14 +83,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>9.1.4</version>
+                <version>10.0.1-prerelease</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>9.1.4</version>
+                <version>10.0.1-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -97,14 +98,14 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.1.6</version>
+                <version>10.0-prerelease</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>9.1.6</version>
+                <version>10.0-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -112,13 +113,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>9.1.4</version>
+                <version>10.0-prerelease</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>9.1.4</version>
+                <version>10.0-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -126,23 +127,23 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>9.0</version>
+                <version>10.0-prerelease</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
             
-            <dependency>
+<!--            <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-scale-generator</artifactId>
                 <version>9.0</version>
                 <scope>runtime</scope>
                 <type>jar</type>
-            </dependency>
+            </dependency>-->
 
             <dependency>
                 <groupId>de.cismet.custom</groupId>
                 <artifactId>beansbinding</artifactId>
-                <version>9.0</version>
+                <version>10.0</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -206,11 +207,11 @@
         <!-- END: cids-dependencies -->
         
         <!-- BEGIN: runtime dependencies -->
-        <dependency>
+<!--        <dependency>
             <groupId>de.cismet.commons</groupId>
             <artifactId>cismap-scale-generator</artifactId>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
         <!--
             By inlcuding this !runtime! binding we are forwarding
             all log messages collected by slf4j to log4j!
@@ -227,7 +228,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.40</version>
             <scope>provided</scope>
         </dependency>
         <!-- END: Provided dependencies -->
