@@ -121,9 +121,9 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -2968,7 +2968,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
+    private void cmdNewLinearReferencingcreateGeometryAction(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNewLinearReferencingcreateGeometryAction
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -2976,14 +2976,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.LINEAR_REFERENCING);
                 }
             });
-    } //GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
+    }//GEN-LAST:event_cmdNewLinearReferencingcreateGeometryAction
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
+    private void mniBufferSelectedGeomActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniBufferSelectedGeomActionPerformed
         final Collection c = mapC.getFeatureCollection().getSelectedFeatures();
         if ((c != null) && (c.size() > 0)) {
             final String s = (String)JOptionPane.showInputDialog(
@@ -3040,14 +3040,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     "CismapPlugin.mniBufferSelectedGeom.Dialog.title"), // NOI18N
                 JOptionPane.WARNING_MESSAGE);
         }
-    }                                                                   //GEN-LAST:event_mniBufferSelectedGeomActionPerformed
+    }//GEN-LAST:event_mniBufferSelectedGeomActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
+    private void cmdNodeReflectGeometryActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdNodeReflectGeometryActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3056,23 +3056,23 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                     mapC.setInteractionMode(MappingComponent.SELECT);
                 }
             });
-    } //GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
+    }//GEN-LAST:event_cmdNodeReflectGeometryActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAngleMeasurementActionPerformed
+    private void mniAngleMeasurementActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAngleMeasurementActionPerformed
         StaticSwingTools.showDialog(AngleMeasurementDialog.getInstance());
-    }                                                                                       //GEN-LAST:event_mniAngleMeasurementActionPerformed
+    }//GEN-LAST:event_mniAngleMeasurementActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniLoadShapeActionPerformed
+    private void mniLoadShapeActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLoadShapeActionPerformed
         JFileChooser fc;
 
         try {
@@ -3107,14 +3107,14 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
             final ActiveLayerModel model = (ActiveLayerModel)mapC.getMappingModel();
             LayerDropUtils.handleFiles(Collections.nCopies(1, file), model, 0, this);
         }
-    } //GEN-LAST:event_mniLoadShapeActionPerformed
+    }//GEN-LAST:event_mniLoadShapeActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void cmdSelectSingleActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_cmdSelectSingleActionPerformed
+    private void cmdSelectSingleActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSelectSingleActionPerformed
         EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -3124,16 +3124,16 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
                         SelectionListener.RECTANGLE);
                 }
             });
-    } //GEN-LAST:event_cmdSelectSingleActionPerformed
+    }//GEN-LAST:event_cmdSelectSingleActionPerformed
 
     /**
      * DOCUMENT ME!
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void mniAppendConfigActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_mniAppendConfigActionPerformed
+    private void mniAppendConfigActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAppendConfigActionPerformed
         loadConfiguration(true);
-    }                                                                                   //GEN-LAST:event_mniAppendConfigActionPerformed
+    }//GEN-LAST:event_mniAppendConfigActionPerformed
 
     /**
      * DOCUMENT ME!
@@ -5329,11 +5329,10 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                         @Override
                                         public void handle(final String target,
-                                                final Request rqst,
+                                                final Request base_request,
                                                 final HttpServletRequest request,
                                                 final HttpServletResponse response) throws IOException,
                                             ServletException {
-                                            final Request base_request = rqst;
                                             base_request.setHandled(true);
                                             response.setContentType("text/html");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // NOI18N
                                             response.setStatus(HttpServletResponse.SC_ACCEPTED);
@@ -5347,7 +5346,7 @@ public class CismapPlugin extends javax.swing.JFrame implements PluginSupport,
 
                                         @Override
                                         public void handle(final String target,
-                                                final Request rqst,
+                                                final Request base_request,
                                                 final HttpServletRequest request,
                                                 final HttpServletResponse response) throws IOException,
                                             ServletException {

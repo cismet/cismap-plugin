@@ -44,7 +44,7 @@
             <dependency>
                 <groupId>de.cismet</groupId>
                 <artifactId>cismet-ext-bom</artifactId>
-                <version>10.0</version>
+                <version>10.1.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -53,29 +53,41 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-3</version>
                 <type>jar</type>
                 <scope>compile</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.glassfish.hk2.external</groupId>
+                        <artifactId>aopalliance-repackaged</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-3</version>
                 <type>test-jar</type>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.glassfish.hk2.external</groupId>
+                        <artifactId>aopalliance-repackaged</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-gui-commons</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -83,14 +95,14 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>10.0.1-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismap-commons</artifactId>
-                <version>10.0.1-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -98,13 +110,13 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids</groupId>
-                <artifactId>cids-server</artifactId>
+                <artifactId>cids-server-1</artifactId>
                 <version>10.0-prerelease</version>
                 <type>test-jar</type>
                 <scope>test</scope>
@@ -113,13 +125,13 @@
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>de.cismet.cids.navigator</groupId>
                 <artifactId>cids-navigator</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -127,7 +139,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
-                <version>10.0-prerelease</version>
+                <version>10.0-prerelease-1</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -376,9 +388,8 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
+            <groupId>org.eclipse.jetty.toolchain</groupId>
+            <artifactId>jetty-jakarta-servlet-api</artifactId>
         </dependency>
         <!-- END: Managed dependencies -->
         
