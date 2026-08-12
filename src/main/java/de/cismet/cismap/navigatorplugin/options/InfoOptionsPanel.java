@@ -28,6 +28,8 @@ import java.awt.datatransfer.StringSelection;
 
 import java.io.File;
 
+import java.util.regex.Pattern;
+
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -329,25 +331,25 @@ public class InfoOptionsPanel extends AbstractOptionsPanel implements Connection
      *
      * @param  evt  DOCUMENT ME!
      */
-    private void jButton1ActionPerformed(final java.awt.event.ActionEvent evt) { //GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton1ActionPerformed(final java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         final StringBuilder sb = new StringBuilder();
         final User user = SessionManager.getSession().getUser();
 
-        sb.append("Starter: ").append(getStarter() + "\n");
-        sb.append("Java-Version: ").append(String.valueOf(getJavaMajorVersion()) + "\n");
-        sb.append("Java-Anbieter: ").append(String.valueOf(System.getProperty("java.vendor")) + "\n");
-        sb.append("Java-Distribution: ")
-                .append(String.valueOf(
-                        System.getProperty("java.vm.name")
+        sb.append("Starter: ").append(getStarter()).append("\n");
+        sb.append("Java-Version: ").append(String.valueOf(getJavaMajorVersion())).append("\n");
+        sb.append("Java-Anbieter: ").append(String.valueOf(System.getProperty("java.vendor"))).append("\n");
+        sb.append("Java-Distribution: ").append(String.valueOf(
+                System.getProperty("java.vm.name")
                         + " "
-                        + System.getProperty("java.runtime.version")) + "\n");
-        sb.append("Nutzer: ").append(user.getName() + "\n");
-        sb.append("Domain: ").append(user.getDomain() + "\n");
+                        + System.getProperty("java.runtime.version")))
+                .append("\n");
+        sb.append("Nutzer: ").append(user.getName()).append("\n");
+        sb.append("Domain: ").append(user.getDomain()).append("\n");
 
         final String cismapPropertiesFile = getCismapPropertiesFile();
 
         if (cismapPropertiesFile != null) {
-            sb.append("CismapProperties: ").append(cismapPropertiesFile + "\n");
+            sb.append("CismapProperties: ").append(cismapPropertiesFile).append("\n");
         } else {
             sb.append("CismapProperties: ");
         }
@@ -355,7 +357,7 @@ public class InfoOptionsPanel extends AbstractOptionsPanel implements Connection
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         final StringSelection selection = new StringSelection(sb.toString());
         clipboard.setContents(selection, selection);
-    } //GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     @Override
     public void initWithConnectionContext(final ConnectionContext connectionContext) {
@@ -371,29 +373,29 @@ public class InfoOptionsPanel extends AbstractOptionsPanel implements Connection
             makeReadOnly(txtDomain);
             makeReadOnly(txtStarter);
             makeReadOnly(txtUser);
+
+            txtJava.setText(String.valueOf(getJavaMajorVersion()));
+            txtJavaVendor.setText(String.valueOf(System.getProperty("java.vendor")));
+            txtJavaDist.setText(String.valueOf(
+                    System.getProperty("java.vm.name")
+                            + " "
+                            + System.getProperty("java.runtime.version")));
+            final User user = SessionManager.getSession().getUser();
+
+            txtUser.setText(user.getName());
+            txtDomain.setText(user.getDomain());
+            txtStarter.setText(getStarter());
+
+            final String cismapPropertiesFile = getCismapPropertiesFile();
+
+            if (cismapPropertiesFile != null) {
+                txtCismapProperties.setText(cismapPropertiesFile);
+            } else {
+                txtCismapProperties.setVisible(false);
+                lblCismapProperties.setVisible(false);
+            }
         } catch (Exception e) {
-            LOG.error("Erro during Creation of Password Dialog", e);
-        }
-
-        txtJava.setText(String.valueOf(getJavaMajorVersion()));
-        txtJavaVendor.setText(String.valueOf(System.getProperty("java.vendor")));
-        txtJavaDist.setText(String.valueOf(
-                System.getProperty("java.vm.name")
-                        + " "
-                        + System.getProperty("java.runtime.version")));
-        final User user = SessionManager.getSession().getUser();
-
-        txtUser.setText(user.getName());
-        txtDomain.setText(user.getDomain());
-        txtStarter.setText(getStarter());
-
-        final String cismapPropertiesFile = getCismapPropertiesFile();
-
-        if (cismapPropertiesFile != null) {
-            txtCismapProperties.setText(cismapPropertiesFile);
-        } else {
-            txtCismapProperties.setVisible(false);
-            lblCismapProperties.setVisible(false);
+            LOG.error("Error during the creation of the InfoOptionsPanel", e);
         }
     }
 
@@ -432,7 +434,7 @@ public class InfoOptionsPanel extends AbstractOptionsPanel implements Connection
 
         if (classPathEntry.contains(".")) {
             final String tmpPath = classPathEntry.substring(0, classPathEntry.lastIndexOf("."));
-            final String[] directories = tmpPath.split(File.separator);
+            final String[] directories = tmpPath.split(Pattern.quote(File.separator));
             int i = directories.length - 2;
 
             while ((i > 0) && directories[i].startsWith(".")) {
